@@ -50,20 +50,32 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AddUserForm.cs">
+    <Compile Include="AddMasterForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AddUserForm.Designer.cs">
+    <Compile Include="AddMasterForm.Designer.cs">
+      <DependentUpon>AddMasterForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="EditForms\AddUserForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EditForms\AddUserForm.Designer.cs">
       <DependentUpon>AddUserForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Autorization\Connection.cs" />
     <Compile Include="Director\ShowReportsHelper\DataManager.cs" />
     <Compile Include="Director\ShowReportsHelper\FilterManager.cs" />
-    <Compile Include="EditUserForm.cs">
+    <Compile Include="EditForms\EditUserForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="EditUserForm.Designer.cs">
+    <Compile Include="EditForms\EditUserForm.Designer.cs">
       <DependentUpon>EditUserForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="EditMasterForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EditMasterForm.Designer.cs">
+      <DependentUpon>EditMasterForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -97,7 +109,7 @@
     </Compile>
     <Compile Include="Autorization\MySQLHelper.cs" />
     <Compile Include="Autorization\PasswordVisibilityToggle.cs" />
-    <Compile Include="NameFormatter.cs" />
+    <Compile Include="Helpers\NameFormatter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Admin\SettingForm.cs">
@@ -131,13 +143,16 @@
       <DependentUpon>Schedule.cs</DependentUpon>
     </Compile>
     <Compile Include="Director\ShowReportsHelper\StyleManager.cs" />
-    <Compile Include="UserModel.cs" />
-    <Compile Include="Validation.cs" />
-    <EmbeddedResource Include="AddUserForm.resx">
+    <Compile Include="Helpers\UserModel.cs" />
+    <Compile Include="Helpers\Validation.cs" />
+    <EmbeddedResource Include="EditForms\AddUserForm.resx">
       <DependentUpon>AddUserForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="EditUserForm.resx">
+    <EmbeddedResource Include="EditForms\EditUserForm.resx">
       <DependentUpon>EditUserForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditMasterForm.resx">
+      <DependentUpon>EditMasterForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
@@ -207,5 +222,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

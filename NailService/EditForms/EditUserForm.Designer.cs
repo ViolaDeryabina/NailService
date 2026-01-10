@@ -46,13 +46,15 @@
             this.RoleCb = new System.Windows.Forms.ComboBox();
             this.LastName = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.phoneTextBox = new System.Windows.Forms.TextBox();
+            this.phoneText = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnSave
             // 
             this.btnSave.BackColor = System.Drawing.Color.HotPink;
             this.btnSave.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnSave.Location = new System.Drawing.Point(447, 367);
+            this.btnSave.Location = new System.Drawing.Point(452, 374);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(223, 47);
             this.btnSave.TabIndex = 33;
@@ -64,7 +66,7 @@
             // 
             this.btnCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnCancel.Location = new System.Drawing.Point(17, 367);
+            this.btnCancel.Location = new System.Drawing.Point(21, 374);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(223, 47);
             this.btnCancel.TabIndex = 32;
@@ -209,12 +211,31 @@
             this.label1.TabIndex = 17;
             this.label1.Text = "Изменить данные";
             // 
+            // phoneTextBox
+            // 
+            this.phoneTextBox.Font = new System.Drawing.Font("MS Reference Sans Serif", 15.25F);
+            this.phoneTextBox.Location = new System.Drawing.Point(131, 319);
+            this.phoneTextBox.Name = "phoneTextBox";
+            this.phoneTextBox.Size = new System.Drawing.Size(354, 32);
+            this.phoneTextBox.TabIndex = 34;
+            // 
+            // phoneText
+            // 
+            this.phoneText.AutoSize = true;
+            this.phoneText.Location = new System.Drawing.Point(17, 327);
+            this.phoneText.Name = "phoneText";
+            this.phoneText.Size = new System.Drawing.Size(96, 24);
+            this.phoneText.TabIndex = 35;
+            this.phoneText.Text = "Телефон";
+            // 
             // EditUserForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(687, 424);
+            this.ClientSize = new System.Drawing.Size(687, 437);
+            this.Controls.Add(this.phoneText);
+            this.Controls.Add(this.phoneTextBox);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.Password);
@@ -262,5 +283,7 @@
         private System.Windows.Forms.ComboBox RoleCb;
         private System.Windows.Forms.TextBox LastName;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox phoneTextBox;
+        private System.Windows.Forms.Label phoneText;
     }
 }

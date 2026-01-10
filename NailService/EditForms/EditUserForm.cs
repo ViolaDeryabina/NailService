@@ -18,6 +18,7 @@ namespace NailService
         private string _connection;
         public UserModel User { get; private set; }
         public bool IsEditMode { get; private set; }
+
         public EditUserForm(UserModel user)
         {
             _connection = Connection.ConnectionString;
@@ -43,6 +44,17 @@ namespace NailService
             else
             {
                 RoleCb.Enabled = true;
+            }
+            //*****************************
+            if (IsMasterUser())
+            {
+                phoneText.Visible = true;
+                phoneTextBox.Visible = true;
+            }
+            else
+            {
+                phoneText.Visible = false;
+                phoneTextBox.Visible = false;
             }
         }
 
@@ -71,6 +83,20 @@ namespace NailService
                 MessageBox.Show($"Ошибка загрузки ролей: {ex.Message}");
             }
            
+        }
+        private bool IsMasterUser()
+        {
+
+            // Проверяем, является ли пользователь администратором
+            // Можно проверять по RoleId или по названию роли
+            return User.RoleName?.ToLower() == "мастер" ||
+                   User.RoleName?.ToLower() == "Мастер" ||
+                   User.RoleId == GetMasterRoleId(); // если знаете ID роли админа
+        }
+
+        private int GetMasterRoleId()
+        {
+            return 3;
         }
 
         private bool IsAdminUser()

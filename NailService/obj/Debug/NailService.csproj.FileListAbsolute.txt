@@ -26,3 +26,4 @@ C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\
 C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\bin\Debug\Resources\edit_icon.png
 C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Debug\NailService.AddUserForm.resources
 C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Debug\NailService.EditUserForm.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Debug\NailService.EditMasterForm.resources
