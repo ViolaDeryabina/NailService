@@ -305,13 +305,13 @@ namespace NailService
                     LoadMastersData();
                     break;
                 case 2: // Роли
-                    LoadRolesData();
+                    LoadServicesData();                    
                     break;
                 case 3: // Услуги
-                    LoadServicesData();
+                    LoadClientsData();
                     break;
                 case 4: // Клиенты
-                    LoadClientsData();
+                    LoadRolesData();
                     break;
 
             }

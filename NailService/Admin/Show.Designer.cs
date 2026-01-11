@@ -51,6 +51,9 @@
             this.button4 = new System.Windows.Forms.Button();
             this.dataGridViewClients = new System.Windows.Forms.DataGridView();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.button8 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Users)).BeginInit();
@@ -68,9 +71,9 @@
             // 
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Controls.Add(this.tabPage5);
+            this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Font = new System.Drawing.Font("MS Reference Sans Serif", 12.25F);
             this.tabControl1.Location = new System.Drawing.Point(3, 2);
             this.tabControl1.Name = "tabControl1";
@@ -181,6 +184,9 @@
             // 
             // tabPage3
             // 
+            this.tabPage3.Controls.Add(this.button8);
+            this.tabPage3.Controls.Add(this.label1);
+            this.tabPage3.Controls.Add(this.textBox1);
             this.tabPage3.Controls.Add(this.button5);
             this.tabPage3.Controls.Add(this.button2);
             this.tabPage3.Controls.Add(this.dataGridViewRoles);
@@ -224,7 +230,7 @@
             this.dataGridViewRoles.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridViewRoles.Location = new System.Drawing.Point(6, 7);
             this.dataGridViewRoles.Name = "dataGridViewRoles";
-            this.dataGridViewRoles.Size = new System.Drawing.Size(958, 455);
+            this.dataGridViewRoles.Size = new System.Drawing.Size(958, 363);
             this.dataGridViewRoles.TabIndex = 0;
             // 
             // tabPage4
@@ -323,6 +329,33 @@
             this.dataGridViewClients.Size = new System.Drawing.Size(958, 445);
             this.dataGridViewClients.TabIndex = 0;
             // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(7, 424);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(280, 27);
+            this.textBox1.TabIndex = 7;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 399);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(142, 22);
+            this.label1.TabIndex = 8;
+            this.label1.Text = "Название роли";
+            // 
+            // button8
+            // 
+            this.button8.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.button8.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button8.Location = new System.Drawing.Point(293, 469);
+            this.button8.Name = "button8";
+            this.button8.Size = new System.Drawing.Size(281, 48);
+            this.button8.TabIndex = 9;
+            this.button8.Text = "Редактировать";
+            this.button8.UseVisualStyleBackColor = false;
+            // 
             // Show
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
@@ -345,6 +378,7 @@
             this.tabPage2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewMasters)).EndInit();
             this.tabPage3.ResumeLayout(false);
+            this.tabPage3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRoles)).EndInit();
             this.tabPage4.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewServices)).EndInit();
@@ -378,5 +412,8 @@
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button7;
         private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button button8;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox textBox1;
     }
 }

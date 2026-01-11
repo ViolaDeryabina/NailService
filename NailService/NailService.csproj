@@ -50,11 +50,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddClientForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddClientForm.Designer.cs">
+      <DependentUpon>AddClientForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="AddMasterForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="AddMasterForm.Designer.cs">
       <DependentUpon>AddMasterForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AddServiceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddServiceForm.Designer.cs">
+      <DependentUpon>AddServiceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="EditClientForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EditClientForm.Designer.cs">
+      <DependentUpon>EditClientForm.cs</DependentUpon>
     </Compile>
     <Compile Include="EditForms\AddUserForm.cs">
       <SubType>Form</SubType>
@@ -76,6 +94,12 @@
     </Compile>
     <Compile Include="EditMasterForm.Designer.cs">
       <DependentUpon>EditMasterForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="EditServiceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EditServiceForm.Designer.cs">
+      <DependentUpon>EditServiceForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -145,6 +169,18 @@
     <Compile Include="Director\ShowReportsHelper\StyleManager.cs" />
     <Compile Include="Helpers\UserModel.cs" />
     <Compile Include="Helpers\Validation.cs" />
+    <EmbeddedResource Include="AddClientForm.resx">
+      <DependentUpon>AddClientForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddMasterForm.resx">
+      <DependentUpon>AddMasterForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddServiceForm.resx">
+      <DependentUpon>AddServiceForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditClientForm.resx">
+      <DependentUpon>EditClientForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="EditForms\AddUserForm.resx">
       <DependentUpon>AddUserForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -153,6 +189,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="EditMasterForm.resx">
       <DependentUpon>EditMasterForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditServiceForm.resx">
+      <DependentUpon>EditServiceForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>

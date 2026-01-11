@@ -27,3 +27,8 @@ C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\
 C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Debug\NailService.AddUserForm.resources
 C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Debug\NailService.EditUserForm.resources
 C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Debug\NailService.EditMasterForm.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Debug\NailService.AddMasterForm.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Debug\NailService.AddServiceForm.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Debug\NailService.AddClientForm.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Debug\NailService.EditClientForm.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Debug\NailService.EditServiceForm.resources

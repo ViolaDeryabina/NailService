@@ -205,11 +205,11 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("MS Reference Sans Serif", 18.25F);
-            this.label1.Location = new System.Drawing.Point(226, 9);
+            this.label1.Location = new System.Drawing.Point(154, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(243, 32);
+            this.label1.Size = new System.Drawing.Size(391, 32);
             this.label1.TabIndex = 17;
-            this.label1.Text = "Изменить данные";
+            this.label1.Text = "Редактировать пользователя";
             // 
             // phoneTextBox
             // 
