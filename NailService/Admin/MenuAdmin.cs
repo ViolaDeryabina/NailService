@@ -22,7 +22,7 @@ namespace NailService
 
         private void ListButton_Click(object sender, EventArgs e)
         {
-            Show show = new Show(_fio);
+            Show show = new Show(_fio, 2);
             show.Show();
             this.Hide();
         }

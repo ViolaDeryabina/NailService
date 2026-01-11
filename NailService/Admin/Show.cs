@@ -17,16 +17,80 @@ namespace NailService
     {
         private string _fio;
         private string _connection;
-        public Show(string FIO)
+        private int _roleID;
+
+        private TabPage _tabUsers;
+        private TabPage _tabMasters;
+        private TabPage _tabServices;
+        private TabPage _tabClients;
+        private TabPage _tabRoles;
+
+        private EditUserClass _editUserClass;
+        public Show(string FIO, int RoleID)
         {
             InitializeComponent();
             _fio = FIO;
+            _roleID = RoleID;
             _connection = Connection.ConnectionString;
+            _editUserClass = new EditUserClass();
+
+            _tabUsers = tabPage1;
+            _tabMasters = tabPage2;
+            _tabServices = tabPage4;
+            _tabClients = tabPage5;
+            _tabRoles = tabPage3;
+
+            ConfigureTabsByRole();
         }
+
+
 
         private MySqlConnection GetNewConnection()
         {
             return new MySqlConnection(_connection);
+        }
+
+        private void ConfigureTabsByRole()
+        {
+            // Очищаем все вкладки
+            tabControl1.TabPages.Clear();
+
+            if (_roleID == 2) // Администратор - все вкладки
+            {
+                tabControl1.TabPages.AddRange(new TabPage[]
+                {
+                    _tabUsers,
+                    _tabMasters,
+                    _tabServices,
+                    _tabClients,
+                    _tabRoles
+                });
+
+                // Показываем кнопку добавления пользователей для админа
+                AddUsers.Visible = true;
+            }
+            else if (_roleID == 4) // Менеджер - только Клиенты и Услуги
+            {
+                tabControl1.TabPages.AddRange(new TabPage[]
+                {
+                    _tabClients,
+                    _tabServices
+                });
+
+                // Скрываем кнопку добавления пользователей для менеджера
+                AddUsers.Visible = false;
+            }
+            else if (_roleID == 3) // Мастер (если нужно)
+            {
+                // Пример для мастера - только клиенты
+                tabControl1.TabPages.Add(_tabClients);
+                AddUsers.Visible = false;
+            }
+            else // Гость или другие роли
+            {
+                tabControl1.TabPages.Add(_tabServices); // Только просмотр услуг
+                AddUsers.Visible = false;
+            }
         }
 
 
@@ -59,26 +123,28 @@ namespace NailService
             }
         }
 
+        //Выбранный пользователь
         private void EditSelectedUser()
         {
             if (Users.SelectedRows.Count == 0)
             {
-                ShowInfo("Выберите товар для редактирования");
+                ShowInfo("Выберите пользователя для редактирования");
                 return;
             }
 
             var selectedRow = Users.SelectedRows[0];
-           OpenEditForm(selectedRow);
+            OpenEditForm(selectedRow);
         }
+
+        //Открытие формы для редактирования 
         private void OpenEditForm(DataGridViewRow row)
         {
             try
             {
                 // Получаем ID из скрытой колонки
                 int userId = Convert.ToInt32(row.Cells["ID"].Value);
-
                 // Загружаем полные данные пользователя из базы по ID
-                var userModel = LoadUserById(userId);
+                var userModel = _editUserClass.LoadUserById(userId);
 
                 if (userModel != null)
                 {
@@ -88,7 +154,7 @@ namespace NailService
                     if (editForm.ShowDialog() == DialogResult.OK)
                     {
                         // Обновляем данные в базе
-                        UpdateUserInDatabase(editForm.User);
+                        _editUserClass.UpdateUserInDatabase(editForm.User);
 
                         // Перезагружаем данные
                         LoadUsersData();
@@ -106,94 +172,6 @@ namespace NailService
                 MessageBox.Show($"Ошибка при открытии формы редактирования: {ex.Message}");
             }
         }
-
-        // Метод для загрузки полных данных пользователя по ID
-        private UserModel LoadUserById(int userId)
-        {
-            using (var connection = GetNewConnection()) // Используем новое соединение
-            {
-                try
-                {
-                    connection.Open();
-                    string query = @"SELECT 
-                    u.IDUser,
-                    u.LastName,
-                    u.FirstName,
-                    u.MiddleName,
-                    u.Login,
-                    u.Password,
-                    u.Role as RoleID,
-                    r.RoleName
-                FROM Users u
-                INNER JOIN Role r ON u.Role = r.IDRole
-                WHERE u.IDUser = @UserId";
-
-                    MySqlCommand cmd = new MySqlCommand(query, connection);
-                    cmd.Parameters.AddWithValue("@UserId", userId);
-
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            return new UserModel
-                            {
-                                UserId = reader.GetInt32("IDUser"),
-                                LastName = reader["LastName"]?.ToString() ?? "",
-                                FirstName = reader["FirstName"]?.ToString() ?? "",
-                                MiddleName = reader["MiddleName"]?.ToString() ?? "",
-                                Login = reader["Login"]?.ToString() ?? "",
-                                Password = reader["Password"]?.ToString() ?? "",
-                                RoleId = reader.GetInt32("RoleID"),
-                                RoleName = reader["RoleName"]?.ToString() ?? ""
-                            };
-                        }
-                    }
-                    connection.Close();
-                    return null;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Ошибка загрузки пользователя: {ex.Message}");
-                    return null;
-                }
-            }
-        }
-
-        private void UpdateUserInDatabase(UserModel user)
-        {
-            using (var connection = GetNewConnection()) // Используем новое соединение
-            {
-                try
-                {
-                    connection.Open();
-                    string query = @"UPDATE Users 
-                        SET LastName = @LastName, 
-                            FirstName = @FirstName, 
-                            MiddleName = @MiddleName, 
-                            Login = @Login, 
-                            Password = @Password, 
-                            Role = @Role 
-                        WHERE IDUser = @UserId";
-
-                    MySqlCommand cmd = new MySqlCommand(query, connection);
-                    cmd.Parameters.AddWithValue("@LastName", user.LastName);
-                    cmd.Parameters.AddWithValue("@FirstName", user.FirstName);
-                    cmd.Parameters.AddWithValue("@MiddleName", user.MiddleName);
-                    cmd.Parameters.AddWithValue("@Login", user.Login);
-                    cmd.Parameters.AddWithValue("@Password", user.Password);
-                    cmd.Parameters.AddWithValue("@Role", user.RoleId);
-                    cmd.Parameters.AddWithValue("@UserId", user.UserId);
-
-                    cmd.ExecuteNonQuery();
-                    connection.Close();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Ошибка обновления пользователя: {ex.Message}");
-                }
-            }
-        }
-
 
         private void DeleteSelectedUser()
         {
@@ -244,23 +222,180 @@ namespace NailService
                 }
             }
         }
+        // РАБОТА С ПОЛЬЗОВАТЕЛЯМИ (УДАЛЕНИЕ, РЕДАКТИРОВАНИЕ И ДОБАВЛЕНИЕ) Конец----
+
+
+        // РАБОТА С УСЛУГАМИ (УДАЛЕНИЕ, РЕДАКТИРОВАНИЕ И ДОБАВЛЕНИЕ) 
+        private void dataGridViewServices_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                // Исправлено: используем dataGridViewServices, а не Users
+                var hitTest = dataGridViewServices.HitTest(e.X, e.Y);
+
+                if (hitTest.RowIndex >= 0 && hitTest.RowIndex < dataGridViewServices.RowCount)
+                {
+                    // Снимаем выделение и выделяем текущую строку
+                    dataGridViewServices.ClearSelection();
+                    dataGridViewServices.Rows[hitTest.RowIndex].Selected = true;
+
+                    // Создаем контекстное меню
+                    var contextMenu = new ContextMenuStrip();
+
+                    var editMenuItem = new ToolStripMenuItem("Редактировать");
+                    editMenuItem.Image = Properties.Resources.edit_icon;
+                    editMenuItem.Click += (s, args) => EditSelectedService();
+
+                    var deleteMenuItem = new ToolStripMenuItem("Удалить");
+                    deleteMenuItem.Image = Properties.Resources.delete_icon;
+                    deleteMenuItem.Click += (s, args) => DeleteSelectedService();
+
+                    contextMenu.Items.Add(editMenuItem);
+                    contextMenu.Items.Add(deleteMenuItem);
+
+                    // Показываем меню в правильном месте
+                    contextMenu.Show(dataGridViewServices, e.Location);
+                }
+            }
+        }
+
+        //Выбранная услуга
+        private void EditSelectedService()
+        {
+            if (dataGridViewServices.SelectedRows.Count == 0)
+            {
+                ShowInfo("Выберите услугу для редактирования");
+                return;
+            }
+
+            var selectedRow = dataGridViewServices.SelectedRows[0];
+            OpenEditFormService(selectedRow);
+        }
+
+        //Открытие формы для редактирования 
+        private void OpenEditFormService(DataGridViewRow row)
+        {
+            try
+            {
+                // Получаем ID из скрытой колонки
+                int serivceId = Convert.ToInt32(row.Cells["ID"].Value);
+                // Загружаем полные данные пользователя из базы по ID
+                var serivceModel = _editUserClass.LoadServiceById(serivceId);
+
+                if (serivceModel != null)
+                {
+                    // Открываем форму редактирования
+                    var editForm = new EditServiceForm(serivceModel);
+
+                    if (editForm.ShowDialog() == DialogResult.OK)
+                    {
+                        // Обновляем данные в базе
+                        _editUserClass.UpdateServiceInDatabase(editForm.Service);
+
+                        // Перезагружаем данные
+                        LoadServicesData();
+
+                        ShowInfo("Услуга успешно обновлена");
+                    }
+                }
+                else
+                {
+                    ShowInfo("Не удалось загрузить данные пользователя");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при открытии формы редактирования: {ex.Message}");
+            }
+        }
+
+        private void DeleteSelectedService()
+        {
+            if (dataGridViewServices.SelectedRows.Count == 0)
+            {
+                ShowInfo("Выберите услугу для удаления");
+                return;
+            }
+
+            var result = MessageBox.Show(
+                "Вы точно хотите удалить услугу?",
+                "Подтверждение удаления",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning
+            );
+
+            if (result == DialogResult.Yes)
+            {
+                var selectedRow = dataGridViewServices.SelectedRows[0];
+                int serviceId = Convert.ToInt32(selectedRow.Cells["ID"].Value);
+                DeleteServiceFromDatabase(serviceId);
+            }
+        }
+
+        private void DeleteServiceFromDatabase(int serviceId)
+        {
+            using (var connection = GetNewConnection())
+            {
+                try
+                {
+                    connection.Open();
+
+                    // ИСПРАВЛЕНО: Правильное имя таблицы и столбца
+                    string query = "DELETE FROM Services WHERE IDServices = @ServiceId";
+
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@ServiceId", serviceId);
+
+                    int affectedRows = cmd.ExecuteNonQuery();
+
+                    if (affectedRows > 0)
+                    {
+                        ShowInfo("Услуга успешно удалена");
+                        LoadServicesData(); // Перезагружаем данные услуг
+                    }
+                    else
+                    {
+                        ShowInfo("Услуга не найдена");
+                    }
+
+                    connection.Close();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка удаления услуги: {ex.Message}",
+                                  "Ошибка",
+                                  MessageBoxButtons.OK,
+                                  MessageBoxIcon.Error);
+                }
+            }
+        }
+        // РАБОТА С УСЛУГАМИ (УДАЛЕНИЕ, РЕДАКТИРОВАНИЕ И ДОБАВЛЕНИЕ) Конец----
+
 
         private void ShowInfo(string message)
         {
             MessageBox.Show(message, "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
-        
+
 
         // ---------------------------------------------------------------------------------------------
         private void Show_Load(object sender, EventArgs e)
-        {         
-            
-            LoadUsersData();
-            ConfigureDataGridView(dataGridViewClients);
-            ConfigureDataGridView(Users);
-            ConfigureDataGridView(dataGridViewMasters);
-            ConfigureDataGridView(dataGridViewRoles);
-            ConfigureDataGridView(dataGridViewServices);
+        {
+
+            // Загружаем данные для активных вкладок
+            LoadCurrentTabData();
+
+            // Настраиваем DataGridView только для видимых вкладок
+            if (tabControl1.TabPages.Contains(_tabUsers))
+                ConfigureDataGridView(Users);
+            if (tabControl1.TabPages.Contains(_tabClients))
+                ConfigureDataGridView(dataGridViewClients);
+            if (tabControl1.TabPages.Contains(_tabMasters))
+                ConfigureDataGridView(dataGridViewMasters);
+            if (tabControl1.TabPages.Contains(_tabRoles))
+                ConfigureDataGridView(dataGridViewRoles);
+            if (tabControl1.TabPages.Contains(_tabServices))
+                ConfigureDataGridView(dataGridViewServices);
         }
 
         private void ConfigureDataGridView(DataGridView name)
@@ -278,7 +413,8 @@ namespace NailService
             name.ReadOnly = true; // Если данные только для чтения
 
             // Обработчик клика по ячейке для выделения строки
-            name.CellClick += (s, e) => {
+            name.CellClick += (s, e) =>
+            {
                 if (e.RowIndex >= 0)
                 {
                     name.Rows[e.RowIndex].Selected = true;
@@ -296,29 +432,43 @@ namespace NailService
         }
         private void LoadCurrentTabData()
         {
-            switch (tabControl1.SelectedIndex)
+            // Загружаем данные только для активной вкладки
+            if (tabControl1.SelectedTab == null)
+                return;
+
+            string tabName = tabControl1.SelectedTab.Name;
+
+            switch (tabName)
             {
-                case 0: // Пользователи
-                    LoadUsersData();
+                case "tabPage1": // Пользователи
+                    if (_roleID == 2) // Только для админа
+                        LoadUsersData();
                     break;
-                case 1: // Мастера
-                    LoadMastersData();
+                case "tabPage2": // Мастера
+                    if (_roleID == 2) // Только для админа
+                        LoadMastersData();
                     break;
-                case 2: // Роли
-                    LoadServicesData();                    
+                case "tabPage3": // Роли
+                    if (_roleID == 2)
+                        LoadRolesData();
+                     // Доступно для всех
                     break;
-                case 3: // Услуги
+                case "tabPage4": // Услуги
+                    LoadServicesData();                  
+                    break;
+                case "tabPage5": // Клиенты
                     LoadClientsData();
                     break;
-                case 4: // Клиенты
-                    LoadRolesData();
-                    break;
-
             }
+
         }
 
         private void LoadUsersData()
         {
+            // Проверяем, доступна ли вкладка
+            if (!tabControl1.TabPages.Contains(_tabUsers))
+                return;
+
             using (var connection = GetNewConnection()) // Используем новое соединение
             {
                 try
@@ -388,6 +538,10 @@ namespace NailService
 
         private void LoadMastersData()
         {
+            // Проверяем, доступна ли вкладка
+            if (!tabControl1.TabPages.Contains(_tabMasters))
+                return;
+
             using (var connection = GetNewConnection()) // Используем новое соединение
             {
                 try
@@ -415,7 +569,6 @@ namespace NailService
                     maskedDt.Columns.Add("ФИО", typeof(string));
                     maskedDt.Columns.Add("Описание", typeof(string));
                     maskedDt.Columns.Add("Телефон", typeof(string));
-                    maskedDt.Columns.Add("Роль", typeof(string));
 
                     // Маскировка ФИО и телефона, объединение ФИО в один столбец
                     foreach (DataRow row in dt.Rows)
@@ -435,8 +588,7 @@ namespace NailService
                         maskedDt.Rows.Add(
                             fullName,
                             row["Описание"],
-                            phone,
-                            row["Роль"]
+                            phone
                         );
                     }
 
@@ -485,6 +637,10 @@ namespace NailService
         // Загрузка ролей
         private void LoadRolesData()
         {
+            // Проверяем, доступна ли вкладка
+            if (!tabControl1.TabPages.Contains(_tabRoles))
+                return;
+
             using (var connection = GetNewConnection()) // Используем новое соединение
             {
                 try
@@ -514,27 +670,59 @@ namespace NailService
         // Загрузка услуг
         private void LoadServicesData()
         {
-            using (var connection = GetNewConnection()) // Используем новое соединение
+            // Проверяем, доступна ли вкладка
+            if (!tabControl1.TabPages.Contains(_tabServices))
+                return;
+
+            using (var connection = GetNewConnection())
             {
                 try
                 {
                     connection.Open();
                     string query = @"SELECT 
-                        s.ServiceName as 'Название услуги',
-                        s.Description as 'Описание',
-                        s.Price as 'Цена',
-                        c.CategoryName as 'Категория'
-                    FROM Services s
-                    INNER JOIN Category c ON s.Category = c.IDCategory
-                    ORDER BY c.CategoryName, s.ServiceName";
+                s.IDServices as 'ID',
+                s.ServiceName as 'Название услуги',
+                s.Description as 'Описание',
+                s.Price as 'Цена',
+                s.Category as 'CategoryID',
+                c.CategoryName as 'Категория'
+            FROM Services s
+            INNER JOIN Category c ON s.Category = c.IDCategory
+            ORDER BY c.CategoryName, s.ServiceName";
 
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
                     adapter.Fill(dt);
 
-                    dataGridViewServices.DataSource = dt;
+                    // Создаем новый DataTable с маскированными данными
+                    DataTable maskedDt = new DataTable();
+                    maskedDt.Columns.Add("ID", typeof(int));
+                    maskedDt.Columns.Add("Название услуги", typeof(string));
+                    maskedDt.Columns.Add("Описание", typeof(string));
+                    maskedDt.Columns.Add("Цена", typeof(decimal));
+                    maskedDt.Columns.Add("Категория", typeof(string));
+                    maskedDt.Columns.Add("CategoryID", typeof(int)); // Скрытая колонка
+
+                    // Обработка каждой строки
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        maskedDt.Rows.Add(
+                            Convert.ToInt32(row["ID"]),
+                            row["Название услуги"]?.ToString() ?? "",
+                            row["Описание"]?.ToString() ?? "",
+                            Convert.ToDecimal(row["Цена"]),
+                            row["Категория"]?.ToString() ?? "",
+                            Convert.ToInt32(row["CategoryID"])
+                        );
+                    }
+
+                    dataGridViewServices.DataSource = maskedDt;
                     dataGridViewServices.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+                    // Скрываем служебные колонки
+                    dataGridViewServices.Columns["ID"].Visible = false;
+                    dataGridViewServices.Columns["CategoryID"].Visible = false;
 
                     // Форматирование цены
                     dataGridViewServices.Columns["Цена"].DefaultCellStyle.Format = "C2";
@@ -543,6 +731,7 @@ namespace NailService
                     // Настройка отображения длинного текста
                     dataGridViewServices.Columns["Описание"].DefaultCellStyle.WrapMode = DataGridViewTriState.True;
                     dataGridViewServices.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+
                     connection.Close();
                 }
                 catch (Exception ex)
@@ -615,35 +804,102 @@ namespace NailService
 
         private void InMenu_Click(object sender, EventArgs e)
         {
-            if (_fio != "")
+            if (_roleID == 2) // Администратор
             {
                 MenuAdmin menuAdmin = new MenuAdmin(_fio);
                 menuAdmin.Show();
                 this.Hide();
             }
-            else
+            else if (_roleID == 4) // Менеджер
             {
                 Schedule menuManager = new Schedule();
                 menuManager.Show();
                 this.Hide();
             }
-            
+            else // Другие роли
+            {
+                // Начальная форма или форма входа
+
+            }
+
         }
 
         private void AddUsers_Click(object sender, EventArgs e)
         {
+            // Проверяем, доступна ли функция для текущей роли
+            if (_roleID != 2) // Только для админа
+            {
+                MessageBox.Show("У вас нет прав для добавления пользователей",
+                              "Доступ запрещен",
+                              MessageBoxButtons.OK,
+                              MessageBoxIcon.Warning);
+                return;
+            }
+
             AddUserForm addUserForm = new AddUserForm();
 
-            // Показываем форму как модальное окно
             DialogResult result = addUserForm.ShowDialog();
 
-            // После закрытия формы добавления обновляем данные
             if (result == DialogResult.OK)
             {
-                LoadUsersData(); // Перезагружаем данные пользователей
+                LoadUsersData();
                 MessageBox.Show("Пользователь успешно добавлен", "Успех",
                               MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
+
+        private void AddMaster_Click(object sender, EventArgs e)
+        {
+            // Проверяем, доступна ли функция для текущей роли
+            if (_roleID != 2) // Только для админа
+            {
+                MessageBox.Show("У вас нет прав для добавления пользователей",
+                              "Доступ запрещен",
+                              MessageBoxButtons.OK,
+                              MessageBoxIcon.Warning);
+                return;
+            }
+
+            AddMasterForm addMasterForm = new AddMasterForm();
+
+            DialogResult result = addMasterForm.ShowDialog();
+
+            if (result == DialogResult.OK)
+            {
+                LoadMastersData();
+                MessageBox.Show("Мастер успешно добавлен", "Успех",
+                              MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void AddService_Click(object sender, EventArgs e)
+        {
+            AddServiceForm addServiceForm = new AddServiceForm();
+
+            DialogResult result = addServiceForm.ShowDialog();
+
+            if (result == DialogResult.OK)
+            {
+                LoadServicesData();
+                MessageBox.Show("Услуга успешно добавлена", "Успех",
+                              MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void AddClient_Click(object sender, EventArgs e)
+        {
+            AddClientForm addClientForm = new AddClientForm();
+
+            DialogResult result = addClientForm.ShowDialog();
+
+            if (result == DialogResult.OK)
+            {
+                LoadClientsData();
+                MessageBox.Show("Клиент успешно добавлен", "Успех",
+                              MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        
     }
 }

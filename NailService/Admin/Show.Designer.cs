@@ -35,25 +35,25 @@
             this.InMenu = new System.Windows.Forms.Button();
             this.Users = new System.Windows.Forms.DataGridView();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.InMenuM = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.InMenuMaster = new System.Windows.Forms.Button();
+            this.AddMaster = new System.Windows.Forms.Button();
             this.dataGridViewMasters = new System.Windows.Forms.DataGridView();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.button5 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.AddRole = new System.Windows.Forms.Button();
+            this.InMenuRole = new System.Windows.Forms.Button();
             this.dataGridViewRoles = new System.Windows.Forms.DataGridView();
             this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.button6 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
+            this.AddService = new System.Windows.Forms.Button();
+            this.InMenuService = new System.Windows.Forms.Button();
             this.dataGridViewServices = new System.Windows.Forms.DataGridView();
             this.tabPage5 = new System.Windows.Forms.TabPage();
-            this.button7 = new System.Windows.Forms.Button();
-            this.button4 = new System.Windows.Forms.Button();
+            this.AddClient = new System.Windows.Forms.Button();
+            this.InMenuClient = new System.Windows.Forms.Button();
             this.dataGridViewClients = new System.Windows.Forms.DataGridView();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.RoleTextBox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.button8 = new System.Windows.Forms.Button();
+            this.EditRole = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Users)).BeginInit();
@@ -136,8 +136,8 @@
             // 
             // tabPage2
             // 
-            this.tabPage2.Controls.Add(this.InMenuM);
-            this.tabPage2.Controls.Add(this.button1);
+            this.tabPage2.Controls.Add(this.InMenuMaster);
+            this.tabPage2.Controls.Add(this.AddMaster);
             this.tabPage2.Controls.Add(this.dataGridViewMasters);
             this.tabPage2.Location = new System.Drawing.Point(4, 29);
             this.tabPage2.Name = "tabPage2";
@@ -147,27 +147,29 @@
             this.tabPage2.Text = "Мастера";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // InMenuM
+            // InMenuMaster
             // 
-            this.InMenuM.BackColor = System.Drawing.Color.HotPink;
-            this.InMenuM.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.InMenuM.Location = new System.Drawing.Point(683, 469);
-            this.InMenuM.Name = "InMenuM";
-            this.InMenuM.Size = new System.Drawing.Size(281, 48);
-            this.InMenuM.TabIndex = 4;
-            this.InMenuM.Text = "В меню";
-            this.InMenuM.UseVisualStyleBackColor = false;
+            this.InMenuMaster.BackColor = System.Drawing.Color.HotPink;
+            this.InMenuMaster.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.InMenuMaster.Location = new System.Drawing.Point(683, 469);
+            this.InMenuMaster.Name = "InMenuMaster";
+            this.InMenuMaster.Size = new System.Drawing.Size(281, 48);
+            this.InMenuMaster.TabIndex = 4;
+            this.InMenuMaster.Text = "В меню";
+            this.InMenuMaster.UseVisualStyleBackColor = false;
+            this.InMenuMaster.Click += new System.EventHandler(this.InMenu_Click);
             // 
-            // button1
+            // AddMaster
             // 
-            this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button1.Location = new System.Drawing.Point(6, 470);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(281, 48);
-            this.button1.TabIndex = 3;
-            this.button1.Text = "Добавить мастера";
-            this.button1.UseVisualStyleBackColor = false;
+            this.AddMaster.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.AddMaster.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.AddMaster.Location = new System.Drawing.Point(6, 470);
+            this.AddMaster.Name = "AddMaster";
+            this.AddMaster.Size = new System.Drawing.Size(281, 48);
+            this.AddMaster.TabIndex = 3;
+            this.AddMaster.Text = "Добавить мастера";
+            this.AddMaster.UseVisualStyleBackColor = false;
+            this.AddMaster.Click += new System.EventHandler(this.AddMaster_Click);
             // 
             // dataGridViewMasters
             // 
@@ -184,11 +186,11 @@
             // 
             // tabPage3
             // 
-            this.tabPage3.Controls.Add(this.button8);
+            this.tabPage3.Controls.Add(this.EditRole);
             this.tabPage3.Controls.Add(this.label1);
-            this.tabPage3.Controls.Add(this.textBox1);
-            this.tabPage3.Controls.Add(this.button5);
-            this.tabPage3.Controls.Add(this.button2);
+            this.tabPage3.Controls.Add(this.RoleTextBox);
+            this.tabPage3.Controls.Add(this.AddRole);
+            this.tabPage3.Controls.Add(this.InMenuRole);
             this.tabPage3.Controls.Add(this.dataGridViewRoles);
             this.tabPage3.Location = new System.Drawing.Point(4, 29);
             this.tabPage3.Name = "tabPage3";
@@ -198,27 +200,28 @@
             this.tabPage3.Text = "Роли";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
-            // button5
+            // AddRole
             // 
-            this.button5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
-            this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button5.Location = new System.Drawing.Point(6, 470);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(281, 48);
-            this.button5.TabIndex = 6;
-            this.button5.Text = "Добавить роль";
-            this.button5.UseVisualStyleBackColor = false;
+            this.AddRole.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.AddRole.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.AddRole.Location = new System.Drawing.Point(6, 470);
+            this.AddRole.Name = "AddRole";
+            this.AddRole.Size = new System.Drawing.Size(281, 48);
+            this.AddRole.TabIndex = 6;
+            this.AddRole.Text = "Добавить роль";
+            this.AddRole.UseVisualStyleBackColor = false;
             // 
-            // button2
+            // InMenuRole
             // 
-            this.button2.BackColor = System.Drawing.Color.HotPink;
-            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button2.Location = new System.Drawing.Point(683, 468);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(281, 48);
-            this.button2.TabIndex = 5;
-            this.button2.Text = "В меню";
-            this.button2.UseVisualStyleBackColor = false;
+            this.InMenuRole.BackColor = System.Drawing.Color.HotPink;
+            this.InMenuRole.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.InMenuRole.Location = new System.Drawing.Point(683, 468);
+            this.InMenuRole.Name = "InMenuRole";
+            this.InMenuRole.Size = new System.Drawing.Size(281, 48);
+            this.InMenuRole.TabIndex = 5;
+            this.InMenuRole.Text = "В меню";
+            this.InMenuRole.UseVisualStyleBackColor = false;
+            this.InMenuRole.Click += new System.EventHandler(this.InMenu_Click);
             // 
             // dataGridViewRoles
             // 
@@ -235,8 +238,8 @@
             // 
             // tabPage4
             // 
-            this.tabPage4.Controls.Add(this.button6);
-            this.tabPage4.Controls.Add(this.button3);
+            this.tabPage4.Controls.Add(this.AddService);
+            this.tabPage4.Controls.Add(this.InMenuService);
             this.tabPage4.Controls.Add(this.dataGridViewServices);
             this.tabPage4.Location = new System.Drawing.Point(4, 29);
             this.tabPage4.Name = "tabPage4";
@@ -246,27 +249,29 @@
             this.tabPage4.Text = "Услуги";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
-            // button6
+            // AddService
             // 
-            this.button6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
-            this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button6.Location = new System.Drawing.Point(6, 469);
-            this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(281, 48);
-            this.button6.TabIndex = 7;
-            this.button6.Text = "Добавить улугу";
-            this.button6.UseVisualStyleBackColor = false;
+            this.AddService.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.AddService.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.AddService.Location = new System.Drawing.Point(6, 469);
+            this.AddService.Name = "AddService";
+            this.AddService.Size = new System.Drawing.Size(281, 48);
+            this.AddService.TabIndex = 7;
+            this.AddService.Text = "Добавить уcлугу";
+            this.AddService.UseVisualStyleBackColor = false;
+            this.AddService.Click += new System.EventHandler(this.AddService_Click);
             // 
-            // button3
+            // InMenuService
             // 
-            this.button3.BackColor = System.Drawing.Color.HotPink;
-            this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button3.Location = new System.Drawing.Point(683, 469);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(281, 48);
-            this.button3.TabIndex = 5;
-            this.button3.Text = "В меню";
-            this.button3.UseVisualStyleBackColor = false;
+            this.InMenuService.BackColor = System.Drawing.Color.HotPink;
+            this.InMenuService.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.InMenuService.Location = new System.Drawing.Point(683, 469);
+            this.InMenuService.Name = "InMenuService";
+            this.InMenuService.Size = new System.Drawing.Size(281, 48);
+            this.InMenuService.TabIndex = 5;
+            this.InMenuService.Text = "В меню";
+            this.InMenuService.UseVisualStyleBackColor = false;
+            this.InMenuService.Click += new System.EventHandler(this.InMenu_Click);
             // 
             // dataGridViewServices
             // 
@@ -280,11 +285,12 @@
             this.dataGridViewServices.Name = "dataGridViewServices";
             this.dataGridViewServices.Size = new System.Drawing.Size(958, 455);
             this.dataGridViewServices.TabIndex = 0;
+            this.dataGridViewServices.MouseDown += new System.Windows.Forms.MouseEventHandler(this.dataGridViewServices_MouseClick);
             // 
             // tabPage5
             // 
-            this.tabPage5.Controls.Add(this.button7);
-            this.tabPage5.Controls.Add(this.button4);
+            this.tabPage5.Controls.Add(this.AddClient);
+            this.tabPage5.Controls.Add(this.InMenuClient);
             this.tabPage5.Controls.Add(this.dataGridViewClients);
             this.tabPage5.Location = new System.Drawing.Point(4, 29);
             this.tabPage5.Name = "tabPage5";
@@ -294,27 +300,29 @@
             this.tabPage5.Text = "Клиенты";
             this.tabPage5.UseVisualStyleBackColor = true;
             // 
-            // button7
+            // AddClient
             // 
-            this.button7.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
-            this.button7.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button7.Location = new System.Drawing.Point(6, 469);
-            this.button7.Name = "button7";
-            this.button7.Size = new System.Drawing.Size(281, 48);
-            this.button7.TabIndex = 7;
-            this.button7.Text = "Добавить клиента";
-            this.button7.UseVisualStyleBackColor = false;
+            this.AddClient.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.AddClient.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.AddClient.Location = new System.Drawing.Point(6, 469);
+            this.AddClient.Name = "AddClient";
+            this.AddClient.Size = new System.Drawing.Size(281, 48);
+            this.AddClient.TabIndex = 7;
+            this.AddClient.Text = "Добавить клиента";
+            this.AddClient.UseVisualStyleBackColor = false;
+            this.AddClient.Click += new System.EventHandler(this.AddClient_Click);
             // 
-            // button4
+            // InMenuClient
             // 
-            this.button4.BackColor = System.Drawing.Color.HotPink;
-            this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button4.Location = new System.Drawing.Point(683, 469);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(281, 48);
-            this.button4.TabIndex = 5;
-            this.button4.Text = "В меню";
-            this.button4.UseVisualStyleBackColor = false;
+            this.InMenuClient.BackColor = System.Drawing.Color.HotPink;
+            this.InMenuClient.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.InMenuClient.Location = new System.Drawing.Point(683, 469);
+            this.InMenuClient.Name = "InMenuClient";
+            this.InMenuClient.Size = new System.Drawing.Size(281, 48);
+            this.InMenuClient.TabIndex = 5;
+            this.InMenuClient.Text = "В меню";
+            this.InMenuClient.UseVisualStyleBackColor = false;
+            this.InMenuClient.Click += new System.EventHandler(this.InMenu_Click);
             // 
             // dataGridViewClients
             // 
@@ -329,12 +337,12 @@
             this.dataGridViewClients.Size = new System.Drawing.Size(958, 445);
             this.dataGridViewClients.TabIndex = 0;
             // 
-            // textBox1
+            // RoleTextBox
             // 
-            this.textBox1.Location = new System.Drawing.Point(7, 424);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(280, 27);
-            this.textBox1.TabIndex = 7;
+            this.RoleTextBox.Location = new System.Drawing.Point(7, 424);
+            this.RoleTextBox.Name = "RoleTextBox";
+            this.RoleTextBox.Size = new System.Drawing.Size(280, 27);
+            this.RoleTextBox.TabIndex = 7;
             // 
             // label1
             // 
@@ -345,16 +353,16 @@
             this.label1.TabIndex = 8;
             this.label1.Text = "Название роли";
             // 
-            // button8
+            // EditRole
             // 
-            this.button8.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
-            this.button8.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button8.Location = new System.Drawing.Point(293, 469);
-            this.button8.Name = "button8";
-            this.button8.Size = new System.Drawing.Size(281, 48);
-            this.button8.TabIndex = 9;
-            this.button8.Text = "Редактировать";
-            this.button8.UseVisualStyleBackColor = false;
+            this.EditRole.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.EditRole.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.EditRole.Location = new System.Drawing.Point(293, 469);
+            this.EditRole.Name = "EditRole";
+            this.EditRole.Size = new System.Drawing.Size(281, 48);
+            this.EditRole.TabIndex = 9;
+            this.EditRole.Text = "Редактировать";
+            this.EditRole.UseVisualStyleBackColor = false;
             // 
             // Show
             // 
@@ -404,16 +412,16 @@
         private System.Windows.Forms.DataGridView dataGridViewClients;
         private System.Windows.Forms.Button InMenu;
         private System.Windows.Forms.Button AddUsers;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button InMenuM;
-        private System.Windows.Forms.Button button5;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button6;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.Button button7;
-        private System.Windows.Forms.Button button4;
-        private System.Windows.Forms.Button button8;
+        private System.Windows.Forms.Button AddMaster;
+        private System.Windows.Forms.Button InMenuMaster;
+        private System.Windows.Forms.Button AddRole;
+        private System.Windows.Forms.Button InMenuRole;
+        private System.Windows.Forms.Button AddService;
+        private System.Windows.Forms.Button InMenuService;
+        private System.Windows.Forms.Button AddClient;
+        private System.Windows.Forms.Button InMenuClient;
+        private System.Windows.Forms.Button EditRole;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox RoleTextBox;
     }
 }

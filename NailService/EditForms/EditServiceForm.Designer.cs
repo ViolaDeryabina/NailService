@@ -34,12 +34,12 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.textBox3 = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.CategoryCb = new System.Windows.Forms.ComboBox();
+            this.NameService = new System.Windows.Forms.TextBox();
+            this.Price = new System.Windows.Forms.TextBox();
+            this.Description = new System.Windows.Forms.TextBox();
+            this.EditService = new System.Windows.Forms.Button();
+            this.Back = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label1
@@ -92,60 +92,65 @@
             this.label5.TabIndex = 4;
             this.label5.Text = "Описание";
             // 
-            // comboBox1
+            // CategoryCb
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(139, 118);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(354, 32);
-            this.comboBox1.TabIndex = 5;
+            this.CategoryCb.FormattingEnabled = true;
+            this.CategoryCb.Location = new System.Drawing.Point(139, 118);
+            this.CategoryCb.Name = "CategoryCb";
+            this.CategoryCb.Size = new System.Drawing.Size(354, 32);
+            this.CategoryCb.TabIndex = 5;
             // 
-            // textBox1
+            // NameService
             // 
-            this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
-            this.textBox1.Location = new System.Drawing.Point(139, 75);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(354, 31);
-            this.textBox1.TabIndex = 6;
+            this.NameService.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
+            this.NameService.Location = new System.Drawing.Point(139, 75);
+            this.NameService.Name = "NameService";
+            this.NameService.Size = new System.Drawing.Size(354, 31);
+            this.NameService.TabIndex = 6;
+            this.NameService.TextChanged += new System.EventHandler(this.NameService_TextChanged);
             // 
-            // textBox2
+            // Price
             // 
-            this.textBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
-            this.textBox2.Location = new System.Drawing.Point(139, 161);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(354, 31);
-            this.textBox2.TabIndex = 7;
+            this.Price.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
+            this.Price.Location = new System.Drawing.Point(139, 161);
+            this.Price.Name = "Price";
+            this.Price.Size = new System.Drawing.Size(354, 31);
+            this.Price.TabIndex = 7;
+            this.Price.TextChanged += new System.EventHandler(this.Price_TextChanged);
             // 
-            // textBox3
+            // Description
             // 
-            this.textBox3.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
-            this.textBox3.Location = new System.Drawing.Point(139, 204);
-            this.textBox3.Multiline = true;
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(354, 128);
-            this.textBox3.TabIndex = 8;
+            this.Description.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
+            this.Description.Location = new System.Drawing.Point(139, 204);
+            this.Description.Multiline = true;
+            this.Description.Name = "Description";
+            this.Description.Size = new System.Drawing.Size(354, 128);
+            this.Description.TabIndex = 8;
+            this.Description.TextChanged += new System.EventHandler(this.Description_TextChanged);
             // 
-            // button1
+            // EditService
             // 
-            this.button1.BackColor = System.Drawing.Color.HotPink;
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button1.Location = new System.Drawing.Point(270, 356);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(223, 47);
-            this.button1.TabIndex = 9;
-            this.button1.Text = "Редактировать";
-            this.button1.UseVisualStyleBackColor = false;
+            this.EditService.BackColor = System.Drawing.Color.HotPink;
+            this.EditService.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.EditService.Location = new System.Drawing.Point(270, 356);
+            this.EditService.Name = "EditService";
+            this.EditService.Size = new System.Drawing.Size(223, 47);
+            this.EditService.TabIndex = 9;
+            this.EditService.Text = "Редактировать";
+            this.EditService.UseVisualStyleBackColor = false;
+            this.EditService.Click += new System.EventHandler(this.EditService_Click);
             // 
-            // button2
+            // Back
             // 
-            this.button2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
-            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button2.Location = new System.Drawing.Point(16, 356);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(223, 47);
-            this.button2.TabIndex = 10;
-            this.button2.Text = "Отмена";
-            this.button2.UseVisualStyleBackColor = false;
+            this.Back.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.Back.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.Back.Location = new System.Drawing.Point(16, 356);
+            this.Back.Name = "Back";
+            this.Back.Size = new System.Drawing.Size(223, 47);
+            this.Back.TabIndex = 10;
+            this.Back.Text = "Отмена";
+            this.Back.UseVisualStyleBackColor = false;
+            this.Back.Click += new System.EventHandler(this.Back_Click);
             // 
             // EditServiceForm
             // 
@@ -153,12 +158,12 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(521, 424);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.textBox3);
-            this.Controls.Add(this.textBox2);
-            this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.Back);
+            this.Controls.Add(this.EditService);
+            this.Controls.Add(this.Description);
+            this.Controls.Add(this.Price);
+            this.Controls.Add(this.NameService);
+            this.Controls.Add(this.CategoryCb);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
@@ -166,10 +171,11 @@
             this.Controls.Add(this.label1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.Margin = new System.Windows.Forms.Padding(6);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "EditServiceForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Редактирование услуги";
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -183,11 +189,11 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.TextBox textBox3;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.ComboBox CategoryCb;
+        private System.Windows.Forms.TextBox NameService;
+        private System.Windows.Forms.TextBox Price;
+        private System.Windows.Forms.TextBox Description;
+        private System.Windows.Forms.Button EditService;
+        private System.Windows.Forms.Button Back;
     }
 }

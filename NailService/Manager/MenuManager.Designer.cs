@@ -110,6 +110,7 @@
             this.ListButton.TabIndex = 2;
             this.ListButton.Text = "Справочники";
             this.ListButton.UseVisualStyleBackColor = false;
+            this.ListButton.Click += new System.EventHandler(this.ListButton_Click);
             // 
             // ReportsButton
             // 

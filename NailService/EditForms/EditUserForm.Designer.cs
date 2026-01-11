@@ -89,6 +89,7 @@
             this.Login.Name = "Login";
             this.Login.Size = new System.Drawing.Size(354, 32);
             this.Login.TabIndex = 30;
+            this.Login.TextChanged += new System.EventHandler(this.Login_TextChanged);
             // 
             // MiddleName
             // 

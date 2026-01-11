@@ -21,5 +21,11 @@ namespace NailService
         {
 
         }
+
+        private void Back_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            Close();
+        }
     }
 }

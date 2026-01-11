@@ -25,5 +25,12 @@ namespace NailService
             schedule.Show();
             this.Hide();
         }
+
+        private void ListButton_Click(object sender, EventArgs e)
+        {
+            Show show = new Show(_fio,4);
+            show.Show();
+            this.Hide();
+        }
     }
 }

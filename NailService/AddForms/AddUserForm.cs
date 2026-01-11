@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace NailService
 {
@@ -205,55 +206,52 @@ namespace NailService
 
         private void LastName_TextChanged(object sender, EventArgs e)
         {
-            // Запоминаем позицию курсора
             int selectionStart = LastName.SelectionStart;
+            string filteredText = InputValidator.FilterToRussianLetters(LastName.Text);
 
-            // Фильтруем текст, оставляя только русские буквы
-            string filteredText = RussianLettersValidator.FilterToRussianLetters(LastName.Text);
-
-            // Если текст изменился после фильтрации
             if (filteredText != LastName.Text)
             {
                 LastName.Text = filteredText;
-
-                // Восстанавливаем позицию курсора
                 LastName.SelectionStart = Math.Min(selectionStart, LastName.Text.Length);
             }
         }
 
         private void FirstName_TextChanged(object sender, EventArgs e)
         {
-            // Запоминаем позицию курсора
             int selectionStart = FirstName.SelectionStart;
+            string filteredText = InputValidator.FilterToRussianLetters(FirstName.Text);
 
-            // Фильтруем текст, оставляя только русские буквы
-            string filteredText = RussianLettersValidator.FilterToRussianLetters(FirstName.Text);
-
-            // Если текст изменился после фильтрации
             if (filteredText != FirstName.Text)
             {
                 FirstName.Text = filteredText;
-
-                // Восстанавливаем позицию курсора
                 FirstName.SelectionStart = Math.Min(selectionStart, FirstName.Text.Length);
             }
         }
 
         private void MiddleName_TextChanged(object sender, EventArgs e)
         {
-            // Запоминаем позицию курсора
             int selectionStart = MiddleName.SelectionStart;
+            string filteredText = InputValidator.FilterToRussianLetters(MiddleName.Text);
 
-            // Фильтруем текст, оставляя только русские буквы
-            string filteredText = RussianLettersValidator.FilterToRussianLetters(MiddleName.Text);
-
-            // Если текст изменился после фильтрации
             if (filteredText != MiddleName.Text)
             {
                 MiddleName.Text = filteredText;
-
-                // Восстанавливаем позицию курсора
                 MiddleName.SelectionStart = Math.Min(selectionStart, MiddleName.Text.Length);
+            }
+        }
+
+        private void Login_TextChanged(object sender, EventArgs e)
+        {
+            int selectionStart = Login.SelectionStart;
+            string filteredText = new string(Login.Text
+                .Where(c => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+                           char.IsDigit(c) || c == '_' || c == '.')
+                .ToArray());
+
+            if (filteredText != Login.Text)
+            {
+                Login.Text = filteredText;
+                Login.SelectionStart = Math.Min(selectionStart, Login.Text.Length);
             }
         }
     }

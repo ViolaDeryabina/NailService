@@ -192,7 +192,7 @@ namespace NailService
 
         private void ListButton_Click(object sender, EventArgs e)
         {
-            Show Show = new Show("");
+            Show Show = new Show("",4);
             Show.Show();
             this.Hide();
         }
