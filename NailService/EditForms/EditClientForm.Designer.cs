@@ -34,11 +34,11 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.textBox3 = new System.Windows.Forms.TextBox();
-            this.textBox4 = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.LastName = new System.Windows.Forms.TextBox();
+            this.FirstName = new System.Windows.Forms.TextBox();
+            this.MiddleName = new System.Windows.Forms.TextBox();
+            this.Phone = new System.Windows.Forms.TextBox();
+            this.EditClient = new System.Windows.Forms.Button();
             this.Back = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
@@ -97,49 +97,53 @@
             this.label5.TabIndex = 4;
             this.label5.Text = "Телефон";
             // 
-            // textBox1
+            // LastName
             // 
-            this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
-            this.textBox1.Location = new System.Drawing.Point(137, 71);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(354, 31);
-            this.textBox1.TabIndex = 5;
+            this.LastName.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
+            this.LastName.Location = new System.Drawing.Point(137, 71);
+            this.LastName.Name = "LastName";
+            this.LastName.Size = new System.Drawing.Size(354, 31);
+            this.LastName.TabIndex = 5;
+            this.LastName.TextChanged += new System.EventHandler(this.LastName_TextChanged);
             // 
-            // textBox2
+            // FirstName
             // 
-            this.textBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
-            this.textBox2.Location = new System.Drawing.Point(137, 118);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(354, 31);
-            this.textBox2.TabIndex = 6;
+            this.FirstName.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
+            this.FirstName.Location = new System.Drawing.Point(137, 118);
+            this.FirstName.Name = "FirstName";
+            this.FirstName.Size = new System.Drawing.Size(354, 31);
+            this.FirstName.TabIndex = 6;
+            this.FirstName.TextChanged += new System.EventHandler(this.FirstName_TextChanged);
             // 
-            // textBox3
+            // MiddleName
             // 
-            this.textBox3.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
-            this.textBox3.Location = new System.Drawing.Point(137, 161);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(354, 31);
-            this.textBox3.TabIndex = 7;
-            this.textBox3.TextChanged += new System.EventHandler(this.textBox3_TextChanged);
+            this.MiddleName.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
+            this.MiddleName.Location = new System.Drawing.Point(137, 161);
+            this.MiddleName.Name = "MiddleName";
+            this.MiddleName.Size = new System.Drawing.Size(354, 31);
+            this.MiddleName.TabIndex = 7;
+            this.MiddleName.TextChanged += new System.EventHandler(this.MiddleName_TextChanged);
             // 
-            // textBox4
+            // Phone
             // 
-            this.textBox4.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
-            this.textBox4.Location = new System.Drawing.Point(137, 204);
-            this.textBox4.Name = "textBox4";
-            this.textBox4.Size = new System.Drawing.Size(354, 31);
-            this.textBox4.TabIndex = 8;
+            this.Phone.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
+            this.Phone.Location = new System.Drawing.Point(137, 204);
+            this.Phone.Name = "Phone";
+            this.Phone.Size = new System.Drawing.Size(354, 31);
+            this.Phone.TabIndex = 8;
+            this.Phone.TextChanged += new System.EventHandler(this.Phone_TextChanged);
             // 
-            // button1
+            // EditClient
             // 
-            this.button1.BackColor = System.Drawing.Color.HotPink;
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button1.Location = new System.Drawing.Point(268, 296);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(223, 47);
-            this.button1.TabIndex = 9;
-            this.button1.Text = "Редактировать";
-            this.button1.UseVisualStyleBackColor = false;
+            this.EditClient.BackColor = System.Drawing.Color.HotPink;
+            this.EditClient.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.EditClient.Location = new System.Drawing.Point(268, 296);
+            this.EditClient.Name = "EditClient";
+            this.EditClient.Size = new System.Drawing.Size(223, 47);
+            this.EditClient.TabIndex = 9;
+            this.EditClient.Text = "Редактировать";
+            this.EditClient.UseVisualStyleBackColor = false;
+            this.EditClient.Click += new System.EventHandler(this.EditClient_Click);
             // 
             // Back
             // 
@@ -160,11 +164,11 @@
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(521, 373);
             this.Controls.Add(this.Back);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.textBox4);
-            this.Controls.Add(this.textBox3);
-            this.Controls.Add(this.textBox2);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.EditClient);
+            this.Controls.Add(this.Phone);
+            this.Controls.Add(this.MiddleName);
+            this.Controls.Add(this.FirstName);
+            this.Controls.Add(this.LastName);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
@@ -177,7 +181,7 @@
             this.MinimizeBox = false;
             this.Name = "EditClientForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "EditClientForm";
+            this.Text = "Редактировать клиента";
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -190,11 +194,11 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.TextBox textBox3;
-        private System.Windows.Forms.TextBox textBox4;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.TextBox LastName;
+        private System.Windows.Forms.TextBox FirstName;
+        private System.Windows.Forms.TextBox MiddleName;
+        private System.Windows.Forms.TextBox Phone;
+        private System.Windows.Forms.Button EditClient;
         private System.Windows.Forms.Button Back;
     }
 }

@@ -18,11 +18,12 @@ namespace NailService
         private string _connection;
         public UserModel User { get; private set; }
         public bool IsEditMode { get; private set; }
+        private bool _isPasswordChanged = false;
 
         public EditUserForm(UserModel user)
         {
-            _connection = Connection.ConnectionString;
             InitializeComponent();
+            _connection = Connection.ConnectionString;            
             LoadRoles();
             User = user;
             IsEditMode = true;
@@ -34,7 +35,8 @@ namespace NailService
             FirstName.Text = User.FirstName;
             MiddleName.Text = User.MiddleName;
             Login.Text = User.Login;
-            Password.Text = User.Password;
+            Password.Text = "";
+            Password.PasswordChar = '*';
             RoleCb.Text = User.RoleName;
 
             if (IsAdminUser())
@@ -45,17 +47,7 @@ namespace NailService
             {
                 RoleCb.Enabled = true;
             }
-            //*****************************
-            if (IsMasterUser())
-            {
-                phoneText.Visible = true;
-                phoneTextBox.Visible = true;
-            }
-            else
-            {
-                phoneText.Visible = false;
-                phoneTextBox.Visible = false;
-            }
+            
         }
 
 
@@ -83,20 +75,6 @@ namespace NailService
                 MessageBox.Show($"Ошибка загрузки ролей: {ex.Message}");
             }
            
-        }
-        private bool IsMasterUser()
-        {
-
-            // Проверяем, является ли пользователь администратором
-            // Можно проверять по RoleId или по названию роли
-            return User.RoleName?.ToLower() == "мастер" ||
-                   User.RoleName?.ToLower() == "Мастер" ||
-                   User.RoleId == GetMasterRoleId(); // если знаете ID роли админа
-        }
-
-        private int GetMasterRoleId()
-        {
-            return 3;
         }
 
         private bool IsAdminUser()
@@ -160,8 +138,16 @@ namespace NailService
             User.FirstName = FirstName.Text.Trim();
             User.MiddleName = MiddleName.Text.Trim();
             User.Login = Login.Text.Trim();
-            User.Password = Password.Text;
             User.RoleId = (int)RoleCb.SelectedValue;
+
+            // Обновляем пароль только если он был изменен
+            if (_isPasswordChanged && !string.IsNullOrWhiteSpace(Password.Text))
+            {
+                // Хешируем новый пароль
+
+                User.Password = MySQLHelper.GetHash(Password.Text);
+                
+            }
         }
 
         private void LastName_TextChanged(object sender, EventArgs e)
@@ -212,6 +198,14 @@ namespace NailService
             {
                 Login.Text = filteredText;
                 Login.SelectionStart = Math.Min(selectionStart, Login.Text.Length);
+            }
+        }
+
+        private void Password_TextChanged(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(Password.Text))
+            {
+                _isPasswordChanged = true;
             }
         }
     }

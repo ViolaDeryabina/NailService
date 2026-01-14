@@ -99,6 +99,7 @@
             this.LastName.Name = "LastName";
             this.LastName.Size = new System.Drawing.Size(354, 31);
             this.LastName.TabIndex = 5;
+            this.LastName.TextChanged += new System.EventHandler(this.LastName_TextChanged);
             // 
             // FirstName
             // 
@@ -107,6 +108,7 @@
             this.FirstName.Name = "FirstName";
             this.FirstName.Size = new System.Drawing.Size(354, 31);
             this.FirstName.TabIndex = 6;
+            this.FirstName.TextChanged += new System.EventHandler(this.FirstName_TextChanged);
             // 
             // MiddleName
             // 
@@ -115,6 +117,7 @@
             this.MiddleName.Name = "MiddleName";
             this.MiddleName.Size = new System.Drawing.Size(354, 31);
             this.MiddleName.TabIndex = 7;
+            this.MiddleName.TextChanged += new System.EventHandler(this.MiddleName_TextChanged);
             // 
             // Phone
             // 
@@ -135,6 +138,7 @@
             this.AddClient.TabIndex = 9;
             this.AddClient.Text = "Добавить";
             this.AddClient.UseVisualStyleBackColor = false;
+            this.AddClient.Click += new System.EventHandler(this.AddClient_Click);
             // 
             // Back
             // 

@@ -33,9 +33,9 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.FIO = new System.Windows.Forms.ComboBox();
+            this.Phone = new System.Windows.Forms.TextBox();
+            this.Description = new System.Windows.Forms.TextBox();
             this.AddMaster = new System.Windows.Forms.Button();
             this.Back = new System.Windows.Forms.Button();
             this.SuspendLayout();
@@ -78,30 +78,31 @@
             this.label4.TabIndex = 3;
             this.label4.Text = "Телефон";
             // 
-            // comboBox1
+            // FIO
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(126, 71);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(437, 32);
-            this.comboBox1.TabIndex = 4;
+            this.FIO.FormattingEnabled = true;
+            this.FIO.Location = new System.Drawing.Point(126, 71);
+            this.FIO.Name = "FIO";
+            this.FIO.Size = new System.Drawing.Size(437, 32);
+            this.FIO.TabIndex = 4;
             // 
-            // textBox1
+            // Phone
             // 
-            this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
-            this.textBox1.Location = new System.Drawing.Point(126, 114);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(437, 31);
-            this.textBox1.TabIndex = 5;
+            this.Phone.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
+            this.Phone.Location = new System.Drawing.Point(126, 114);
+            this.Phone.Name = "Phone";
+            this.Phone.Size = new System.Drawing.Size(437, 31);
+            this.Phone.TabIndex = 5;
+            this.Phone.TextChanged += new System.EventHandler(this.Phone_TextChanged);
             // 
-            // textBox2
+            // Description
             // 
-            this.textBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
-            this.textBox2.Location = new System.Drawing.Point(126, 161);
-            this.textBox2.Multiline = true;
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(437, 140);
-            this.textBox2.TabIndex = 6;
+            this.Description.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
+            this.Description.Location = new System.Drawing.Point(126, 161);
+            this.Description.Multiline = true;
+            this.Description.Name = "Description";
+            this.Description.Size = new System.Drawing.Size(437, 140);
+            this.Description.TabIndex = 6;
             // 
             // AddMaster
             // 
@@ -135,9 +136,9 @@
             this.ClientSize = new System.Drawing.Size(687, 424);
             this.Controls.Add(this.Back);
             this.Controls.Add(this.AddMaster);
-            this.Controls.Add(this.textBox2);
-            this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.Description);
+            this.Controls.Add(this.Phone);
+            this.Controls.Add(this.FIO);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -161,9 +162,9 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.ComboBox FIO;
+        private System.Windows.Forms.TextBox Phone;
+        private System.Windows.Forms.TextBox Description;
         private System.Windows.Forms.Button AddMaster;
         private System.Windows.Forms.Button Back;
     }

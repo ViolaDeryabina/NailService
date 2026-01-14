@@ -46,8 +46,7 @@
             this.RoleCb = new System.Windows.Forms.ComboBox();
             this.LastName = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.phoneTextBox = new System.Windows.Forms.TextBox();
-            this.phoneText = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnSave
@@ -81,6 +80,7 @@
             this.Password.Name = "Password";
             this.Password.Size = new System.Drawing.Size(354, 32);
             this.Password.TabIndex = 31;
+            this.Password.TextChanged += new System.EventHandler(this.Password_TextChanged);
             // 
             // Login
             // 
@@ -123,7 +123,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(17, 284);
+            this.label7.Location = new System.Drawing.Point(17, 305);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(56, 24);
             this.label7.TabIndex = 26;
@@ -188,7 +188,7 @@
             // RoleCb
             // 
             this.RoleCb.FormattingEnabled = true;
-            this.RoleCb.Location = new System.Drawing.Point(131, 281);
+            this.RoleCb.Location = new System.Drawing.Point(131, 302);
             this.RoleCb.Name = "RoleCb";
             this.RoleCb.Size = new System.Drawing.Size(354, 32);
             this.RoleCb.TabIndex = 19;
@@ -212,22 +212,15 @@
             this.label1.TabIndex = 17;
             this.label1.Text = "Редактировать пользователя";
             // 
-            // phoneTextBox
+            // label8
             // 
-            this.phoneTextBox.Font = new System.Drawing.Font("MS Reference Sans Serif", 15.25F);
-            this.phoneTextBox.Location = new System.Drawing.Point(131, 319);
-            this.phoneTextBox.Name = "phoneTextBox";
-            this.phoneTextBox.Size = new System.Drawing.Size(354, 32);
-            this.phoneTextBox.TabIndex = 34;
-            // 
-            // phoneText
-            // 
-            this.phoneText.AutoSize = true;
-            this.phoneText.Location = new System.Drawing.Point(17, 327);
-            this.phoneText.Name = "phoneText";
-            this.phoneText.Size = new System.Drawing.Size(96, 24);
-            this.phoneText.TabIndex = 35;
-            this.phoneText.Text = "Телефон";
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("MS Reference Sans Serif", 8.25F);
+            this.label8.Location = new System.Drawing.Point(131, 280);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(210, 15);
+            this.label8.TabIndex = 34;
+            this.label8.Text = "Оставить пустым, чтобы не менять";
             // 
             // EditUserForm
             // 
@@ -235,8 +228,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(687, 437);
-            this.Controls.Add(this.phoneText);
-            this.Controls.Add(this.phoneTextBox);
+            this.Controls.Add(this.label8);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.Password);
@@ -284,7 +276,6 @@
         private System.Windows.Forms.ComboBox RoleCb;
         private System.Windows.Forms.TextBox LastName;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox phoneTextBox;
-        private System.Windows.Forms.Label phoneText;
+        private System.Windows.Forms.Label label8;
     }
 }

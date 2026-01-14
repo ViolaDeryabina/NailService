@@ -33,10 +33,10 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.FIO = new System.Windows.Forms.ComboBox();
+            this.Phone = new System.Windows.Forms.TextBox();
+            this.Description = new System.Windows.Forms.TextBox();
+            this.EditMaster = new System.Windows.Forms.Button();
             this.Back = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
@@ -77,39 +77,41 @@
             this.label4.TabIndex = 3;
             this.label4.Text = "Описание";
             // 
-            // comboBox1
+            // FIO
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(133, 77);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(441, 32);
-            this.comboBox1.TabIndex = 4;
+            this.FIO.FormattingEnabled = true;
+            this.FIO.Location = new System.Drawing.Point(133, 77);
+            this.FIO.Name = "FIO";
+            this.FIO.Size = new System.Drawing.Size(441, 32);
+            this.FIO.TabIndex = 4;
             // 
-            // textBox1
+            // Phone
             // 
-            this.textBox1.Location = new System.Drawing.Point(133, 120);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(441, 31);
-            this.textBox1.TabIndex = 5;
+            this.Phone.Location = new System.Drawing.Point(133, 120);
+            this.Phone.Name = "Phone";
+            this.Phone.Size = new System.Drawing.Size(441, 31);
+            this.Phone.TabIndex = 5;
+            this.Phone.TextChanged += new System.EventHandler(this.Phone_TextChanged);
             // 
-            // textBox2
+            // Description
             // 
-            this.textBox2.Location = new System.Drawing.Point(133, 161);
-            this.textBox2.Multiline = true;
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(441, 148);
-            this.textBox2.TabIndex = 6;
+            this.Description.Location = new System.Drawing.Point(133, 161);
+            this.Description.Multiline = true;
+            this.Description.Name = "Description";
+            this.Description.Size = new System.Drawing.Size(441, 148);
+            this.Description.TabIndex = 6;
             // 
-            // button1
+            // EditMaster
             // 
-            this.button1.BackColor = System.Drawing.Color.HotPink;
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button1.Location = new System.Drawing.Point(442, 356);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(223, 47);
-            this.button1.TabIndex = 7;
-            this.button1.Text = "Редактировать";
-            this.button1.UseVisualStyleBackColor = false;
+            this.EditMaster.BackColor = System.Drawing.Color.HotPink;
+            this.EditMaster.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.EditMaster.Location = new System.Drawing.Point(442, 356);
+            this.EditMaster.Name = "EditMaster";
+            this.EditMaster.Size = new System.Drawing.Size(223, 47);
+            this.EditMaster.TabIndex = 7;
+            this.EditMaster.Text = "Редактировать";
+            this.EditMaster.UseVisualStyleBackColor = false;
+            this.EditMaster.Click += new System.EventHandler(this.EditMaster_Click);
             // 
             // Back
             // 
@@ -121,6 +123,7 @@
             this.Back.TabIndex = 8;
             this.Back.Text = "Отмена";
             this.Back.UseVisualStyleBackColor = false;
+            this.Back.Click += new System.EventHandler(this.Back_Click);
             // 
             // EditMasterForm
             // 
@@ -129,10 +132,10 @@
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(687, 424);
             this.Controls.Add(this.Back);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.textBox2);
-            this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.EditMaster);
+            this.Controls.Add(this.Description);
+            this.Controls.Add(this.Phone);
+            this.Controls.Add(this.FIO);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -156,10 +159,10 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.ComboBox FIO;
+        private System.Windows.Forms.TextBox Phone;
+        private System.Windows.Forms.TextBox Description;
+        private System.Windows.Forms.Button EditMaster;
         private System.Windows.Forms.Button Back;
     }
 }

@@ -172,7 +172,7 @@
             this.MinimizeBox = false;
             this.Name = "AddServiceForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "AddServiceForm";
+            this.Text = "Добавить услугу";
             this.ResumeLayout(false);
             this.PerformLayout();
 

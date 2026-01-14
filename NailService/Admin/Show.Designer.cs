@@ -38,10 +38,6 @@
             this.InMenuMaster = new System.Windows.Forms.Button();
             this.AddMaster = new System.Windows.Forms.Button();
             this.dataGridViewMasters = new System.Windows.Forms.DataGridView();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.AddRole = new System.Windows.Forms.Button();
-            this.InMenuRole = new System.Windows.Forms.Button();
-            this.dataGridViewRoles = new System.Windows.Forms.DataGridView();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.AddService = new System.Windows.Forms.Button();
             this.InMenuService = new System.Windows.Forms.Button();
@@ -50,21 +46,34 @@
             this.AddClient = new System.Windows.Forms.Button();
             this.InMenuClient = new System.Windows.Forms.Button();
             this.dataGridViewClients = new System.Windows.Forms.DataGridView();
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.RoleTextBox = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
             this.EditRole = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.RoleTextBox = new System.Windows.Forms.TextBox();
+            this.AddRole = new System.Windows.Forms.Button();
+            this.InMenuRole = new System.Windows.Forms.Button();
+            this.dataGridViewRoles = new System.Windows.Forms.DataGridView();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.tabPage6 = new System.Windows.Forms.TabPage();
+            this.dataGridViewStatuses = new System.Windows.Forms.DataGridView();
+            this.label2 = new System.Windows.Forms.Label();
+            this.Status = new System.Windows.Forms.TextBox();
+            this.AddStatus = new System.Windows.Forms.Button();
+            this.EditStatus = new System.Windows.Forms.Button();
+            this.InMenuStatus = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Users)).BeginInit();
             this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewMasters)).BeginInit();
-            this.tabPage3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRoles)).BeginInit();
             this.tabPage4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewServices)).BeginInit();
             this.tabPage5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewClients)).BeginInit();
+            this.tabPage3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRoles)).BeginInit();
+            this.tabPage6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewStatuses)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -74,6 +83,7 @@
             this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Controls.Add(this.tabPage5);
             this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Controls.Add(this.tabPage6);
             this.tabControl1.Font = new System.Drawing.Font("MS Reference Sans Serif", 12.25F);
             this.tabControl1.Location = new System.Drawing.Point(3, 2);
             this.tabControl1.Name = "tabControl1";
@@ -183,58 +193,7 @@
             this.dataGridViewMasters.Name = "dataGridViewMasters";
             this.dataGridViewMasters.Size = new System.Drawing.Size(958, 455);
             this.dataGridViewMasters.TabIndex = 0;
-            // 
-            // tabPage3
-            // 
-            this.tabPage3.Controls.Add(this.EditRole);
-            this.tabPage3.Controls.Add(this.label1);
-            this.tabPage3.Controls.Add(this.RoleTextBox);
-            this.tabPage3.Controls.Add(this.AddRole);
-            this.tabPage3.Controls.Add(this.InMenuRole);
-            this.tabPage3.Controls.Add(this.dataGridViewRoles);
-            this.tabPage3.Location = new System.Drawing.Point(4, 29);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(970, 523);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "Роли";
-            this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // AddRole
-            // 
-            this.AddRole.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
-            this.AddRole.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.AddRole.Location = new System.Drawing.Point(6, 470);
-            this.AddRole.Name = "AddRole";
-            this.AddRole.Size = new System.Drawing.Size(281, 48);
-            this.AddRole.TabIndex = 6;
-            this.AddRole.Text = "Добавить роль";
-            this.AddRole.UseVisualStyleBackColor = false;
-            // 
-            // InMenuRole
-            // 
-            this.InMenuRole.BackColor = System.Drawing.Color.HotPink;
-            this.InMenuRole.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.InMenuRole.Location = new System.Drawing.Point(683, 468);
-            this.InMenuRole.Name = "InMenuRole";
-            this.InMenuRole.Size = new System.Drawing.Size(281, 48);
-            this.InMenuRole.TabIndex = 5;
-            this.InMenuRole.Text = "В меню";
-            this.InMenuRole.UseVisualStyleBackColor = false;
-            this.InMenuRole.Click += new System.EventHandler(this.InMenu_Click);
-            // 
-            // dataGridViewRoles
-            // 
-            this.dataGridViewRoles.AllowUserToAddRows = false;
-            this.dataGridViewRoles.AllowUserToDeleteRows = false;
-            this.dataGridViewRoles.AllowUserToResizeColumns = false;
-            this.dataGridViewRoles.AllowUserToResizeRows = false;
-            this.dataGridViewRoles.BackgroundColor = System.Drawing.SystemColors.ControlLightLight;
-            this.dataGridViewRoles.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridViewRoles.Location = new System.Drawing.Point(6, 7);
-            this.dataGridViewRoles.Name = "dataGridViewRoles";
-            this.dataGridViewRoles.Size = new System.Drawing.Size(958, 363);
-            this.dataGridViewRoles.TabIndex = 0;
+            this.dataGridViewMasters.MouseClick += new System.Windows.Forms.MouseEventHandler(this.dataGridViewMasters_MouseClick);
             // 
             // tabPage4
             // 
@@ -336,22 +295,23 @@
             this.dataGridViewClients.Name = "dataGridViewClients";
             this.dataGridViewClients.Size = new System.Drawing.Size(958, 445);
             this.dataGridViewClients.TabIndex = 0;
+            this.dataGridViewClients.MouseClick += new System.Windows.Forms.MouseEventHandler(this.dataGridViewClients_MouseClick);
             // 
-            // RoleTextBox
+            // tabPage3
             // 
-            this.RoleTextBox.Location = new System.Drawing.Point(7, 424);
-            this.RoleTextBox.Name = "RoleTextBox";
-            this.RoleTextBox.Size = new System.Drawing.Size(280, 27);
-            this.RoleTextBox.TabIndex = 7;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 399);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(142, 22);
-            this.label1.TabIndex = 8;
-            this.label1.Text = "Название роли";
+            this.tabPage3.Controls.Add(this.EditRole);
+            this.tabPage3.Controls.Add(this.label1);
+            this.tabPage3.Controls.Add(this.RoleTextBox);
+            this.tabPage3.Controls.Add(this.AddRole);
+            this.tabPage3.Controls.Add(this.InMenuRole);
+            this.tabPage3.Controls.Add(this.dataGridViewRoles);
+            this.tabPage3.Location = new System.Drawing.Point(4, 29);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage3.Size = new System.Drawing.Size(970, 523);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "Роли";
+            this.tabPage3.UseVisualStyleBackColor = true;
             // 
             // EditRole
             // 
@@ -363,6 +323,144 @@
             this.EditRole.TabIndex = 9;
             this.EditRole.Text = "Редактировать";
             this.EditRole.UseVisualStyleBackColor = false;
+            this.EditRole.Click += new System.EventHandler(this.EditRole_Click);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 399);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(142, 22);
+            this.label1.TabIndex = 8;
+            this.label1.Text = "Название роли";
+            // 
+            // RoleTextBox
+            // 
+            this.RoleTextBox.Location = new System.Drawing.Point(7, 424);
+            this.RoleTextBox.Name = "RoleTextBox";
+            this.RoleTextBox.Size = new System.Drawing.Size(280, 27);
+            this.RoleTextBox.TabIndex = 7;
+            this.RoleTextBox.TextChanged += new System.EventHandler(this.RoleTextBox_TextChanged_1);
+            // 
+            // AddRole
+            // 
+            this.AddRole.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.AddRole.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.AddRole.Location = new System.Drawing.Point(6, 470);
+            this.AddRole.Name = "AddRole";
+            this.AddRole.Size = new System.Drawing.Size(281, 48);
+            this.AddRole.TabIndex = 6;
+            this.AddRole.Text = "Добавить роль";
+            this.AddRole.UseVisualStyleBackColor = false;
+            this.AddRole.Click += new System.EventHandler(this.AddRole_Click);
+            // 
+            // InMenuRole
+            // 
+            this.InMenuRole.BackColor = System.Drawing.Color.HotPink;
+            this.InMenuRole.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.InMenuRole.Location = new System.Drawing.Point(683, 468);
+            this.InMenuRole.Name = "InMenuRole";
+            this.InMenuRole.Size = new System.Drawing.Size(281, 48);
+            this.InMenuRole.TabIndex = 5;
+            this.InMenuRole.Text = "В меню";
+            this.InMenuRole.UseVisualStyleBackColor = false;
+            this.InMenuRole.Click += new System.EventHandler(this.InMenu_Click);
+            // 
+            // dataGridViewRoles
+            // 
+            this.dataGridViewRoles.AllowUserToAddRows = false;
+            this.dataGridViewRoles.AllowUserToDeleteRows = false;
+            this.dataGridViewRoles.AllowUserToResizeColumns = false;
+            this.dataGridViewRoles.AllowUserToResizeRows = false;
+            this.dataGridViewRoles.BackgroundColor = System.Drawing.SystemColors.ControlLightLight;
+            this.dataGridViewRoles.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewRoles.Location = new System.Drawing.Point(6, 7);
+            this.dataGridViewRoles.Name = "dataGridViewRoles";
+            this.dataGridViewRoles.Size = new System.Drawing.Size(958, 363);
+            this.dataGridViewRoles.TabIndex = 0;
+            this.dataGridViewRoles.MouseClick += new System.Windows.Forms.MouseEventHandler(this.dataGridViewRoles_MouseClick);
+            // 
+            // tabPage6
+            // 
+            this.tabPage6.Controls.Add(this.InMenuStatus);
+            this.tabPage6.Controls.Add(this.EditStatus);
+            this.tabPage6.Controls.Add(this.AddStatus);
+            this.tabPage6.Controls.Add(this.Status);
+            this.tabPage6.Controls.Add(this.label2);
+            this.tabPage6.Controls.Add(this.dataGridViewStatuses);
+            this.tabPage6.Location = new System.Drawing.Point(4, 29);
+            this.tabPage6.Name = "tabPage6";
+            this.tabPage6.Size = new System.Drawing.Size(970, 523);
+            this.tabPage6.TabIndex = 5;
+            this.tabPage6.Text = "Статусы";
+            this.tabPage6.UseVisualStyleBackColor = true;
+            // 
+            // dataGridViewStatuses
+            // 
+            this.dataGridViewStatuses.AllowUserToAddRows = false;
+            this.dataGridViewStatuses.AllowUserToDeleteRows = false;
+            this.dataGridViewStatuses.BackgroundColor = System.Drawing.SystemColors.ControlLightLight;
+            this.dataGridViewStatuses.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewStatuses.Location = new System.Drawing.Point(6, 7);
+            this.dataGridViewStatuses.Name = "dataGridViewStatuses";
+            this.dataGridViewStatuses.ReadOnly = true;
+            this.dataGridViewStatuses.Size = new System.Drawing.Size(958, 363);
+            this.dataGridViewStatuses.TabIndex = 0;
+            this.dataGridViewStatuses.MouseClick += new System.Windows.Forms.MouseEventHandler(this.dataGridViewStatuses_MouseClick);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(6, 399);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(163, 22);
+            this.label2.TabIndex = 1;
+            this.label2.Text = "Название статуса";
+            // 
+            // Status
+            // 
+            this.Status.Location = new System.Drawing.Point(7, 424);
+            this.Status.Name = "Status";
+            this.Status.Size = new System.Drawing.Size(280, 27);
+            this.Status.TabIndex = 2;
+            this.Status.TextChanged += new System.EventHandler(this.Status_TextChanged);
+            this.Status.KeyDown += new System.Windows.Forms.KeyEventHandler(this.StatusTextBox_KeyDown);
+            // 
+            // AddStatus
+            // 
+            this.AddStatus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.AddStatus.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.AddStatus.Location = new System.Drawing.Point(6, 470);
+            this.AddStatus.Name = "AddStatus";
+            this.AddStatus.Size = new System.Drawing.Size(281, 48);
+            this.AddStatus.TabIndex = 3;
+            this.AddStatus.Text = "Добавить";
+            this.AddStatus.UseVisualStyleBackColor = false;
+            this.AddStatus.Click += new System.EventHandler(this.AddStatus_Click);
+            // 
+            // EditStatus
+            // 
+            this.EditStatus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.EditStatus.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.EditStatus.Location = new System.Drawing.Point(293, 469);
+            this.EditStatus.Name = "EditStatus";
+            this.EditStatus.Size = new System.Drawing.Size(281, 48);
+            this.EditStatus.TabIndex = 4;
+            this.EditStatus.Text = "Редактировать";
+            this.EditStatus.UseVisualStyleBackColor = false;
+            this.EditStatus.Click += new System.EventHandler(this.EditStatus_Click);
+            // 
+            // InMenuStatus
+            // 
+            this.InMenuStatus.BackColor = System.Drawing.Color.HotPink;
+            this.InMenuStatus.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.InMenuStatus.Location = new System.Drawing.Point(683, 468);
+            this.InMenuStatus.Name = "InMenuStatus";
+            this.InMenuStatus.Size = new System.Drawing.Size(281, 48);
+            this.InMenuStatus.TabIndex = 5;
+            this.InMenuStatus.Text = "В меню";
+            this.InMenuStatus.UseVisualStyleBackColor = false;
+            this.InMenuStatus.Click += new System.EventHandler(this.InMenu_Click);
             // 
             // Show
             // 
@@ -385,13 +483,16 @@
             ((System.ComponentModel.ISupportInitialize)(this.Users)).EndInit();
             this.tabPage2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewMasters)).EndInit();
-            this.tabPage3.ResumeLayout(false);
-            this.tabPage3.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRoles)).EndInit();
             this.tabPage4.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewServices)).EndInit();
             this.tabPage5.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewClients)).EndInit();
+            this.tabPage3.ResumeLayout(false);
+            this.tabPage3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRoles)).EndInit();
+            this.tabPage6.ResumeLayout(false);
+            this.tabPage6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewStatuses)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -423,5 +524,12 @@
         private System.Windows.Forms.Button EditRole;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox RoleTextBox;
+        private System.Windows.Forms.TabPage tabPage6;
+        private System.Windows.Forms.Button InMenuStatus;
+        private System.Windows.Forms.Button EditStatus;
+        private System.Windows.Forms.Button AddStatus;
+        private System.Windows.Forms.TextBox Status;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.DataGridView dataGridViewStatuses;
     }
 }
