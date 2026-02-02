@@ -98,7 +98,7 @@
             // 
             // Exit
             // 
-            this.Exit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.Exit.BackColor = System.Drawing.Color.HotPink;
             this.Exit.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.Exit.Location = new System.Drawing.Point(19, 318);
             this.Exit.Name = "Exit";
