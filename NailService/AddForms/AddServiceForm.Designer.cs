@@ -40,6 +40,7 @@
             this.Category = new System.Windows.Forms.ComboBox();
             this.AddService = new System.Windows.Forms.Button();
             this.Back = new System.Windows.Forms.Button();
+            this.lblCharCount = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -128,7 +129,7 @@
             // 
             this.AddService.BackColor = System.Drawing.Color.HotPink;
             this.AddService.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.AddService.Location = new System.Drawing.Point(270, 356);
+            this.AddService.Location = new System.Drawing.Point(270, 408);
             this.AddService.Name = "AddService";
             this.AddService.Size = new System.Drawing.Size(223, 47);
             this.AddService.TabIndex = 9;
@@ -140,7 +141,7 @@
             // 
             this.Back.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.Back.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.Back.Location = new System.Drawing.Point(16, 356);
+            this.Back.Location = new System.Drawing.Point(16, 408);
             this.Back.Name = "Back";
             this.Back.Size = new System.Drawing.Size(223, 47);
             this.Back.TabIndex = 10;
@@ -148,12 +149,23 @@
             this.Back.UseVisualStyleBackColor = false;
             this.Back.Click += new System.EventHandler(this.Back_Click);
             // 
+            // lblCharCount
+            // 
+            this.lblCharCount.AutoSize = true;
+            this.lblCharCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.25F);
+            this.lblCharCount.Location = new System.Drawing.Point(425, 335);
+            this.lblCharCount.Name = "lblCharCount";
+            this.lblCharCount.Size = new System.Drawing.Size(53, 20);
+            this.lblCharCount.TabIndex = 11;
+            this.lblCharCount.Text = "label6";
+            // 
             // AddServiceForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(521, 424);
+            this.ClientSize = new System.Drawing.Size(521, 467);
+            this.Controls.Add(this.lblCharCount);
             this.Controls.Add(this.Back);
             this.Controls.Add(this.AddService);
             this.Controls.Add(this.Category);
@@ -191,5 +203,6 @@
         private System.Windows.Forms.ComboBox Category;
         private System.Windows.Forms.Button AddService;
         private System.Windows.Forms.Button Back;
+        private System.Windows.Forms.Label lblCharCount;
     }
 }

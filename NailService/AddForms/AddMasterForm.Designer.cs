@@ -36,7 +36,7 @@
             this.FIO = new System.Windows.Forms.ComboBox();
             this.Phone = new System.Windows.Forms.TextBox();
             this.Description = new System.Windows.Forms.TextBox();
-            this.AddMaster = new System.Windows.Forms.Button();
+            this.AddMasterButton = new System.Windows.Forms.Button();
             this.Back = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
@@ -104,17 +104,17 @@
             this.Description.Size = new System.Drawing.Size(437, 140);
             this.Description.TabIndex = 6;
             // 
-            // AddMaster
+            // AddMasterButton
             // 
-            this.AddMaster.BackColor = System.Drawing.Color.HotPink;
-            this.AddMaster.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.AddMaster.Location = new System.Drawing.Point(442, 356);
-            this.AddMaster.Name = "AddMaster";
-            this.AddMaster.Size = new System.Drawing.Size(223, 47);
-            this.AddMaster.TabIndex = 7;
-            this.AddMaster.Text = "Добавить";
-            this.AddMaster.UseVisualStyleBackColor = false;
-            this.AddMaster.Click += new System.EventHandler(this.AddMaster_Click);
+            this.AddMasterButton.BackColor = System.Drawing.Color.HotPink;
+            this.AddMasterButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.AddMasterButton.Location = new System.Drawing.Point(442, 356);
+            this.AddMasterButton.Name = "AddMasterButton";
+            this.AddMasterButton.Size = new System.Drawing.Size(223, 47);
+            this.AddMasterButton.TabIndex = 7;
+            this.AddMasterButton.Text = "Добавить";
+            this.AddMasterButton.UseVisualStyleBackColor = false;
+            this.AddMasterButton.Click += new System.EventHandler(this.AddMasterButton_Click);
             // 
             // Back
             // 
@@ -135,7 +135,7 @@
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(687, 424);
             this.Controls.Add(this.Back);
-            this.Controls.Add(this.AddMaster);
+            this.Controls.Add(this.AddMasterButton);
             this.Controls.Add(this.Description);
             this.Controls.Add(this.Phone);
             this.Controls.Add(this.FIO);
@@ -165,7 +165,7 @@
         private System.Windows.Forms.ComboBox FIO;
         private System.Windows.Forms.TextBox Phone;
         private System.Windows.Forms.TextBox Description;
-        private System.Windows.Forms.Button AddMaster;
+        private System.Windows.Forms.Button AddMasterButton;
         private System.Windows.Forms.Button Back;
     }
 }

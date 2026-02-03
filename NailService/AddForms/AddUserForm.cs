@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace NailService
 {
@@ -16,10 +15,13 @@ namespace NailService
     {
         private string _connection;
         public UserModel NewUser { get; private set; }
-        public AddUserForm()
+        private Show _showForm; // Ссылка на главную форму для вызова методов
+
+        public AddUserForm(Show showForm = null)
         {
             InitializeComponent();
             _connection = Connection.ConnectionString;
+            _showForm = showForm; // Сохраняем ссылку на главную форму
             NewUser = new UserModel();
             LoadRoles();
         }
@@ -41,7 +43,6 @@ namespace NailService
                     RoleCb.DisplayMember = "RoleName";
                     RoleCb.ValueMember = "IDRole";
 
-                    // Устанавливаем значение по умолчанию (например, первую роль)
                     if (RoleCb.Items.Count > 0)
                     {
                         RoleCb.SelectedIndex = 0;
@@ -59,8 +60,14 @@ namespace NailService
         {
             if (ValidateData())
             {
-                SaveUserData();
-                if (AddUserToDatabase())
+                // Проверяем, есть ли неактивный пользователь для восстановления
+                if (_showForm != null && CheckAndRestoreInactiveUser())
+                {
+                    return; // Пользователь восстановлен, форма закрывается
+                }
+
+                // Иначе создаем нового пользователя
+                if (AddNewUser())
                 {
                     DialogResult = DialogResult.OK;
                     Close();
@@ -112,10 +119,10 @@ namespace NailService
                 return false;
             }
 
-            // Проверка уникальности логина
-            if (!IsLoginUnique(Login.Text.Trim()))
+            // Проверка, что логин не занят активным пользователем
+            if (IsActiveUserExists())
             {
-                MessageBox.Show("Пользователь с таким логином уже существует", "Ошибка",
+                MessageBox.Show("Пользователь с таким логином уже существует и активен", "Ошибка",
                               MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Login.Focus();
                 Login.SelectAll();
@@ -125,24 +132,194 @@ namespace NailService
             return true;
         }
 
-        private bool IsLoginUnique(string login)
+        // Проверяет, есть ли активный пользователь с таким логином
+        private bool IsActiveUserExists()
         {
             try
             {
                 using (var connection = new MySqlConnection(_connection))
                 {
                     connection.Open();
-                    string query = "SELECT COUNT(*) FROM Users WHERE Login = @Login";
+                    string query = "SELECT COUNT(*) FROM Users WHERE Login = @Login AND IsActive = 1";
                     MySqlCommand cmd = new MySqlCommand(query, connection);
-                    cmd.Parameters.AddWithValue("@Login", login);
+                    cmd.Parameters.AddWithValue("@Login", Login.Text.Trim());
 
                     int count = Convert.ToInt32(cmd.ExecuteScalar());
-                    return count == 0;
+                    return count > 0;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка проверки логина: {ex.Message}", "Ошибка",
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return true; // В случае ошибки считаем, что пользователь существует
+            }
+        }
+
+        // Проверяет и восстанавливает неактивного пользователя
+        private bool CheckAndRestoreInactiveUser()
+        {
+            try
+            {
+                string lastName = LastName.Text.Trim();
+                string firstName = FirstName.Text.Trim();
+                string login = Login.Text.Trim();
+
+                // Проверяем через метод главной формы
+                var (exists, isActive, userId) = _showForm.CheckUserExists(lastName, firstName, login);
+
+                if (exists && !isActive)
+                {
+                    // Нашли неактивного пользователя - предлагаем восстановить
+                    var result = MessageBox.Show(
+                        $"Найден неактивный пользователь с такими данными:\n" +
+                        $"ФИО: {lastName} {firstName}\n" +
+                        $"Логин: {login}\n\n" +
+                        "Восстановить этого пользователя с новыми данными?",
+                        "Восстановление пользователя",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question);
+
+                    if (result == DialogResult.Yes)
+                    {
+                        // Сохраняем данные из формы
+                        SaveUserData();
+
+                        // Восстанавливаем пользователя
+                        bool restored = _showForm.RestoreUser(userId, NewUser);
+
+                        if (restored)
+                        {
+                            MessageBox.Show("Пользователь успешно восстановлен", "Успех",
+                                          MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            DialogResult = DialogResult.OK;
+                            Close();
+                            return true;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Не удалось восстановить пользователя", "Ошибка",
+                                          MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    else
+                    {
+                        // Пользователь отказался от восстановления
+                        // Можем создать нового или просто вернуть false
+                        return false;
+                    }
+                }
+                else if (exists && isActive)
+                {
+                    // Активный пользователь уже существует - проверка уже была в ValidateData
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при проверке пользователя: {ex.Message}", "Ошибка",
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return false;
+        }
+
+        // Создает нового пользователя
+        private bool AddNewUser()
+        {
+            try
+            {
+                SaveUserData();
+
+                using (var connection = new MySqlConnection(_connection))
+                {
+                    connection.Open();
+
+                    // Сначала проверяем, нет ли неактивного пользователя с таким логином
+                    string checkQuery = "SELECT IDUser FROM Users WHERE Login = @Login AND IsActive = 0";
+                    MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
+                    checkCmd.Parameters.AddWithValue("@Login", NewUser.Login);
+
+                    object inactiveUserId = checkCmd.ExecuteScalar();
+
+                    if (inactiveUserId != null && inactiveUserId != DBNull.Value)
+                    {
+                        // Нашли неактивного пользователя с таким логином - восстанавливаем
+                        int userId = Convert.ToInt32(inactiveUserId);
+
+                        string updateQuery = @"UPDATE Users 
+                                            SET LastName = @LastName,
+                                                FirstName = @FirstName,
+                                                MiddleName = @MiddleName,
+                                                Password = @Password,
+                                                Role = @Role,
+                                                IsActive = 1
+                                            WHERE IDUser = @UserId";
+
+                        MySqlCommand updateCmd = new MySqlCommand(updateQuery, connection);
+                        updateCmd.Parameters.AddWithValue("@UserId", userId);
+                        updateCmd.Parameters.AddWithValue("@LastName", NewUser.LastName);
+                        updateCmd.Parameters.AddWithValue("@FirstName", NewUser.FirstName);
+                        updateCmd.Parameters.AddWithValue("@MiddleName", NewUser.MiddleName);
+                        updateCmd.Parameters.AddWithValue("@Password", NewUser.Password);
+                        updateCmd.Parameters.AddWithValue("@Role", NewUser.RoleId);
+
+                        int updatedRows = updateCmd.ExecuteNonQuery();
+
+                        if (updatedRows > 0)
+                        {
+                            MessageBox.Show("Пользователь успешно восстановлен", "Успех",
+                                          MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        // Создаем нового пользователя
+                        string insertQuery = @"INSERT INTO Users 
+                                            (LastName, FirstName, MiddleName, Login, Password, Role, IsActive) 
+                                            VALUES (@LastName, @FirstName, @MiddleName, @Login, @Password, @Role, 1)";
+
+                        MySqlCommand insertCmd = new MySqlCommand(insertQuery, connection);
+                        insertCmd.Parameters.AddWithValue("@LastName", NewUser.LastName);
+                        insertCmd.Parameters.AddWithValue("@FirstName", NewUser.FirstName);
+                        insertCmd.Parameters.AddWithValue("@MiddleName", NewUser.MiddleName);
+                        insertCmd.Parameters.AddWithValue("@Login", NewUser.Login);
+                        insertCmd.Parameters.AddWithValue("@Password", NewUser.Password);
+                        insertCmd.Parameters.AddWithValue("@Role", NewUser.RoleId);
+
+                        int result = insertCmd.ExecuteNonQuery();
+
+                        if (result > 0)
+                        {
+                            MessageBox.Show("Пользователь успешно добавлен", "Успех",
+                                          MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            return true;
+                        }
+                    }
+
+                    MessageBox.Show("Не удалось добавить пользователя", "Ошибка",
+                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+            catch (MySqlException ex)
+            {
+                if (ex.Number == 1062) // Ошибка дублирования уникального ключа
+                {
+                    MessageBox.Show("Пользователь с таким логином уже существует", "Ошибка",
+                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    MessageBox.Show($"Ошибка при добавлении пользователя: {ex.Message}", "Ошибка",
+                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при добавлении пользователя: {ex.Message}", "Ошибка",
                               MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
@@ -158,52 +335,13 @@ namespace NailService
             NewUser.Login = Login.Text.Trim();
             NewUser.Password = passwordHash;
             NewUser.RoleId = (int)RoleCb.SelectedValue;
+
+            // Дополнительные поля (если есть в UserModel)
+            // NewUser.Phone = PhoneTextBox.Text.Trim();
+            // NewUser.Email = EmailTextBox.Text.Trim();
         }
 
-
-
-        private bool AddUserToDatabase()
-        {
-            try
-            {
-                using (var connection = new MySqlConnection(_connection))
-                {
-                    connection.Open();
-                    string query = @"INSERT INTO Users 
-                                    (LastName, FirstName, MiddleName, Login, Password, Role) 
-                                    VALUES (@LastName, @FirstName, @MiddleName, @Login, @Password, @Role)";
-
-                    MySqlCommand cmd = new MySqlCommand(query, connection);
-                    cmd.Parameters.AddWithValue("@LastName", NewUser.LastName);
-                    cmd.Parameters.AddWithValue("@FirstName", NewUser.FirstName);
-                    cmd.Parameters.AddWithValue("@MiddleName", NewUser.MiddleName);
-                    cmd.Parameters.AddWithValue("@Login", NewUser.Login);
-                    cmd.Parameters.AddWithValue("@Password", NewUser.Password);
-                    cmd.Parameters.AddWithValue("@Role", NewUser.RoleId);
-
-                    int result = cmd.ExecuteNonQuery();
-
-                    if (result > 0)
-                    {
-
-                        return true;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Не удалось добавить пользователя", "Ошибка",
-                                      MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return false;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при добавлении пользователя: {ex.Message}", "Ошибка",
-                              MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-        }
-
+        // Обработчики фильтрации ввода (остаются без изменений)
         private void LastName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = LastName.SelectionStart;
@@ -254,5 +392,68 @@ namespace NailService
                 Login.SelectionStart = Math.Min(selectionStart, Login.Text.Length);
             }
         }
+
+        // Проверка при вводе логина (можно добавить авто-подсказку)
+        private void Login_Leave(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(Login.Text) && _showForm != null)
+            {
+                // Можно добавить проверку и показ подсказки о неактивном пользователе
+                CheckForInactiveUserHint();
+            }
+        }
+
+        private void CheckForInactiveUserHint()
+        {
+            try
+            {
+                string login = Login.Text.Trim();
+
+                using (var connection = new MySqlConnection(_connection))
+                {
+                    connection.Open();
+                    string query = @"SELECT u.IDUser, u.LastName, u.FirstName, u.MiddleName, 
+                                           u.IsActive, r.RoleName
+                                    FROM Users u 
+                                    INNER JOIN Role r ON u.Role = r.IDRole
+                                    WHERE u.Login = @Login AND u.IsActive = 0";
+
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@Login", login);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            int userId = reader.GetInt32("IDUser");
+                            string lastName = reader["LastName"]?.ToString() ?? "";
+                            string firstName = reader["FirstName"]?.ToString() ?? "";
+                            string middleName = reader["MiddleName"]?.ToString() ?? "";
+                            string roleName = reader["RoleName"]?.ToString() ?? "";
+
+                            // Можно показать подсказку под полем логина
+                            //lblHint.Text = $"Найден неактивный пользователь: {lastName} {firstName} {middleName} ({roleName})";
+                            //lblHint.Visible = true;
+                        }
+                        else
+                        {
+                            //lblHint.Visible = false;
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Игнорируем ошибки при проверке подсказки
+            }
+        }
+
+        private void Password_TextChanged(object sender, EventArgs e)
+        {
+            // Можно добавить проверку сложности пароля
+           //CheckPasswordStrength();
+        }
+
+        
     }
 }
