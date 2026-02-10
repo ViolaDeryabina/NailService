@@ -109,6 +109,7 @@
             this.Seervices.TabIndex = 1;
             this.Seervices.Text = "Услуги";
             this.Seervices.UseVisualStyleBackColor = false;
+            this.Seervices.Click += new System.EventHandler(this.Seervices_Click);
             // 
             // Reports
             // 

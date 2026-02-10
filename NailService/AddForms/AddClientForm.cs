@@ -377,8 +377,7 @@ namespace NailService
 
                         if (result > 0)
                         {
-                            MessageBox.Show("Клиент успешно добавлен", "Успех",
-                                          MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            
                             return true;
                         }
                     }

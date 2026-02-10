@@ -344,6 +344,7 @@
             this.StatusTextBox.Name = "StatusTextBox";
             this.StatusTextBox.Size = new System.Drawing.Size(280, 27);
             this.StatusTextBox.TabIndex = 2;
+            this.StatusTextBox.TextChanged += new System.EventHandler(this.StatusTextBox_TextChanged);
             // 
             // label2
             // 

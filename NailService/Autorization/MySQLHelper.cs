@@ -52,6 +52,25 @@ namespace NailService
 
             return roleName;
         }
+        public static int GetRoleId(string login, string passwordHash)
+        {
+            using (MySqlConnection con = new MySqlConnection(Connection.ConnectionString))
+            {
+                con.Open();
+                string query = @"SELECT u.Role 
+                        FROM users u 
+                        WHERE u.Login = @Login 
+                        AND u.Password = @Password 
+                        AND u.IsActive = 1";
+
+                MySqlCommand cmd = new MySqlCommand(query, con);
+                cmd.Parameters.AddWithValue("@Login", login);
+                cmd.Parameters.AddWithValue("@Password", passwordHash);
+
+                object result = cmd.ExecuteScalar();
+                return result != null ? Convert.ToInt32(result) : 0;
+            }
+        }
 
 
 

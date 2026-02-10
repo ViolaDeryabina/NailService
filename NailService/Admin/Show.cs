@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ namespace NailService
         private string _fio;
         private string _connection;
         private int _roleID;
+        private ImageService _imageService;
 
         private TabPage _tabUsers;
         private TabPage _tabMasters;
@@ -36,7 +38,9 @@ namespace NailService
             _fio = FIO;
             _roleID = RoleID;
             _connection = Connection.ConnectionString;
+
             _editUserClass = new EditUserClass();
+            _imageService = new ImageService();
 
             _tabUsers = tabPage1;
             _tabMasters = tabPage2;
@@ -52,6 +56,7 @@ namespace NailService
         {
             return new MySqlConnection(_connection);
         }
+
 
         private void ConfigureTabsByRole()
         {
@@ -78,6 +83,15 @@ namespace NailService
                 });
                 AddUsers.Visible = false;
             }
+            else if (_roleID == 1) // Директор
+            {
+                tabControl1.TabPages.AddRange(new TabPage[]
+                {
+                    _tabServices
+                });
+                AddUsers.Visible = false;
+            }
+
         }
 
         // РАБОТА С МАСТЕРАМИ (SOFT DELETE)
@@ -181,6 +195,24 @@ namespace NailService
                 {
                     connection.Open();
 
+                    // Проверяем, активен ли мастер
+                    string checkQuery = "SELECT IsActive FROM masters WHERE IDMasters = @MasterId";
+                    MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
+                    checkCmd.Parameters.AddWithValue("@MasterId", masterId);
+
+                    object result = checkCmd.ExecuteScalar();
+
+                    if (result != null)
+                    {
+                        bool isActive = Convert.ToBoolean(result);
+
+                        if (!isActive)
+                        {
+                            ShowInfo("Мастер уже отключен");
+                            return;
+                        }
+                    }
+
                     // SOFT DELETE: помечаем мастера как неактивного
                     string query = "UPDATE masters SET IsActive = 0 WHERE IDMasters = @MasterId";
                     MySqlCommand cmd = new MySqlCommand(query, connection);
@@ -190,7 +222,7 @@ namespace NailService
 
                     if (affectedRows > 0)
                     {
-                        ShowInfo("Мастер успешно удален (скрыт)");
+                        ShowInfo("Мастер успешно отключен");
                         LoadMastersData();
                     }
                     else
@@ -202,7 +234,7 @@ namespace NailService
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка удаления мастера: {ex.Message}");
+                    MessageBox.Show($"Ошибка отключения мастера: {ex.Message}");
                 }
             }
         }
@@ -308,6 +340,24 @@ namespace NailService
                 {
                     connection.Open();
 
+                    // Проверяем, активен ли клиент
+                    string checkQuery = "SELECT IsActive FROM client WHERE IDClient = @ClientId";
+                    MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
+                    checkCmd.Parameters.AddWithValue("@ClientId", clientId);
+
+                    object result = checkCmd.ExecuteScalar();
+
+                    if (result != null)
+                    {
+                        bool isActive = Convert.ToBoolean(result);
+
+                        if (!isActive)
+                        {
+                            ShowInfo("Клиент уже отключен");
+                            return;
+                        }
+                    }
+
                     // SOFT DELETE: помечаем клиента как неактивного
                     string query = "UPDATE client SET IsActive = 0 WHERE IDClient = @ClientId";
                     MySqlCommand cmd = new MySqlCommand(query, connection);
@@ -317,7 +367,7 @@ namespace NailService
 
                     if (affectedRows > 0)
                     {
-                        ShowInfo("Клиент успешно удален (скрыт)");
+                        ShowInfo("Клиент успешно отключен");
                         LoadClientsData();
                     }
                     else
@@ -329,7 +379,7 @@ namespace NailService
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка удаления клиента: {ex.Message}");
+                    MessageBox.Show($"Ошибка отключения клиента: {ex.Message}");
                 }
             }
         }
@@ -433,17 +483,36 @@ namespace NailService
                 {
                     connection.Open();
 
-                    // Получаем информацию о пользователе
+                    // Проверяем, активен ли пользователь
+                    string checkQuery = "SELECT IsActive FROM Users WHERE IDUser = @UserId";
+                    MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
+                    checkCmd.Parameters.AddWithValue("@UserId", userId);
+
+                    object result = checkCmd.ExecuteScalar();
+
+                    if (result != null)
+                    {
+                        bool isActive = Convert.ToBoolean(result);
+
+                        if (!isActive)
+                        {
+                            ShowInfo("Пользователь уже отключен");
+                            return;
+                        }
+                    }
+
+                    // Остальной код проверки администраторов...
                     string userInfoQuery = @"
-                        SELECT u.LastName, u.FirstName, u.MiddleName, r.RoleName, r.IDRole
-                        FROM Users u INNER JOIN Role r ON u.Role = r.IDRole
-                        WHERE u.IDUser = @UserId";
+                SELECT u.LastName, u.FirstName, u.MiddleName, r.RoleName, r.IDRole, u.IsActive
+                FROM Users u INNER JOIN Role r ON u.Role = r.IDRole
+                WHERE u.IDUser = @UserId";
 
                     MySqlCommand infoCmd = new MySqlCommand(userInfoQuery, connection);
                     infoCmd.Parameters.AddWithValue("@UserId", userId);
 
                     string lastName = "", firstName = "", middleName = "", roleName = "";
                     int roleId = 0;
+                    bool isActiveUser = true;
 
                     using (var reader = infoCmd.ExecuteReader())
                     {
@@ -454,10 +523,18 @@ namespace NailService
                             middleName = reader["MiddleName"]?.ToString() ?? "";
                             roleName = reader["RoleName"]?.ToString() ?? "";
                             roleId = reader.GetInt32("IDRole");
+                            isActiveUser = reader.GetBoolean("IsActive");
                         }
                     }
 
                     string userFullName = $"{lastName} {firstName} {middleName}".Trim();
+
+                    // Если пользователь уже неактивен
+                    if (!isActiveUser)
+                    {
+                        ShowInfo($"Пользователь '{userFullName}' уже отключен");
+                        return;
+                    }
 
                     // Проверяем, является ли пользователь администратором
                     bool isAdmin = roleId == 2 ||
@@ -474,9 +551,9 @@ namespace NailService
 
                         if (adminCount <= 1)
                         {
-                            MessageBox.Show($"Нельзя удалить пользователя '{userFullName}'.\n\n" +
+                            MessageBox.Show($"Нельзя отключить пользователя '{userFullName}'.\n\n" +
                                           "Это последний активный администратор в системе.",
-                                          "Ошибка удаления",
+                                          "Ошибка",
                                           MessageBoxButtons.OK,
                                           MessageBoxIcon.Error);
                             connection.Close();
@@ -493,7 +570,7 @@ namespace NailService
 
                     if (affectedRows > 0)
                     {
-                        ShowInfo($"Пользователь '{userFullName}' успешно удален (скрыт)");
+                        ShowInfo($"Пользователь '{userFullName}' успешно отключен");
                         LoadUsersData();
                     }
                     else
@@ -505,7 +582,7 @@ namespace NailService
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка удаления пользователя: {ex.Message}");
+                    MessageBox.Show($"Ошибка отключения пользователя: {ex.Message}");
                 }
             }
         }
@@ -550,32 +627,7 @@ namespace NailService
             OpenEditFormService(selectedRow);
         }
 
-        private void OpenEditFormService(DataGridViewRow row)
-        {
-            try
-            {
-                int serviceId = Convert.ToInt32(row.Cells["ID"].Value);
-                var serviceModel = _editUserClass.LoadServiceById(serviceId);
-                if (serviceModel != null)
-                {
-                    var editForm = new EditServiceForm(serviceModel);
-                    if (editForm.ShowDialog() == DialogResult.OK)
-                    {
-                        _editUserClass.UpdateServiceInDatabase(editForm.Service);
-                        LoadServicesData();
-                        ShowInfo("Услуга успешно обновлена");
-                    }
-                }
-                else
-                {
-                    ShowInfo("Не удалось загрузить данные услуги");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}");
-            }
-        }
+        
 
         private void DeleteSelectedService()
         {
@@ -609,6 +661,24 @@ namespace NailService
                 {
                     connection.Open();
 
+                    // Проверяем, активна ли услуга
+                    string checkQuery = "SELECT IsActive FROM services WHERE IDServices = @ServiceId";
+                    MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
+                    checkCmd.Parameters.AddWithValue("@ServiceId", serviceId);
+
+                    object result = checkCmd.ExecuteScalar();
+
+                    if (result != null)
+                    {
+                        bool isActive = Convert.ToBoolean(result);
+
+                        if (!isActive)
+                        {
+                            ShowInfo("Услуга уже отключена");
+                            return;
+                        }
+                    }
+
                     // SOFT DELETE: помечаем услугу как неактивную
                     string query = "UPDATE services SET IsActive = 0 WHERE IDServices = @ServiceId";
                     MySqlCommand cmd = new MySqlCommand(query, connection);
@@ -618,7 +688,7 @@ namespace NailService
 
                     if (affectedRows > 0)
                     {
-                        ShowInfo("Услуга успешно удалена (скрыта)");
+                        ShowInfo("Услуга успешно отключена");
                         LoadServicesData();
                     }
                     else
@@ -630,7 +700,7 @@ namespace NailService
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка удаления услуги: {ex.Message}");
+                    MessageBox.Show($"Ошибка отключения услуги: {ex.Message}");
                 }
             }
         }
@@ -667,11 +737,12 @@ namespace NailService
                     connection.Open();
 
                     string query = @"
-                        SELECT IDUser, IsActive 
-                        FROM users 
-                        WHERE (Login = @Login 
-                               OR (LastName = @LastName AND FirstName = @FirstName))
-                        LIMIT 1";
+                SELECT IDUser, IsActive 
+                FROM users 
+                WHERE (Login = @Login 
+                       OR (LastName = @LastName AND FirstName = @FirstName))
+                ORDER BY IsActive DESC
+                LIMIT 1";
 
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@Login", login);
@@ -690,8 +761,9 @@ namespace NailService
 
                     return (false, false, 0);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    MessageBox.Show($"Ошибка проверки пользователя: {ex.Message}");
                     return (false, false, 0);
                 }
             }
@@ -1041,18 +1113,18 @@ namespace NailService
                 try
                 {
                     connection.Open();
-                    // Добавляем фильтр WHERE s.IsActive = 1 AND c.IsActive = 1
                     string query = @"SELECT 
-                        s.IDServices as 'ID',
-                        s.ServiceName as 'Название услуги',
-                        s.Description as 'Описание',
-                        s.Price as 'Цена',
-                        s.Category as 'CategoryID',
-                        c.CategoryName as 'Категория'
-                    FROM Services s
-                    INNER JOIN Category c ON s.Category = c.IDCategory
-                    WHERE s.IsActive = 1 AND c.IsActive = 1
-                    ORDER BY c.CategoryName, s.ServiceName";
+                s.IDServices as 'ID',
+                s.ServiceName as 'Название услуги',
+                s.Description as 'Описание',
+                s.Price as 'Цена',
+                s.Category as 'CategoryID',
+                s.Photo as 'Фото',
+                c.CategoryName as 'Категория'
+            FROM Services s
+            INNER JOIN Category c ON s.Category = c.IDCategory
+            WHERE s.IsActive = 1 AND c.IsActive = 1
+            ORDER BY c.CategoryName, s.ServiceName";
 
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
@@ -1065,28 +1137,61 @@ namespace NailService
                     maskedDt.Columns.Add("Описание", typeof(string));
                     maskedDt.Columns.Add("Цена", typeof(decimal));
                     maskedDt.Columns.Add("Категория", typeof(string));
+                    maskedDt.Columns.Add("Миниатюра", typeof(Image));
+                    maskedDt.Columns.Add("Имя файла", typeof(string));
                     maskedDt.Columns.Add("CategoryID", typeof(int));
+
+                    Size thumbnailSize = _imageService.CalculateOptimalThumbnailSize(dataGridViewServices, 80);
 
                     foreach (DataRow row in dt.Rows)
                     {
+                        Image thumbnail = _imageService.GetServiceThumbnail(
+                            row["Фото"]?.ToString(),
+                            thumbnailSize.Width,
+                            thumbnailSize.Height
+                        );
+
                         maskedDt.Rows.Add(
                             Convert.ToInt32(row["ID"]),
                             row["Название услуги"]?.ToString() ?? "",
                             row["Описание"]?.ToString() ?? "",
                             Convert.ToDecimal(row["Цена"]),
                             row["Категория"]?.ToString() ?? "",
+                            thumbnail,
+                            row["Фото"]?.ToString(),
                             Convert.ToInt32(row["CategoryID"])
                         );
                     }
 
-                    dataGridViewServices.DataSource = maskedDt;
+                    // СОХРАНЯЕМ ВЫДЕЛЕНИЕ (если есть)
+                    int selectedIndex = -1;
+                    if (dataGridViewServices.SelectedRows.Count > 0)
+                    {
+                        selectedIndex = dataGridViewServices.SelectedRows[0].Index;
+                    }
+
+                    // 1. Сначала очищаем существующие колонки
+                    dataGridViewServices.Columns.Clear();
+
+                    // 2. Настраиваем базовые свойства БЕЗ столбцов
+                    dataGridViewServices.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                    dataGridViewServices.MultiSelect = false;
+                    dataGridViewServices.RowHeadersVisible = false;
+                    dataGridViewServices.ReadOnly = true;
                     dataGridViewServices.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                    dataGridViewServices.Columns["ID"].Visible = false;
-                    dataGridViewServices.Columns["CategoryID"].Visible = false;
-                    dataGridViewServices.Columns["Цена"].DefaultCellStyle.Format = "C2";
-                    dataGridViewServices.Columns["Цена"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-                    dataGridViewServices.Columns["Описание"].DefaultCellStyle.WrapMode = DataGridViewTriState.True;
-                    dataGridViewServices.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+                    dataGridViewServices.AllowUserToResizeRows = false;
+
+                    // 3. Устанавливаем источник данных
+                    dataGridViewServices.DataSource = maskedDt;
+
+                    // 4. Настраиваем колонки ПОСЛЕ установки DataSource
+                    DataGridViewConfigurator.ConfigureServicesDataGridView( dataGridViewServices );
+
+                    // 5. Восстанавливаем выделение
+                    if (selectedIndex >= 0 && selectedIndex < dataGridViewServices.Rows.Count)
+                    {
+                        dataGridViewServices.Rows[selectedIndex].Selected = true;
+                    }
 
                     connection.Close();
                 }
@@ -1097,6 +1202,75 @@ namespace NailService
             }
         }
 
+        private void OpenEditFormService(DataGridViewRow row)
+        {
+            try
+            {
+                int serviceId = Convert.ToInt32(row.Cells["ID"].Value);
+
+                // Получаем имя файла фото
+                string photoFileName = null;
+                if (dataGridViewServices.Columns.Contains("Имя файла") && row.Cells["Имя файла"].Value != null)
+                {
+                    photoFileName = row.Cells["Имя файла"].Value.ToString();
+                }
+
+                var serviceModel = _editUserClass.LoadServiceById(serviceId);
+                if (serviceModel != null)
+                {
+                    // ЗАГРУЖАЕМ ОРИГИНАЛЬНОЕ ИЗОБРАЖЕНИЕ через ImageService
+                    if (!string.IsNullOrEmpty(photoFileName))
+                    {
+                        try
+                        {
+                            // Получаем полный путь к изображению через ImageService
+                            string imagesPath = _imageService.GetServicesImagesPath();
+                            string imagePath = Path.Combine(imagesPath, photoFileName);
+
+                            if (File.Exists(imagePath))
+                            {
+                                // Загружаем оригинальное изображение
+                                serviceModel.ServiceImage = _imageService.LoadImageFromFile(imagePath);
+                            }
+                            else
+                            {
+                                // Если файл не найден, загружаем заглушку
+                                serviceModel.ServiceImage = _imageService.LoadDefaultServiceImage();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // В случае ошибки загрузки используем заглушку
+                            serviceModel.ServiceImage = _imageService.LoadDefaultServiceImage();
+                        }
+                    }
+                    else
+                    {
+                        // Если фото нет, загружаем заглушку
+                        serviceModel.ServiceImage = _imageService.LoadDefaultServiceImage();
+                    }
+
+                    serviceModel.Photo = photoFileName;
+
+                    // Передаем ImageService в форму редактирования
+                    var editForm = new EditServiceForm(serviceModel, _imageService);
+                    if (editForm.ShowDialog() == DialogResult.OK)
+                    {
+                        _editUserClass.UpdateServiceInDatabase(editForm.Service);
+                        LoadServicesData();
+                        ShowInfo("Услуга успешно обновлена");
+                    }
+                }
+                else
+                {
+                    ShowInfo("Не удалось загрузить данные услуги");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}");
+            }
+        }
         private void LoadClientsData()
         {
             using (var connection = GetNewConnection())
@@ -1217,6 +1391,12 @@ namespace NailService
             else if (_roleID == 4)
             {
                 Schedule menuManager = new Schedule();
+                menuManager.Show();
+                this.Hide();
+            }
+            else if (_roleID == 1)
+            {
+                MenuDirector menuManager = new MenuDirector(_fio);
                 menuManager.Show();
                 this.Hide();
             }

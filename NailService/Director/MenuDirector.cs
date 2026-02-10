@@ -33,5 +33,12 @@ namespace NailService
             showReports.Show();
             this.Hide();
         }
+
+        private void Seervices_Click(object sender, EventArgs e)
+        {
+            Show show= new Show(_fio,1);
+            show.Show();
+            this.Hide();
+        }
     }
 }

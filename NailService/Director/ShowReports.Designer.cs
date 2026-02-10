@@ -47,9 +47,9 @@
             this.btnClearFilters = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.cmbStatusFilter = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
             this.cmbMasterFilter = new System.Windows.Forms.ComboBox();
-            this.cmbStatusFilter = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRecords)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -89,7 +89,7 @@
             // 
             // ReportsButton
             // 
-            this.ReportsButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.ReportsButton.BackColor = System.Drawing.Color.HotPink;
             this.ReportsButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.ReportsButton.Location = new System.Drawing.Point(898, 612);
             this.ReportsButton.Name = "ReportsButton";
@@ -97,6 +97,7 @@
             this.ReportsButton.TabIndex = 12;
             this.ReportsButton.Text = "Сформировать отчёт";
             this.ReportsButton.UseVisualStyleBackColor = false;
+            this.ReportsButton.Click += new System.EventHandler(this.ReportsButton_Click);
             // 
             // dataGridViewRecords
             // 
@@ -244,6 +245,18 @@
             this.groupBox2.TabIndex = 27;
             this.groupBox2.TabStop = false;
             // 
+            // cmbStatusFilter
+            // 
+            this.cmbStatusFilter.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbStatusFilter.Font = new System.Drawing.Font("MS Reference Sans Serif", 15.25F);
+            this.cmbStatusFilter.ForeColor = System.Drawing.Color.Black;
+            this.cmbStatusFilter.FormattingEnabled = true;
+            this.cmbStatusFilter.Location = new System.Drawing.Point(935, 38);
+            this.cmbStatusFilter.Name = "cmbStatusFilter";
+            this.cmbStatusFilter.Size = new System.Drawing.Size(198, 34);
+            this.cmbStatusFilter.TabIndex = 29;
+            this.cmbStatusFilter.SelectedIndexChanged += new System.EventHandler(this.cmbStatusFilter_SelectedIndexChanged);
+            // 
             // label7
             // 
             this.label7.AutoSize = true;
@@ -265,18 +278,6 @@
             this.cmbMasterFilter.Size = new System.Drawing.Size(198, 34);
             this.cmbMasterFilter.TabIndex = 28;
             this.cmbMasterFilter.SelectedIndexChanged += new System.EventHandler(this.cmbMasterFilter_SelectedIndexChanged);
-            // 
-            // cmbStatusFilter
-            // 
-            this.cmbStatusFilter.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbStatusFilter.Font = new System.Drawing.Font("MS Reference Sans Serif", 15.25F);
-            this.cmbStatusFilter.ForeColor = System.Drawing.Color.Black;
-            this.cmbStatusFilter.FormattingEnabled = true;
-            this.cmbStatusFilter.Location = new System.Drawing.Point(935, 38);
-            this.cmbStatusFilter.Name = "cmbStatusFilter";
-            this.cmbStatusFilter.Size = new System.Drawing.Size(198, 34);
-            this.cmbStatusFilter.TabIndex = 29;
-            this.cmbStatusFilter.SelectedIndexChanged += new System.EventHandler(this.cmbStatusFilter_SelectedIndexChanged);
             // 
             // ShowReports
             // 

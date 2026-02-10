@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AddServiceForm));
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -41,13 +42,17 @@
             this.AddService = new System.Windows.Forms.Button();
             this.Back = new System.Windows.Forms.Button();
             this.lblCharCount = new System.Windows.Forms.Label();
+            this.pictureBoxService = new System.Windows.Forms.PictureBox();
+            this.btnLoadImage = new System.Windows.Forms.Button();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxService)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F);
-            this.label1.Location = new System.Drawing.Point(133, 9);
+            this.label1.Location = new System.Drawing.Point(270, 9);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(223, 31);
             this.label1.TabIndex = 0;
@@ -97,6 +102,7 @@
             this.NameService.Size = new System.Drawing.Size(354, 31);
             this.NameService.TabIndex = 5;
             this.NameService.TextChanged += new System.EventHandler(this.NameService_TextChanged);
+            this.NameService.Leave += new System.EventHandler(this.NameService_Leave);
             // 
             // Price
             // 
@@ -159,12 +165,39 @@
             this.lblCharCount.TabIndex = 11;
             this.lblCharCount.Text = "label6";
             // 
+            // pictureBoxService
+            // 
+            this.pictureBoxService.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.pictureBoxService.Location = new System.Drawing.Point(510, 75);
+            this.pictureBoxService.Name = "pictureBoxService";
+            this.pictureBoxService.Size = new System.Drawing.Size(252, 219);
+            this.pictureBoxService.TabIndex = 12;
+            this.pictureBoxService.TabStop = false;
+            this.pictureBoxService.Click += new System.EventHandler(this.pictureBoxService_Click);
+            this.pictureBoxService.DragDrop += new System.Windows.Forms.DragEventHandler(this.pictureBoxService_DragDrop);
+            this.pictureBoxService.DragEnter += new System.Windows.Forms.DragEventHandler(this.pictureBoxService_DragEnter);
+            this.pictureBoxService.MouseHover += new System.EventHandler(this.pictureBoxService_MouseHover);
+            // 
+            // btnLoadImage
+            // 
+            this.btnLoadImage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.btnLoadImage.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnLoadImage.Location = new System.Drawing.Point(510, 300);
+            this.btnLoadImage.Name = "btnLoadImage";
+            this.btnLoadImage.Size = new System.Drawing.Size(252, 32);
+            this.btnLoadImage.TabIndex = 13;
+            this.btnLoadImage.Text = "Выбрать";
+            this.btnLoadImage.UseVisualStyleBackColor = false;
+            this.btnLoadImage.Click += new System.EventHandler(this.btnLoadImage_Click);
+            // 
             // AddServiceForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(521, 467);
+            this.ClientSize = new System.Drawing.Size(777, 465);
+            this.Controls.Add(this.btnLoadImage);
+            this.Controls.Add(this.pictureBoxService);
             this.Controls.Add(this.lblCharCount);
             this.Controls.Add(this.Back);
             this.Controls.Add(this.AddService);
@@ -185,6 +218,7 @@
             this.Name = "AddServiceForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Добавить услугу";
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxService)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -204,5 +238,8 @@
         private System.Windows.Forms.Button AddService;
         private System.Windows.Forms.Button Back;
         private System.Windows.Forms.Label lblCharCount;
+        private System.Windows.Forms.PictureBox pictureBoxService;
+        private System.Windows.Forms.Button btnLoadImage;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }

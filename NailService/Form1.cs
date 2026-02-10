@@ -33,7 +33,7 @@ namespace NailService
             Resources.eyeClose// TextBox с паролем
         );
         }
-        
+
         private void Autorization_Click(object sender, EventArgs e)
         {
             if (Connection.TestConnection())
@@ -46,62 +46,104 @@ namespace NailService
                 {
                     using (MySqlConnection con = new MySqlConnection(_connection))
                     {
-                        con.Open();
+                        try
+                        {
+                            con.Open();
 
-                        string passwordHash = MySQLHelper.GetHash(Password.Text);
+                            string passwordHash = MySQLHelper.GetHash(Password.Text);
 
-                        string query = $"SELECT Count(*) FROM users Where Login='{Login.Text}' and Password = '{passwordHash}';";
+                            // Добавляем проверку IsActive = 1
+                            string query = @"SELECT Count(*) FROM users 
+                                   WHERE Login = @Login 
+                                   AND Password = @Password 
+                                   AND IsActive = 1";
 
-                        MySqlCommand cmd = new MySqlCommand(query, con);
-                        cmd.ExecuteScalar();
+                            MySqlCommand cmd = new MySqlCommand(query, con);
+                            cmd.Parameters.AddWithValue("@Login", Login.Text);
+                            cmd.Parameters.AddWithValue("@Password", passwordHash);
 
+                            int count = Convert.ToInt32(cmd.ExecuteScalar());
 
-                        var role = MySQLHelper.GetRoleName(Login.Text, passwordHash);                       
-                        string FIO = MySQLHelper.GetLastNameWithInitials(Login.Text, passwordHash);
-
-                        if(role != null && FIO != null){
-                            switch (role)
+                            if (count > 0)
                             {
-                                case "Директор":
-                                    {
-                                        MenuDirector menuDirector = new MenuDirector(FIO);
-                                        menuDirector.Show();
-                                        this.Hide();
-                                        break;
-                                    }
-                                case "Админ":
-                                    {
-                                        MenuAdmin menuAdmin = new MenuAdmin(FIO);
-                                        menuAdmin.Show();
-                                        this.Hide();
-                                        break;
-                                    }
-                                case "Мастер":
-                                    {
-                                        MenuMaster menuMaster = new MenuMaster(FIO);
-                                        menuMaster.Show();
-                                        this.Hide();
-                                        break;
-                                    }
-                                case "Менеджер":
-                                    {
-                                        MenuManager menuManager = new MenuManager(FIO);
-                                        menuManager.Show();
-                                        this.Hide();
-                                        break;
-                                    }
+                                var role = MySQLHelper.GetRoleName(Login.Text, passwordHash);
+                                string FIO = MySQLHelper.GetLastNameWithInitials(Login.Text, passwordHash);
 
+                                if (role != null && FIO != null)
+                                {
+                                    int roleId = MySQLHelper.GetRoleId(Login.Text, passwordHash);
+
+                                    switch (role)
+                                    {
+                                        case "Директор":
+                                            {
+                                                MenuDirector menuDirector = new MenuDirector(FIO);
+                                                menuDirector.Show();
+                                                this.Hide();
+                                                break;
+                                            }
+                                        case "Админ":
+                                            {
+                                                MenuAdmin menuAdmin = new MenuAdmin(FIO);
+                                                menuAdmin.Show();
+                                                this.Hide();
+                                                break;
+                                            }
+                                        case "Мастер":
+                                            {
+                                                MenuMaster menuMaster = new MenuMaster(FIO);
+                                                menuMaster.Show();
+                                                this.Hide();
+                                                break;
+                                            }
+                                        case "Менеджер":
+                                            {
+                                                MenuManager menuManager = new MenuManager(FIO);
+                                                menuManager.Show();
+                                                this.Hide();
+                                                break;
+                                            }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Проверяем, существует ли пользователь, но неактивен
+                                string checkInactiveQuery = @"SELECT Count(*) FROM users 
+                                                     WHERE Login = @Login 
+                                                     AND Password = @Password 
+                                                     AND IsActive = 0";
+
+                                MySqlCommand checkCmd = new MySqlCommand(checkInactiveQuery, con);
+                                checkCmd.Parameters.AddWithValue("@Login", Login.Text);
+                                checkCmd.Parameters.AddWithValue("@Password", passwordHash);
+
+                                int inactiveCount = Convert.ToInt32(checkCmd.ExecuteScalar());
+
+                                if (inactiveCount > 0)
+                                {
+                                    MessageBox.Show("Ваша учетная запись отключена. Обратитесь к администратору.",
+                                                  "Доступ запрещен",
+                                                  MessageBoxButtons.OK,
+                                                  MessageBoxIcon.Warning);
+                                }
+                                else
+                                {
+                                    MessageBox.Show("Неверный логин или пароль", "Ошибка");
+                                }
+
+                                Login.Text = "";
+                                Password.Text = "";
                             }
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            MessageBox.Show("Неверный логин или пароль", "Ошибка");
-                            Login.Text = "";
-                            Password.Text = "";
+                            MessageBox.Show($"Ошибка авторизации: {ex.Message}", "Ошибка");
                         }
-
-
-                         con.Close();
+                        finally
+                        {
+                            con.Close();
+                        }
                     }
                 }
             }

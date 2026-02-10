@@ -108,80 +108,98 @@ namespace NailService
         //УСЛУГИ
         public ServiceModel LoadServiceById(int serviceId)
         {
-            using (var connection = GetNewConnection()) // Используем новое соединение
+            ServiceModel service = null;
+
+            using (var connection = GetNewConnection())
             {
                 try
                 {
                     connection.Open();
                     string query = @"SELECT 
-                        s.IDServices,
-                        s.ServiceName,
-                        s.Description,
-                        s.Price,
-                        s.Category as CategoryID,
-                        c.CategoryName
-                    FROM Services s
-                    INNER JOIN Category c ON s.Category = c.IDCategory
-                    WHERE s.IDServices = @ServiceId";
+                s.IDServices,
+                s.ServiceName,
+                s.Description,
+                s.Price,
+                s.Category,
+                s.Photo,
+                s.IsActive,
+                c.CategoryName
+            FROM services s
+            LEFT JOIN Category c ON s.Category = c.IDCategory
+            WHERE s.IDServices = @ServiceId";
 
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@ServiceId", serviceId);
 
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    using (var reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
                         {
-                            return new ServiceModel
+                            service = new ServiceModel
                             {
-                                IDServices = reader.GetInt32("IDServices"),
+                                IDServices = Convert.ToInt32(reader["IDServices"]),
                                 ServiceName = reader["ServiceName"]?.ToString() ?? "",
                                 Description = reader["Description"]?.ToString() ?? "",
-                                Price = reader.GetInt32("Price"),
-                                Category = reader.GetInt32("CategoryID"),
-                                CategoryName = reader["CategoryName"]?.ToString() ?? ""
+                                Price = Convert.ToInt32(reader["Price"]),
+                                Category = Convert.ToInt32(reader["Category"]),
+                                CategoryName = reader["CategoryName"]?.ToString() ?? "",
+                                Photo = reader["Photo"]?.ToString(),
+                                IsActive = Convert.ToBoolean(reader["IsActive"]),
+                                ServiceImage = null // Будет загружено отдельно
                             };
                         }
                     }
-                    connection.Close();
-                    return null;
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка загрузки услуги: {ex.Message}");
-                    return null;
+                    // Логирование ошибки
+                    Debug.WriteLine($"Ошибка загрузки услуги: {ex.Message}");
+                    // Можно также записать в журнал или показать пользователю
                 }
             }
+
+            return service;
         }
 
-        public void UpdateServiceInDatabase(ServiceModel service)
+        public bool UpdateServiceInDatabase(ServiceModel service)
         {
             using (var connection = GetNewConnection())
             {
                 try
                 {
                     connection.Open();
-                    string query = @"UPDATE Services 
-                SET ServiceName = @ServiceName, 
-                    Description = @Description, 
-                    Price = @Price, 
-                    Category = @CategoryId 
-                WHERE IDServices = @ServiceId";
+
+                    string query = @"UPDATE services 
+                           SET ServiceName = @ServiceName,
+                               Description = @Description,
+                               Price = @Price,
+                               Category = @Category,
+                               Photo = @Photo
+                           WHERE IDServices = @ServiceId";
 
                     MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@ServiceId", service.IDServices);
                     cmd.Parameters.AddWithValue("@ServiceName", service.ServiceName);
                     cmd.Parameters.AddWithValue("@Description", service.Description);
                     cmd.Parameters.AddWithValue("@Price", service.Price);
-                    cmd.Parameters.AddWithValue("@CategoryId", service.Category);  
-                    cmd.Parameters.AddWithValue("@ServiceId", service.IDServices);
+                    cmd.Parameters.AddWithValue("@Category", service.Category);
 
-                    cmd.ExecuteNonQuery();
-                    connection.Close();
+                    // Добавляем фото
+                    if (!string.IsNullOrEmpty(service.Photo))
+                    {
+                        cmd.Parameters.AddWithValue("@Photo", service.Photo);
+                    }
+                    else
+                    {
+                        cmd.Parameters.AddWithValue("@Photo", DBNull.Value);
+                    }
+
+                    int result = cmd.ExecuteNonQuery();
+                    return result > 0;
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка обновления услуги: {ex.Message}", "Ошибка",
-                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    throw;
+                    throw new Exception($"Ошибка обновления услуги: {ex.Message}", ex);
                 }
             }
         }
