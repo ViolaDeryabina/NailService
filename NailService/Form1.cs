@@ -72,6 +72,8 @@ namespace NailService
                                 if (role != null && FIO != null)
                                 {
                                     int roleId = MySQLHelper.GetRoleId(Login.Text, passwordHash);
+                                    int masterID = EditUserClass.GetMasterId(Login.Text, passwordHash);
+
 
                                     switch (role)
                                     {
@@ -91,7 +93,7 @@ namespace NailService
                                             }
                                         case "Мастер":
                                             {
-                                                MenuMaster menuMaster = new MenuMaster(FIO);
+                                                MenuMaster menuMaster = new MenuMaster(FIO, masterID);
                                                 menuMaster.Show();
                                                 this.Hide();
                                                 break;

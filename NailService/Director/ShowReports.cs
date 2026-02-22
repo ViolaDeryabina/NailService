@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -545,8 +546,8 @@ namespace NailService
         }
 
 
-// Создание отчёта в Excel
-private void GenerateExcelReport()
+        // Создание отчёта в Excel
+        private void GenerateExcelReport()
         {
             Excel.Application excelApp = null;
             Excel.Workbook workbook = null;
@@ -593,139 +594,199 @@ private void GenerateExcelReport()
                     throw new Exception("Не удалось создать рабочий лист Excel");
                 }
 
-                // Заголовок отчета (строка 1)
+                // Настройка страницы
+                worksheet.PageSetup.Orientation = Excel.XlPageOrientation.xlLandscape;
+                worksheet.PageSetup.LeftMargin = excelApp.CentimetersToPoints(1);
+                worksheet.PageSetup.RightMargin = excelApp.CentimetersToPoints(1);
+                worksheet.PageSetup.TopMargin = excelApp.CentimetersToPoints(1.5);
+                worksheet.PageSetup.BottomMargin = excelApp.CentimetersToPoints(1);
+
+                // Цвета в стиле приложения
+                Color accentColor = Color.HotPink;
+                Color lightPink = Color.FromArgb(255, 203, 219);
+                Color lightGray = Color.FromArgb(240, 240, 240);
+
+                // ЗАГОЛОВОК ОТЧЕТА
                 range = worksheet.Range["A1", "G1"];
                 range.Merge();
                 range.Value = "ОТЧЕТ О ЗАПИСЯХ";
-                range.Font.Size = 16;
+                range.Font.Size = 18;
                 range.Font.Bold = true;
+                range.Font.Name = "Arial";
                 range.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 range.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.LightSkyBlue);
-
-                // Сброс reference
+                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(lightPink);
+                range.Font.Color = System.Drawing.ColorTranslator.ToOle(Color.White);
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
                 range = null;
 
-                // Информация о фильтрах (начиная со строки 3)
+                // ИНФОРМАЦИЯ О ФИЛЬТРАХ
                 int currentRow = 3;
 
                 // Период
-                worksheet.Cells[currentRow, 1] = "Период:";
+                worksheet.Cells[currentRow, 1] = "📅 Период:";
                 worksheet.Cells[currentRow, 2] = $"{dtpFromDate.Value:dd.MM.yyyy} - {dtpToDate.Value:dd.MM.yyyy}";
+                FormatInfoCell(worksheet, currentRow, 1, true);
+                FormatInfoCell(worksheet, currentRow, 2, false);
                 currentRow++;
 
                 // Мастер (если выбран)
                 if (cmbMasterFilter.SelectedIndex > 0)
                 {
-                    worksheet.Cells[currentRow, 1] = "Мастер:";
+                    worksheet.Cells[currentRow, 1] = "👤 Мастер:";
                     worksheet.Cells[currentRow, 2] = cmbMasterFilter.SelectedItem?.ToString();
+                    FormatInfoCell(worksheet, currentRow, 1, true);
+                    FormatInfoCell(worksheet, currentRow, 2, false);
                     currentRow++;
                 }
 
                 // Статус (если выбран)
                 if (cmbStatusFilter.SelectedIndex > 0)
                 {
-                    worksheet.Cells[currentRow, 1] = "Статус:";
+                    worksheet.Cells[currentRow, 1] = "📊 Статус:";
                     worksheet.Cells[currentRow, 2] = cmbStatusFilter.SelectedItem?.ToString();
+                    FormatInfoCell(worksheet, currentRow, 1, true);
+                    FormatInfoCell(worksheet, currentRow, 2, false);
                     currentRow++;
                 }
 
                 // Поисковый запрос (если есть)
                 if (!string.IsNullOrEmpty(txtSearch.Text))
                 {
-                    worksheet.Cells[currentRow, 1] = "Поиск:";
+                    worksheet.Cells[currentRow, 1] = "🔍 Поиск:";
                     worksheet.Cells[currentRow, 2] = txtSearch.Text;
+                    FormatInfoCell(worksheet, currentRow, 1, true);
+                    FormatInfoCell(worksheet, currentRow, 2, false);
                     currentRow++;
                 }
 
                 // Сортировка
-                worksheet.Cells[currentRow, 1] = "Сортировка:";
+                worksheet.Cells[currentRow, 1] = "⬆️ Сортировка:";
                 worksheet.Cells[currentRow, 2] = cmbSort.SelectedItem?.ToString();
+                FormatInfoCell(worksheet, currentRow, 1, true);
+                FormatInfoCell(worksheet, currentRow, 2, false);
                 currentRow++;
 
                 // Дата формирования
-                worksheet.Cells[currentRow, 1] = "Дата формирования:";
+                worksheet.Cells[currentRow, 1] = "⏱️ Дата формирования:";
                 worksheet.Cells[currentRow, 2] = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
+                FormatInfoCell(worksheet, currentRow, 1, true);
+                FormatInfoCell(worksheet, currentRow, 2, false);
                 currentRow++;
 
                 // Количество записей
-                worksheet.Cells[currentRow, 1] = "Количество записей:";
+                worksheet.Cells[currentRow, 1] = "📝 Количество записей:";
                 worksheet.Cells[currentRow, 2] = dataGridViewRecords.Rows.Count.ToString();
-                currentRow += 2; // Пропускаем строку
+                FormatInfoCell(worksheet, currentRow, 1, true);
 
-                // Заголовки таблицы
+                // Выделяем количество записей жирным
+                range = worksheet.Cells[currentRow, 2];
+                range.Font.Bold = true;
+                range.Font.Color = System.Drawing.ColorTranslator.ToOle(accentColor);
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+
+                currentRow += 2;
+
+                // ЗАГОЛОВКИ ТАБЛИЦЫ
                 string[] headers = { "Мастер", "Клиент", "Дата и время", "Статус", "Услуга", "Цена", "Менеджер" };
-                for (int i = 0; i < headers.Length; i++)
+                int columnCount = headers.Length; // = 7
+
+                for (int i = 0; i < columnCount; i++)
                 {
                     worksheet.Cells[currentRow, i + 1] = headers[i];
-
                     range = worksheet.Cells[currentRow, i + 1];
                     range.Font.Bold = true;
-                    range.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.LightGray);
+                    range.Font.Name = "Arial";
+                    range.Font.Size = 11;
+                    range.Interior.Color = System.Drawing.ColorTranslator.ToOle(accentColor);
+                    range.Font.Color = System.Drawing.ColorTranslator.ToOle(Color.White);
+                    range.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                     range.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
-
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
-                    range = null;
                 }
-
-                // Автоматическая ширина столбцов для заголовков
-                range = worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, headers.Length]];
-                range.Columns.AutoFit();
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
-                range = null;
 
                 currentRow++;
 
-                // Данные из DataGridView
+                // ДАННЫЕ
                 decimal totalSum = 0;
                 for (int i = 0; i < dataGridViewRecords.Rows.Count; i++)
                 {
                     DataGridViewRow row = dataGridViewRecords.Rows[i];
-
-                    // Пропускаем последнюю строку, если она пустая (автоматически добавляется в DataGridView)
                     if (row.IsNewRow) continue;
+
+                    // Получаем название статуса отдельно
+                    string statusName = "";
+                    int statusId = 0;
+
+                    // Находим колонку статуса и получаем название
+                    for (int s = 0; s < dataGridViewRecords.Columns.Count; s++)
+                    {
+                        if (dataGridViewRecords.Columns[s].Name == "Status")
+                        {
+                            if (row.Cells[s].Value != null)
+                            {
+                                statusId = Convert.ToInt32(row.Cells[s].Value);
+                                // Получаем название статуса из _statusItems
+                                var statusItem = _statusItems.FirstOrDefault(x => x.ID == statusId);
+                                statusName = statusItem?.Name ?? statusId.ToString();
+                            }
+                            break;
+                        }
+                    }
 
                     for (int j = 0; j < dataGridViewRecords.Columns.Count; j++)
                     {
                         object cellValue = row.Cells[j].Value;
+                        string columnName = dataGridViewRecords.Columns[j].Name;
+
                         if (cellValue != null)
                         {
-                            // Для столбца "Цена" вычисляем сумму
-                            if (j == 5) // Индекс столбца "Цена" (нумерация с 0)
+                            // Для столбца статуса используем название, а не ID
+                            if (columnName == "Status")
                             {
+                                worksheet.Cells[currentRow, j + 1] = statusName;
+
+                                // Подкрашиваем статус
+                                range = worksheet.Cells[currentRow, j + 1];
+                                range.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+
+                                // Устанавливаем цвет в зависимости от статуса
+                                if (statusName.Contains("Запланирован"))
+                                    range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(255, 245, 157));
+                                else if (statusName.Contains("Подтвержден"))
+                                    range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(197, 225, 165));
+                                else if (statusName.Contains("Выполнен"))
+                                    range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(225, 225, 225));
+                                else if (statusName.Contains("Отменен"))
+                                    range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(255, 171, 145));
+
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+                            }
+                            // Для столбца "Цена" (индекс 5 или по имени)
+                            else if (columnName == "Price" || j == 5)
+                            {
+                                decimal price = 0;
+
                                 if (cellValue is string priceStr)
                                 {
-                                    // Убираем символ валюты и пробелы
                                     string cleanPrice = priceStr.Replace("₽", "").Replace("$", "").Replace("€", "").Replace(" ", "").Trim();
                                     cleanPrice = cleanPrice.Replace(".", System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
                                     cleanPrice = cleanPrice.Replace(",", System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
-
-                                    if (decimal.TryParse(cleanPrice, out decimal price))
-                                    {
-                                        totalSum += price;
-                                        range = worksheet.Cells[currentRow, j + 1];
-                                        range.Value = price;
-                                        range.NumberFormat = "#,##0.00";
-
-                                        System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
-                                        range = null;
-                                    }
-                                    else
-                                    {
-                                        worksheet.Cells[currentRow, j + 1] = cellValue.ToString();
-                                    }
+                                    decimal.TryParse(cleanPrice, out price);
                                 }
                                 else if (cellValue is decimal || cellValue is double || cellValue is int)
                                 {
-                                    decimal price = Convert.ToDecimal(cellValue);
+                                    price = Convert.ToDecimal(cellValue);
+                                }
+
+                                if (price > 0)
+                                {
                                     totalSum += price;
                                     range = worksheet.Cells[currentRow, j + 1];
                                     range.Value = price;
                                     range.NumberFormat = "#,##0.00";
-
+                                    range.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
                                     System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
-                                    range = null;
                                 }
                                 else
                                 {
@@ -735,6 +796,14 @@ private void GenerateExcelReport()
                             else
                             {
                                 worksheet.Cells[currentRow, j + 1] = cellValue.ToString();
+
+                                // Выравнивание для разных колонок
+                                range = worksheet.Cells[currentRow, j + 1];
+                                if (columnName == "Date" || j == 2) // Дата по центру
+                                {
+                                    range.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                                }
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
                             }
                         }
                     }
@@ -742,56 +811,66 @@ private void GenerateExcelReport()
                     // Добавляем границы для строки
                     range = worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, headers.Length]];
                     range.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
+                    range.Borders.Color = System.Drawing.ColorTranslator.ToOle(Color.LightGray);
+
+                    // Чередование фона строк
+                    if (i % 2 == 1)
+                    {
+                        range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(250, 250, 250));
+                    }
 
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
-                    range = null;
-
                     currentRow++;
                 }
+                range = worksheet.Columns[8];
+                range.ClearContents();
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
 
-                // Итоговая строка
-                worksheet.Cells[currentRow, 1] = "ИТОГО:";
-
-                // Объединяем ячейки для "ИТОГО" (A-E)
+                // ИТОГОВАЯ СТРОКА
                 range = worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, 5]];
                 range.Merge();
+                range.Value = "ИТОГО:";
+                range.Font.Bold = true;
+                range.Font.Size = 12;
+                range.Font.Name = "Arial";
                 range.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
-                range = null;
-
-                // Итоговая сумма в столбце F
-                range = worksheet.Cells[currentRow, 6];
-                range.Value = totalSum;
-                range.NumberFormat = "#,##0.00";
-                range.Font.Bold = true;
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
-                range = null;
-
-                // Форматируем итоговую строку
-                range = worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, 6]];
-                range.Font.Bold = true;
-                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.LightGreen);
+                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(lightPink);
                 range.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
-                range = null;
 
-                // Автоматическая ширина всех столбцов
+                range = worksheet.Cells[currentRow, 6];
+                range.Value = totalSum;
+                range.Font.Bold = true;
+                range.Font.Size = 12;
+                range.Font.Name = "Arial";
+                range.NumberFormat = "#,##0.00";
+                range.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(lightPink);
+                range.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+
+                range = worksheet.Cells[currentRow, 7];
+                range.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
+                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(lightPink);
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+
+                // АВТОПОДБОР ШИРИНЫ
                 range = worksheet.UsedRange;
                 range.Columns.AutoFit();
+
+                // Устанавливаем минимальную ширину для некоторых колонок
+                if (worksheet.Columns[1].ColumnWidth < 12) worksheet.Columns[1].ColumnWidth = 12; // Мастер
+                if (worksheet.Columns[2].ColumnWidth < 15) worksheet.Columns[2].ColumnWidth = 15; // Клиент
+                if (worksheet.Columns[4].ColumnWidth < 20) worksheet.Columns[4].ColumnWidth = 20; // Услуга
+
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
-                range = null;
 
                 // Добавляем автофильтр
-                if (dataGridViewRecords.Rows.Count > 0)
-                {
-                    int dataStartRow = currentRow - dataGridViewRecords.Rows.Count;
-                    int dataEndRow = currentRow - 1;
-
-                    range = worksheet.Range[worksheet.Cells[dataStartRow, 1], worksheet.Cells[dataEndRow, headers.Length]];
-                    range.AutoFilter(1, Type.Missing, Excel.XlAutoFilterOperator.xlAnd, Type.Missing, true);
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
-                    range = null;
-                }
+                int dataStartRow = 7; // Строка с заголовками
+                int dataEndRow = currentRow - 1;
+                range = worksheet.Range[worksheet.Cells[dataStartRow, 1], worksheet.Cells[dataEndRow, headers.Length]];
+                range.AutoFilter(1, Type.Missing, Excel.XlAutoFilterOperator.xlAnd, Type.Missing, true);
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
 
                 // Сохраняем файл
                 workbook.SaveAs(filePath);
@@ -835,8 +914,10 @@ private void GenerateExcelReport()
             {
                 MessageBox.Show($"Ошибка при создании Excel отчета:\n{ex.Message}", "Ошибка",
                               MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-                // Освобождаем ресурсы в случае ошибки
+            }
+            finally
+            {
+                // Освобождаем ресурсы
                 try
                 {
                     if (range != null) System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
@@ -863,6 +944,23 @@ private void GenerateExcelReport()
                     GC.WaitForPendingFinalizers();
                 }
             }
+        }
+
+        // Вспомогательный метод для форматирования информационных ячеек
+        private void FormatInfoCell(Excel.Worksheet worksheet, int row, int col, bool isLabel)
+        {
+            Excel.Range range = worksheet.Cells[row, col];
+
+            if (isLabel)
+            {
+                range.Font.Bold = true;
+                range.Font.Color = System.Drawing.ColorTranslator.ToOle(Color.HotPink);
+            }
+
+            range.Font.Name = "Arial";
+            range.Font.Size = 10;
+
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
         }
 
         private void ReleaseExcelObjects(object worksheet, object workbook, object excelApp)

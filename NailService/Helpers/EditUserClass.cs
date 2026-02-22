@@ -17,7 +17,42 @@ namespace NailService
         {
             return new MySqlConnection(_connection);
         }
+        public static int GetMasterId(string login, string passwordHash)
+        {
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(Connection.ConnectionString))
+                {
+                    con.Open();
 
+                    string query = @"
+                SELECT m.IDMasters 
+                FROM Users u
+                INNER JOIN Masters m ON u.IDUser = m.User
+                WHERE u.Login = @Login 
+                AND u.Password = @Password 
+                AND u.IsActive = 1";
+
+                    MySqlCommand cmd = new MySqlCommand(query, con);
+                    cmd.Parameters.AddWithValue("@Login", login);
+                    cmd.Parameters.AddWithValue("@Password", passwordHash);
+
+                    object result = cmd.ExecuteScalar();
+
+                    if (result != null && result != DBNull.Value)
+                    {
+                        return Convert.ToInt32(result);
+                    }
+
+                    return 0; // Мастер не найден
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка получения ID мастера: {ex.Message}");
+                return 0;
+            }
+        }
         //ПОЛЬЗОВАТЕЛИ
         public UserModel LoadUserById(int userId)
         {
