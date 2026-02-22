@@ -42,6 +42,7 @@
             this.button2 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
+            this.btnWeeklyReport = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewSchedule)).BeginInit();
             this.SuspendLayout();
@@ -139,7 +140,7 @@
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(56, 18);
             this.label3.TabIndex = 8;
-            this.label3.Text = "запись";
+            this.label3.Text = "занято";
             // 
             // label4
             // 
@@ -184,12 +185,26 @@
             this.button4.UseVisualStyleBackColor = true;
             this.button4.Click += new System.EventHandler(this.btnCurrentWeek_Click);
             // 
+            // btnWeeklyReport
+            // 
+            this.btnWeeklyReport.BackColor = System.Drawing.Color.HotPink;
+            this.btnWeeklyReport.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnWeeklyReport.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
+            this.btnWeeklyReport.Location = new System.Drawing.Point(256, 736);
+            this.btnWeeklyReport.Name = "btnWeeklyReport";
+            this.btnWeeklyReport.Size = new System.Drawing.Size(223, 55);
+            this.btnWeeklyReport.TabIndex = 13;
+            this.btnWeeklyReport.Text = "Отчётность";
+            this.btnWeeklyReport.UseVisualStyleBackColor = false;
+            this.btnWeeklyReport.Click += new System.EventHandler(this.btnMonthlyReport_Click);
+            // 
             // Schedule
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(1301, 803);
+            this.Controls.Add(this.btnWeeklyReport);
             this.Controls.Add(this.InMenu);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.button3);
@@ -229,5 +244,6 @@
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button btnWeeklyReport;
     }
 }

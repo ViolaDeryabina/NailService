@@ -225,6 +225,7 @@ namespace NailService
                     MessageBox.Show("DataGridView не настроен. Сначала выполните настройку.");
                     return;
                 }
+                
 
                 // Отключаем обработчик событий на время загрузки
                 dataGridViewRecords.CellValueChanged -= DataGridViewRecords_CellValueChanged;
@@ -266,6 +267,9 @@ namespace NailService
 
                 var records = _filterManager.GetFilteredRecords(searchText, masterFilter, statusFilter,
                     fromDate, toDate, sortBy, ascending);
+
+                decimal totalRevenue = CalculateTotalRevenue(records);
+                lblTotalRevenue.Text = $"Общая выручка: {totalRevenue:N0} руб.";
 
                 // Находим индексы колонок
                 int statusColumnIndex = -1;
@@ -944,6 +948,19 @@ namespace NailService
                     GC.WaitForPendingFinalizers();
                 }
             }
+        }
+        private decimal CalculateTotalRevenue(List<RecordData> records)
+        {
+            decimal total = 0;
+            foreach (var record in records)
+            {
+                // Исключаем отмененные записи (StatusID = 4)
+                if (record.StatusID != 4)
+                {
+                    total += record.Price;
+                }
+            }
+            return total;
         }
 
         // Вспомогательный метод для форматирования информационных ячеек

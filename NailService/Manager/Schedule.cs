@@ -572,5 +572,472 @@ namespace NailService
             }
             this.Hide();
         }
+
+        private void btnMonthlyReport_Click(object sender, EventArgs e)
+        {
+            GenerateMonthlyReport();
+        }
+
+        private DateTime GetMonthStart(DateTime date)
+        {
+            return new DateTime(date.Year, date.Month, 1);
+        }
+
+        private DateTime GetMonthEnd(DateTime date)
+        {
+            return GetMonthStart(date).AddMonths(1).AddDays(-1).Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+        }
+
+        private DataTable GetMonthlyReportData(DateTime monthDate)
+        {
+            DataTable dt = new DataTable();
+
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(Connection.ConnectionString))
+                {
+                    con.Open();
+
+                    DateTime monthStart = GetMonthStart(monthDate);
+                    DateTime monthEnd = GetMonthEnd(monthDate);
+
+                    string query = @"
+                SELECT 
+                    DATE_FORMAT(r.Date, '%d.%m.%Y') as 'Дата',
+                    DATE_FORMAT(r.Date, '%H:%i') as 'Время',
+                    CONCAT(c.LastName, ' ', LEFT(c.FirstName, 1), '.', LEFT(c.MiddleName, 1), '.') as 'Клиент',
+                    CONCAT(u_m.LastName, ' ', LEFT(u_m.FirstName, 1), '.') as 'Мастер',
+                    s.ServiceName as 'Услуга',
+                    s.Price as 'Цена',
+                    CASE 
+                        WHEN r.discount = 1 THEN '5%' 
+                        ELSE '-' 
+                    END as 'Скидка',
+                    CASE 
+                        WHEN r.Status = 1 THEN 'Запланирован'
+                        WHEN r.Status = 2 THEN 'Подтвержден'
+                        WHEN r.Status = 3 THEN 'Выполнен'
+                        WHEN r.Status = 4 THEN 'Отменен'
+                        ELSE 'Неизвестно'
+                    END as 'Статус',
+                    u_u.LastName as 'Менеджер'
+                FROM Record r
+                INNER JOIN Client c ON r.Client = c.IDClient
+                INNER JOIN Services s ON r.Service = s.IDServices
+                INNER JOIN Masters m ON r.Master = m.IDMasters
+                INNER JOIN Users u_m ON m.User = u_m.IDUser
+                INNER JOIN Users u_u ON r.User = u_u.IDUser
+                WHERE r.Date BETWEEN @startDate AND @endDate 
+                ORDER BY r.Date";
+
+                    MySqlCommand cmd = new MySqlCommand(query, con);
+                    cmd.Parameters.AddWithValue("@startDate", monthStart);
+                    cmd.Parameters.AddWithValue("@endDate", monthEnd);
+
+                    MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
+                    adapter.Fill(dt);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка получения данных для отчета: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return dt;
+        }
+
+        private Dictionary<string, decimal> GetMonthlyStatistics(DateTime monthDate)
+        {
+            Dictionary<string, decimal> stats = new Dictionary<string, decimal>();
+
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(Connection.ConnectionString))
+                {
+                    con.Open();
+
+                    DateTime monthStart = GetMonthStart(monthDate);
+                    DateTime monthEnd = GetMonthEnd(monthDate);
+
+                    string query = @"
+                SELECT 
+                    COUNT(*) as TotalRecords,
+                    SUM(CASE WHEN r.Status = 3 THEN 1 ELSE 0 END) as Completed,
+                    SUM(CASE WHEN r.Status = 4 THEN 1 ELSE 0 END) as Cancelled,
+                    SUM(CASE WHEN r.Status = 1 THEN 1 ELSE 0 END) as Planned,
+                    SUM(CASE WHEN r.Status = 2 THEN 1 ELSE 0 END) as Confirmed,
+                    SUM(CASE WHEN r.Status = 3 THEN s.Price ELSE 0 END) as Revenue,
+                    COUNT(DISTINCT r.Master) as ActiveMasters,
+                    COUNT(DISTINCT r.Client) as UniqueClients
+                FROM Record r
+                INNER JOIN Services s ON r.Service = s.IDServices
+                WHERE r.Date BETWEEN @startDate AND @endDate";
+
+                    MySqlCommand cmd = new MySqlCommand(query, con);
+                    cmd.Parameters.AddWithValue("@startDate", monthStart);
+                    cmd.Parameters.AddWithValue("@endDate", monthEnd);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            stats["TotalRecords"] = Convert.ToDecimal(reader["TotalRecords"]);
+                            stats["Completed"] = Convert.ToDecimal(reader["Completed"]);
+                            stats["Cancelled"] = Convert.ToDecimal(reader["Cancelled"]);
+                            stats["Planned"] = Convert.ToDecimal(reader["Planned"]);
+                            stats["Confirmed"] = Convert.ToDecimal(reader["Confirmed"]);
+                            stats["Revenue"] = reader.IsDBNull(5) ? 0 : reader.GetDecimal(5);
+                            stats["ActiveMasters"] = Convert.ToDecimal(reader["ActiveMasters"]);
+                            stats["UniqueClients"] = Convert.ToDecimal(reader["UniqueClients"]);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка получения статистики: {ex.Message}");
+            }
+
+            return stats;
+        }
+
+        private string GetMonthName(int month)
+        {
+            string[] months = { "январь", "февраль", "март", "апрель", "май", "июнь",
+                       "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь" };
+            return months[month - 1];
+        }
+
+        private void GenerateMonthlyReport()
+        {
+            Microsoft.Office.Interop.Excel.Application excelApp = null;
+            Microsoft.Office.Interop.Excel.Workbook workbook = null;
+            Microsoft.Office.Interop.Excel.Worksheet worksheet = null;
+            Microsoft.Office.Interop.Excel.Range range = null;
+
+            try
+            {
+                // Выбираем месяц для отчета
+                DateTime selectedMonth = currentWeekStart;
+
+                // Можно добавить диалог выбора месяца
+                // Но для простоты используем текущий месяц из расписания
+
+                // Получаем данные за месяц
+                DataTable reportData = GetMonthlyReportData(selectedMonth);
+                Dictionary<string, decimal> statistics = GetMonthlyStatistics(selectedMonth);
+
+                if (reportData.Rows.Count == 0)
+                {
+                    MessageBox.Show($"Нет записей за {GetMonthName(selectedMonth.Month)} {selectedMonth.Year} для формирования отчета!",
+                        "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // Создаем диалог сохранения файла
+                SaveFileDialog saveDialog = new SaveFileDialog
+                {
+                    Filter = "Excel Files|*.xlsx",
+                    Title = "Сохранить отчет",
+                    FileName = $"Отчет_за_{GetMonthName(selectedMonth.Month)}_{selectedMonth.Year}.xlsx",
+                    DefaultExt = "xlsx"
+                };
+
+                if (saveDialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                string filePath = saveDialog.FileName;
+
+                // Создаем Excel приложение
+                excelApp = new Microsoft.Office.Interop.Excel.Application();
+                excelApp.Visible = false;
+                excelApp.DisplayAlerts = false;
+
+                workbook = excelApp.Workbooks.Add();
+                worksheet = workbook.ActiveSheet;
+
+                // Настройка страницы
+                worksheet.PageSetup.Orientation = Microsoft.Office.Interop.Excel.XlPageOrientation.xlLandscape;
+                worksheet.PageSetup.LeftMargin = excelApp.CentimetersToPoints(1);
+                worksheet.PageSetup.RightMargin = excelApp.CentimetersToPoints(1);
+                worksheet.PageSetup.TopMargin = excelApp.CentimetersToPoints(1.5);
+                worksheet.PageSetup.BottomMargin = excelApp.CentimetersToPoints(1);
+
+                // Цвета в стиле приложения
+                Color accentColor = Color.HotPink;
+                Color lightPink = Color.FromArgb(255, 203, 219);
+                Color lightGreen = Color.FromArgb(197, 225, 165);
+                Color lightCoral = Color.FromArgb(255, 171, 145);
+
+                // ЗАГОЛОВОК
+                range = worksheet.Range["A1", "I1"];
+                range.Merge();
+                range.Value = $"МЕСЯЧНЫЙ ОТЧЕТ";
+                range.Font.Size = 20;
+                range.Font.Bold = true;
+                range.Font.Name = "Arial";
+                range.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
+                range.VerticalAlignment = Microsoft.Office.Interop.Excel.XlVAlign.xlVAlignCenter;
+                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(lightPink);
+                range.Font.Color = System.Drawing.ColorTranslator.ToOle(Color.White);
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+
+                // Период
+                range = worksheet.Range["A2", "I2"];
+                range.Merge();
+                DateTime monthStart = GetMonthStart(selectedMonth);
+                DateTime monthEnd = GetMonthEnd(selectedMonth);
+                range.Value = $"{GetMonthName(selectedMonth.Month).ToUpper()} {selectedMonth.Year}";
+                range.Font.Size = 14;
+                range.Font.Bold = true;
+                range.Font.Name = "Arial";
+                range.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+
+                // Дата формирования
+                range = worksheet.Range["A3", "I3"];
+                range.Merge();
+                range.Value = $"Дата формирования: {DateTime.Now:dd.MM.yyyy HH:mm}";
+                range.Font.Size = 10;
+                range.Font.Name = "Arial";
+                range.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+
+                // СТАТИСТИКА
+                int currentRow = 5;
+
+                worksheet.Cells[currentRow, 1] = "📊 СТАТИСТИКА ЗА МЕСЯЦ";
+                range = worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, 3]];
+                range.Merge();
+                range.Font.Bold = true;
+                range.Font.Size = 12;
+                range.Font.Name = "Arial";
+                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(accentColor);
+                range.Font.Color = System.Drawing.ColorTranslator.ToOle(Color.White);
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+                currentRow += 2;
+
+                // Левая колонка статистики
+                worksheet.Cells[currentRow, 1] = "Всего записей:";
+                worksheet.Cells[currentRow, 2] = statistics["TotalRecords"];
+                FormatStatCell(worksheet, currentRow, 1, true);
+                FormatStatCell(worksheet, currentRow, 2, false);
+                currentRow++;
+
+                worksheet.Cells[currentRow, 1] = "✅ Выполнено:";
+                worksheet.Cells[currentRow, 2] = statistics["Completed"];
+                FormatStatCell(worksheet, currentRow, 1, true);
+                FormatStatCell(worksheet, currentRow, 2, false);
+                currentRow++;
+
+                worksheet.Cells[currentRow, 1] = "📌 Подтверждено:";
+                worksheet.Cells[currentRow, 2] = statistics["Confirmed"];
+                FormatStatCell(worksheet, currentRow, 1, true);
+                FormatStatCell(worksheet, currentRow, 2, false);
+                currentRow++;
+
+                worksheet.Cells[currentRow, 1] = "⏳ Запланировано:";
+                worksheet.Cells[currentRow, 2] = statistics["Planned"];
+                FormatStatCell(worksheet, currentRow, 1, true);
+                FormatStatCell(worksheet, currentRow, 2, false);
+                currentRow++;
+
+                worksheet.Cells[currentRow, 1] = "❌ Отменено:";
+                worksheet.Cells[currentRow, 2] = statistics["Cancelled"];
+                FormatStatCell(worksheet, currentRow, 1, true);
+                FormatStatCell(worksheet, currentRow, 2, false);
+                currentRow += 2;
+
+                // Правая колонка статистики (начинаем с той же строки, но сдвигаем по колонкам)
+                int statRow = currentRow - 7; // Возвращаемся к началу статистики
+
+                worksheet.Cells[statRow, 4] = "Активных мастеров:";
+                worksheet.Cells[statRow, 5] = statistics["ActiveMasters"];
+                FormatStatCell(worksheet, statRow, 4, true);
+                FormatStatCell(worksheet, statRow, 5, false);
+                statRow++;
+
+                worksheet.Cells[statRow, 4] = "Уникальных клиентов:";
+                worksheet.Cells[statRow, 5] = statistics["UniqueClients"];
+                FormatStatCell(worksheet, statRow, 4, true);
+                FormatStatCell(worksheet, statRow, 5, false);
+                statRow += 2;
+
+                // Выручка
+                worksheet.Cells[statRow, 4] = "💰 ОБЩАЯ ВЫРУЧКА:";
+                worksheet.Cells[statRow, 5] = statistics["Revenue"];
+                range = worksheet.Cells[statRow, 4];
+                range.Font.Bold = true;
+                range.Font.Size = 12;
+                range.Font.Color = System.Drawing.ColorTranslator.ToOle(accentColor);
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+
+                range = worksheet.Cells[statRow, 5];
+                range.Value = statistics["Revenue"];
+                range.Font.Bold = true;
+                range.Font.Size = 14;
+                range.Font.Color = System.Drawing.ColorTranslator.ToOle(Color.Green);
+                range.NumberFormat = "#,##0.00";
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+
+                currentRow = statRow + 3;
+
+                // ЗАГОЛОВКИ ТАБЛИЦЫ
+                string[] headers = { "Дата", "Время", "Клиент", "Мастер", "Услуга", "Цена", "Скидка", "Статус", "Менеджер" };
+
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    worksheet.Cells[currentRow, i + 1] = headers[i];
+                    range = worksheet.Cells[currentRow, i + 1];
+                    range.Font.Bold = true;
+                    range.Font.Name = "Arial";
+                    range.Font.Size = 11;
+                    range.Interior.Color = System.Drawing.ColorTranslator.ToOle(accentColor);
+                    range.Font.Color = System.Drawing.ColorTranslator.ToOle(Color.White);
+                    range.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
+                    range.Borders.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+                }
+
+                currentRow++;
+
+                // ДАННЫЕ
+                for (int i = 0; i < reportData.Rows.Count; i++)
+                {
+                    DataRow row = reportData.Rows[i];
+
+                    for (int j = 0; j < reportData.Columns.Count; j++)
+                    {
+                        worksheet.Cells[currentRow, j + 1] = row[j].ToString();
+                        range = worksheet.Cells[currentRow, j + 1];
+                        range.Font.Name = "Arial";
+                        range.Font.Size = 10;
+                        range.Borders.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
+
+                        // Выравнивание
+                        if (j == 0 || j == 1) // Дата и время по центру
+                        {
+                            range.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
+                        }
+                        else if (j == 5) // Цена по правому краю
+                        {
+                            range.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignRight;
+                        }
+                        else
+                        {
+                            range.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignLeft;
+                        }
+
+                        // Подкрашиваем статус
+                        if (j == 7) // Статус
+                        {
+                            string status_val = row[j].ToString();
+                            if (status_val.Contains("Запланирован"))
+                                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(255, 245, 157));
+                            else if (status_val.Contains("Подтвержден"))
+                                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(197, 225, 165));
+                            else if (status_val.Contains("Выполнен"))
+                                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(225, 225, 225));
+                            else if (status_val.Contains("Отменен"))
+                                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(255, 171, 145));
+                        }
+
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+                    }
+
+                    // Чередование фона строк
+                    if (i % 2 == 1)
+                    {
+                        range = worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, headers.Length]];
+                        range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(250, 250, 250));
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+                    }
+
+                    currentRow++;
+                }
+
+                // ИТОГ
+                currentRow += 1;
+                range = worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, 4]];
+                range.Merge();
+                range.Value = "ИТОГО ЗА МЕСЯЦ:";
+                range.Font.Bold = true;
+                range.Font.Size = 12;
+                range.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignRight;
+                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(lightPink);
+                range.Borders.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+
+                range = worksheet.Cells[currentRow, 5];
+                range.Value = statistics["Revenue"];
+                range.Font.Bold = true;
+                range.Font.Size = 12;
+                range.NumberFormat = "#,##0.00";
+                range.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignRight;
+                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(lightPink);
+                range.Borders.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+
+                // АВТОПОДБОР ШИРИНЫ
+                worksheet.Columns.AutoFit();
+
+                // Сохраняем файл
+                workbook.SaveAs(filePath);
+                workbook.Close();
+
+                MessageBox.Show($"Отчет за {GetMonthName(selectedMonth.Month)} {selectedMonth.Year} успешно сохранен!\n\n{filePath}",
+                    "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // Спрашиваем, открыть ли файл
+                if (MessageBox.Show("Открыть отчет?", "Вопрос",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    System.Diagnostics.Process.Start(filePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при создании отчета: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                // Освобождаем ресурсы
+                if (range != null) System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+                if (worksheet != null) System.Runtime.InteropServices.Marshal.ReleaseComObject(worksheet);
+                if (workbook != null)
+                {
+                    workbook.Close(false);
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
+                }
+                if (excelApp != null)
+                {
+                    excelApp.Quit();
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
+                }
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
+        private void FormatStatCell(Microsoft.Office.Interop.Excel.Worksheet worksheet, int row, int col, bool isLabel)
+        {
+            Microsoft.Office.Interop.Excel.Range range = worksheet.Cells[row, col];
+
+            if (isLabel)
+            {
+                range.Font.Bold = true;
+            }
+
+            range.Font.Name = "Arial";
+            range.Font.Size = 11;
+            range.Borders.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
+
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+        }
+
+
     }
 }

@@ -50,6 +50,7 @@
             this.cmbStatusFilter = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
             this.cmbMasterFilter = new System.Windows.Forms.ComboBox();
+            this.lblTotalRevenue = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRecords)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -79,7 +80,7 @@
             // 
             this.InMenu.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.InMenu.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.InMenu.Location = new System.Drawing.Point(610, 612);
+            this.InMenu.Location = new System.Drawing.Point(610, 639);
             this.InMenu.Name = "InMenu";
             this.InMenu.Size = new System.Drawing.Size(263, 45);
             this.InMenu.TabIndex = 13;
@@ -91,7 +92,7 @@
             // 
             this.ReportsButton.BackColor = System.Drawing.Color.HotPink;
             this.ReportsButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.ReportsButton.Location = new System.Drawing.Point(898, 612);
+            this.ReportsButton.Location = new System.Drawing.Point(898, 639);
             this.ReportsButton.Name = "ReportsButton";
             this.ReportsButton.Size = new System.Drawing.Size(263, 45);
             this.ReportsButton.TabIndex = 12;
@@ -282,12 +283,23 @@
             this.cmbMasterFilter.TabIndex = 28;
             this.cmbMasterFilter.SelectedIndexChanged += new System.EventHandler(this.cmbMasterFilter_SelectedIndexChanged);
             // 
+            // lblTotalRevenue
+            // 
+            this.lblTotalRevenue.AutoSize = true;
+            this.lblTotalRevenue.Font = new System.Drawing.Font("MS Reference Sans Serif", 12.25F);
+            this.lblTotalRevenue.Location = new System.Drawing.Point(899, 596);
+            this.lblTotalRevenue.Name = "lblTotalRevenue";
+            this.lblTotalRevenue.Size = new System.Drawing.Size(41, 22);
+            this.lblTotalRevenue.TabIndex = 28;
+            this.lblTotalRevenue.Text = "руб";
+            // 
             // ShowReports
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(1173, 668);
+            this.ClientSize = new System.Drawing.Size(1173, 696);
+            this.Controls.Add(this.lblTotalRevenue);
             this.Controls.Add(this.btnClearFilters);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
@@ -345,5 +357,6 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.ComboBox cmbMasterFilter;
         private System.Windows.Forms.ComboBox cmbStatusFilter;
+        private System.Windows.Forms.Label lblTotalRevenue;
     }
 }
