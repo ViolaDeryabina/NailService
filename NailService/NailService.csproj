@@ -68,8 +68,8 @@
     <Compile Include="AddForms\AddServiceForm.Designer.cs">
       <DependentUpon>AddServiceForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ClientModel.cs" />
-    <Compile Include="DataGridViewConfigurator.cs" />
+    <Compile Include="Models\ClientModel.cs" />
+    <Compile Include="Helpers\DataGridViewConfigurator.cs" />
     <Compile Include="EditForms\EditClientForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -103,7 +103,7 @@
     <Compile Include="EditForms\EditServiceForm.Designer.cs">
       <DependentUpon>EditServiceForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="EditUserClass.cs" />
+    <Compile Include="Helpers\EditUserClass.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -116,7 +116,7 @@
     <Compile Include="Admin\MenuAdmin.Designer.cs">
       <DependentUpon>MenuAdmin.cs</DependentUpon>
     </Compile>
-    <Compile Include="ImageService.cs" />
+    <Compile Include="Helpers\ImageService.cs" />
     <Compile Include="Manager\MenuManager.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -129,7 +129,7 @@
     <Compile Include="Director\MenuDirector.Designer.cs">
       <DependentUpon>MenuDirector.cs</DependentUpon>
     </Compile>
-    <Compile Include="MasterModel.cs" />
+    <Compile Include="Models\MasterModel.cs" />
     <Compile Include="Master\MenuMaster.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -174,14 +174,13 @@
     <Compile Include="Director\ShowReportsHelper\StyleManager.cs" />
     <Compile Include="Helpers\UserModel.cs" />
     <Compile Include="Helpers\Validation.cs" />
-    <Compile Include="SearchClient.cs">
+    <Compile Include="Manager\SearchClient.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SearchClient.Designer.cs">
+    <Compile Include="Manager\SearchClient.Designer.cs">
       <DependentUpon>SearchClient.cs</DependentUpon>
     </Compile>
-    <Compile Include="ServiceModel.cs" />
-    <Compile Include="StatusUpdater.cs" />
+    <Compile Include="Models\ServiceModel.cs" />
     <EmbeddedResource Include="AddForms\AddClientForm.resx">
       <DependentUpon>AddClientForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -246,7 +245,7 @@
     <EmbeddedResource Include="Manager\Schedule.resx">
       <DependentUpon>Schedule.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SearchClient.resx">
+    <EmbeddedResource Include="Manager\SearchClient.resx">
       <DependentUpon>SearchClient.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
@@ -280,7 +279,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Images\" />
-    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="Microsoft.Office.Core">
