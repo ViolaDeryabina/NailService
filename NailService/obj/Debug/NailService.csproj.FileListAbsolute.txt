@@ -33,3 +33,4 @@ C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\
 C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Debug\NailService.EditClientForm.resources
 C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Debug\NailService.EditServiceForm.resources
 C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Debug\NailService.csproj.ResolveComReference.cache
+C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Debug\NailService.SearchClient.resources

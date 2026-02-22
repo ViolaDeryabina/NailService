@@ -58,7 +58,7 @@
             // 
             this.FIOlabel.AutoSize = true;
             this.FIOlabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
-            this.FIOlabel.Location = new System.Drawing.Point(658, 54);
+            this.FIOlabel.Location = new System.Drawing.Point(786, 11);
             this.FIOlabel.Name = "FIOlabel";
             this.FIOlabel.Size = new System.Drawing.Size(161, 24);
             this.FIOlabel.TabIndex = 1;

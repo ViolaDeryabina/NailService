@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using MySql.Data.MySqlClient;
 using NailServiceApp.Utilities;
 
-namespace NailServiceApp.Data
+namespace NailService
 {
     public class RecordData
     {
+        public int RecordID { get; set; }
         public string MasterName { get; set; }
         public string ClientName { get; set; }
         public DateTime Date { get; set; }
@@ -38,6 +39,7 @@ namespace NailServiceApp.Data
 
                     string query = @"
                         SELECT 
+                            r.IDRecord,
                             u_m.LastName as MasterLastName,
                             u_m.FirstName as MasterFirstName, 
                             u_m.MiddleName as MasterMiddleName,
@@ -89,6 +91,7 @@ namespace NailServiceApp.Data
 
                             records.Add(new RecordData
                             {
+                                RecordID = Convert.ToInt32(reader["IDRecord"]),
                                 MasterName = masterShortName,
                                 ClientName = clientShortName,
                                 Date = Convert.ToDateTime(reader["Date"]),
@@ -119,7 +122,8 @@ namespace NailServiceApp.Data
                 using (var connection = new MySqlConnection(_connectionString))
                 {
                     connection.Open();
-                    string query = "SELECT StatusName FROM Status";
+                    // Убрано условие WHERE IsActive = 1
+                    string query = "SELECT StatusName FROM Status ORDER BY StatusName";
 
                     using (var command = new MySqlCommand(query, connection))
                     using (var reader = command.ExecuteReader())
@@ -137,6 +141,109 @@ namespace NailServiceApp.Data
             }
 
             return statuses;
+        }
+
+        // НОВЫЙ МЕТОД: Получение списка статусов с ID для ComboBox в DataGridView
+        public List<StatusItem> GetStatusItems()
+        {
+            var statuses = new List<StatusItem>();
+
+            try
+            {
+                using (var connection = new MySqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    // Убрано условие WHERE IsActive = 1
+                    string query = "SELECT IDStatus, StatusName FROM Status ORDER BY StatusName";
+
+                    using (var command = new MySqlCommand(query, connection))
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            statuses.Add(new StatusItem
+                            {
+                                ID = Convert.ToInt32(reader["IDStatus"]),
+                                Name = reader["StatusName"].ToString()
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show($"Ошибка загрузки статусов: {ex.Message}");
+            }
+
+            return statuses;
+        }
+
+        // НОВЫЙ МЕТОД: Обновление статуса записи
+        public bool UpdateRecordStatus(int recordId, int newStatusId)
+        {
+            try
+            {
+                using (var connection = new MySqlConnection(_connectionString))
+                {
+                    connection.Open();
+
+                    string query = @"UPDATE Record 
+                                    SET Status = @Status 
+                                    WHERE IDRecord = @IDRecord";
+
+                    using (var command = new MySqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Status", newStatusId);
+                        command.Parameters.AddWithValue("@IDRecord", recordId);
+
+                        int rowsAffected = command.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Ошибка при обновлении статуса: {ex.Message}");
+            }
+        }
+
+        // НОВЫЙ МЕТОД: Получение названия статуса по ID
+        public string GetStatusNameById(int statusId)
+        {
+            try
+            {
+                using (var connection = new MySqlConnection(_connectionString))
+                {
+                    connection.Open();
+
+                    string query = "SELECT StatusName FROM Status WHERE IDStatus = @StatusID";
+
+                    using (var command = new MySqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@StatusID", statusId);
+
+                        var result = command.ExecuteScalar();
+                        return result?.ToString() ?? "";
+                    }
+                }
+            }
+            catch
+            {
+                return "";
+            }
+        }
+    }
+
+    // НОВЫЙ КЛАСС: Для хранения статуса с ID и именем
+    public class StatusItem
+    {
+        public int ID { get; set; }
+        public string Name { get; set; }
+
+        // Для отображения в ComboBox
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

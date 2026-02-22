@@ -1,4 +1,4 @@
-﻿using NailServiceApp.Styles;
+﻿
 using System;
 using System.Diagnostics;
 using System.Drawing;

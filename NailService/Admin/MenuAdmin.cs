@@ -40,5 +40,12 @@ namespace NailService
             form1.Show();
             this.Hide();
         }
+
+        private void Orders_Click(object sender, EventArgs e)
+        {
+            ShowReports showReports = new ShowReports(_fio, 2);
+            showReports.Show();
+            this.Hide();
+        }
     }
 }

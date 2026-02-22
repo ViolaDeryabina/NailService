@@ -1,4 +1,4 @@
-﻿using NailServiceApp.Data;
+﻿
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +20,7 @@ namespace NailService
         public FilterManager(string connectionString)
         {
             _dataManager = new DataManager(connectionString);
-            _allRecords = _dataManager.GetAllRecords();
+            RefreshData();
         }
 
         public DateRange GetDateRange()
@@ -47,9 +47,9 @@ namespace NailService
             if (!string.IsNullOrEmpty(searchText))
             {
                 filtered = filtered.Where(r =>
-                    r.MasterName.ToLower().Contains(searchText.ToLower()) ||
-                    r.ClientName.ToLower().Contains(searchText.ToLower()) ||
-                    r.Service.ToLower().Contains(searchText.ToLower()));
+                    (r.MasterName?.ToLower() ?? "").Contains(searchText.ToLower()) ||
+                    (r.ClientName?.ToLower() ?? "").Contains(searchText.ToLower()) ||
+                    (r.Service?.ToLower() ?? "").Contains(searchText.ToLower()));
             }
 
             // Фильтрация по мастеру
@@ -58,7 +58,7 @@ namespace NailService
                 filtered = filtered.Where(r => r.MasterName == masterFilter);
             }
 
-            // ФИЛЬТРАЦИЯ ПО СТАТУСУ - ДОБАВЛЕНО
+            // ФИЛЬТРАЦИЯ ПО СТАТУСУ
             if (statusFilter != "Все" && statusFilter != "Все статусы")
             {
                 filtered = filtered.Where(r => r.Status == statusFilter);
@@ -104,16 +104,53 @@ namespace NailService
         // Фильтрация по мастерам
         public void PopulateMastersComboBox(ComboBox comboBox)
         {
-            var masters = new List<string> { "Все мастера"  };
-            var uniqueMasters = _allRecords.Select(r => r.MasterName).Distinct().OrderBy(m => m);
-            masters.AddRange(uniqueMasters);
+            var masters = new List<string> { "Все мастера" };
+
+            if (_allRecords != null && _allRecords.Any())
+            {
+                var uniqueMasters = _allRecords
+                    .Select(r => r.MasterName)
+                    .Where(m => !string.IsNullOrEmpty(m))
+                    .Distinct()
+                    .OrderBy(m => m);
+
+                masters.AddRange(uniqueMasters);
+            }
+
             comboBox.DataSource = masters;
+            comboBox.SelectedIndex = 0;
         }
 
         public void PopulateStatusComboBox(ComboBox comboBox)
         {
             var statuses = _dataManager.GetStatusList();
             comboBox.DataSource = statuses;
+            comboBox.SelectedIndex = 0;
+        }
+
+        // НОВЫЙ МЕТОД: Получение статусов для ComboBox в DataGridView
+        public List<StatusItem> GetStatusItems()
+        {
+            return _dataManager.GetStatusItems();
+        }
+
+        // НОВЫЙ МЕТОД: Обновление статуса
+        public bool UpdateRecordStatus(int recordId, int newStatusId)
+        {
+            bool result = _dataManager.UpdateRecordStatus(recordId, newStatusId);
+
+            if (result)
+            {
+                // Обновляем данные в локальном кэше
+                var record = _allRecords.FirstOrDefault(r => r.RecordID == recordId);
+                if (record != null)
+                {
+                    record.StatusID = newStatusId;
+                    record.Status = _dataManager.GetStatusNameById(newStatusId);
+                }
+            }
+
+            return result;
         }
 
         public void RefreshData()

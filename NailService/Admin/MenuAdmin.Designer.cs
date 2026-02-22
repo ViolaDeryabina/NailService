@@ -37,6 +37,7 @@
             this.Exit = new System.Windows.Forms.Button();
             this.ListButton = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.Orders = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -75,6 +76,7 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.Orders);
             this.groupBox2.Controls.Add(this.Settings);
             this.groupBox2.Controls.Add(this.Exit);
             this.groupBox2.Controls.Add(this.ListButton);
@@ -134,6 +136,19 @@
             this.pictureBox1.TabIndex = 2;
             this.pictureBox1.TabStop = false;
             // 
+            // Orders
+            // 
+            this.Orders.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.Orders.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.Orders.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.Orders.Location = new System.Drawing.Point(6, 142);
+            this.Orders.Name = "Orders";
+            this.Orders.Size = new System.Drawing.Size(223, 58);
+            this.Orders.TabIndex = 13;
+            this.Orders.Text = "Учёт оказанных услуг";
+            this.Orders.UseVisualStyleBackColor = false;
+            this.Orders.Click += new System.EventHandler(this.Orders_Click);
+            // 
             // MenuAdmin
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
@@ -169,5 +184,6 @@
         private System.Windows.Forms.Button Exit;
         private System.Windows.Forms.Button ListButton;
         private System.Windows.Forms.Button Settings;
+        private System.Windows.Forms.Button Orders;
     }
 }

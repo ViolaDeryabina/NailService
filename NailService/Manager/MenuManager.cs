@@ -16,12 +16,13 @@ namespace NailService
         public MenuManager(string FIO)
         {
             InitializeComponent();
-            FIOlabel.Text = $"Менеджер: {FIO}";
+            _fio = FIO;
+            FIOlabel.Text = $"Менеджер: {_fio}";
         }
 
         private void RecordButton_Click(object sender, EventArgs e)
         {
-            Schedule schedule = new Schedule();
+            Schedule schedule = new Schedule(_fio, 4, 0);
             schedule.Show();
             this.Hide();
         }

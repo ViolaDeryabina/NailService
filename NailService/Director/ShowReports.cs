@@ -1,10 +1,10 @@
-﻿using System;
-using System.Windows.Forms;
-using NailServiceApp.Data;
-using NailServiceApp.Styles;
-using System.IO;
+﻿using MySql.Data.MySqlClient;
+
+using System;
+using System.Collections.Generic;
 using System.Data;
-using System.Reflection;
+using System.Linq;
+using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace NailService
@@ -12,18 +12,32 @@ namespace NailService
     public partial class ShowReports : Form
     {
         private string _fio;
+        private int _roleID;
         private FilterManager _filterManager;
         private DateTime _minDate;
         private DateTime _maxDate;
+        private int _editingRowIndex = -1;
+        private int _editingColumnIndex = -1;
+        private List<StatusItem> _statusItems;
+        private bool _isErrorMessageShown = false;
 
-        public ShowReports(string FIO)
+        public ShowReports(string FIO, int RoleID)
         {
             InitializeComponent();
             _fio = FIO;
+            _roleID = RoleID;
 
             _filterManager = new FilterManager(Connection.ConnectionString);
+
+            // Сначала настраиваем DataGridView
+            SetupDataGridView();
+
+            // Затем загружаем данные для комбобоксов
             _filterManager.PopulateMastersComboBox(cmbMasterFilter);
             _filterManager.PopulateStatusComboBox(cmbStatusFilter);
+
+            // Загружаем статусы для ComboBox в DataGridView
+            _statusItems = _filterManager.GetStatusItems();
 
             // Настройка сортировки
             cmbSort.Items.AddRange(new string[] {
@@ -37,75 +51,184 @@ namespace NailService
             cmbSort.SelectedIndex = 0;
 
             SetupDateTimePickers();
-            SetupDataGridView();
-            LoadData();
 
-            FIOlabel.Text = $"Директор: {_fio}";
+            // Загружаем данные только после полной настройки
+            LoadData();
+            if (RoleID == 1)
+            {
+                FIOlabel.Text = $"Директор: {_fio}";
+            }else if (RoleID == 2)
+            {
+                FIOlabel.Text = $"Администратор: {_fio}";
+            }
+           
         }
 
         private void SetupDateTimePickers()
         {
-            // Получаем минимальную и максимальную даты из базы данных
-            var dateRange = _filterManager.GetDateRange();
-            _minDate = dateRange.MinDate;
-            _maxDate = dateRange.MaxDate;
-
-            // Устанавливаем ограничения
-            dtpFromDate.MinDate = _minDate;
-            dtpFromDate.MaxDate = _maxDate;
-            dtpToDate.MinDate = _minDate;
-            dtpToDate.MaxDate = _maxDate;
-
-            // Устанавливаем значения по умолчанию (последний месяц)
-            DateTime defaultFrom = _maxDate.AddMonths(-1);
-            if (defaultFrom < _minDate)
+            try
             {
-                defaultFrom = _minDate;
+                // Получаем минимальную и максимальную даты из базы данных
+                var dateRange = _filterManager.GetDateRange();
+                _minDate = dateRange.MinDate;
+                _maxDate = dateRange.MaxDate;
+
+                // Устанавливаем ограничения
+                dtpFromDate.MinDate = _minDate;
+                dtpFromDate.MaxDate = _maxDate;
+                dtpToDate.MinDate = _minDate;
+                dtpToDate.MaxDate = _maxDate;
+
+                // Устанавливаем значения по умолчанию (последний месяц)
+                DateTime defaultFrom = _maxDate.AddMonths(-1);
+                if (defaultFrom < _minDate)
+                {
+                    defaultFrom = _minDate;
+                }
+
+                dtpFromDate.Value = defaultFrom;
+                dtpToDate.Value = _maxDate;
+
+                // НАСТРОЙКА ДЛЯ КАЛЕНДАРЯ
+                dtpFromDate.Format = DateTimePickerFormat.Custom;
+                dtpFromDate.CustomFormat = "dd.MM.yyyy";
+                dtpFromDate.ShowUpDown = false;
+                dtpFromDate.ShowCheckBox = false;
+
+                dtpToDate.Format = DateTimePickerFormat.Custom;
+                dtpToDate.CustomFormat = "dd.MM.yyyy";
+                dtpToDate.ShowUpDown = false;
+                dtpToDate.ShowCheckBox = false;
             }
-
-            dtpFromDate.Value = defaultFrom;
-            dtpToDate.Value = _maxDate;
-
-            // НАСТРОЙКА ДЛЯ КАЛЕНДАРЯ
-            dtpFromDate.Format = DateTimePickerFormat.Custom;
-            dtpFromDate.CustomFormat = "dd.MM.yyyy";
-            dtpFromDate.ShowUpDown = false; // ВКЛЮЧАЕМ КАЛЕНДАРЬ
-            dtpFromDate.ShowCheckBox = false;
-
-            dtpToDate.Format = DateTimePickerFormat.Custom;
-            dtpToDate.CustomFormat = "dd.MM.yyyy";
-            dtpToDate.ShowUpDown = false; // ВКЛЮЧАЕМ КАЛЕНДАРЬ
-            dtpToDate.ShowCheckBox = false;
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при настройке дат: {ex.Message}");
+            }
         }
 
         private void SetupDataGridView()
         {
-            // Полностью очищаем и настраиваем DataGridView
-            dataGridViewRecords.Columns.Clear();
-            dataGridViewRecords.Rows.Clear();
-            dataGridViewRecords.DataSource = null;
+            try
+            {
+                // Очищаем колонки
+                dataGridViewRecords.Columns.Clear();
 
-            // Создаем колонки
-            dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn { Name = "MasterName", HeaderText = "Мастер" });
-            dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn { Name = "ClientName", HeaderText = "Клиент" });
-            dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn { Name = "Date", HeaderText = "Дата и время" });
-            dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn { Name = "Status", HeaderText = "Статус" });
-            dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn { Name = "Service", HeaderText = "Услуга" });
-            dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn { Name = "Price", HeaderText = "Цена" });
-            dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn { Name = "UserName", HeaderText = "Менеджер" });
+                // Добавляем колонки
+                dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = "MasterName",
+                    HeaderText = "Мастер",
+                    ReadOnly = true
+                });
 
-            StyleManager.ApplyGridStyles(dataGridViewRecords);
-            StyleManager.ApplyColumnAlignments(dataGridViewRecords);
+                dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = "ClientName",
+                    HeaderText = "Клиент",
+                    ReadOnly = true
+                });
+
+                dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = "Date",
+                    HeaderText = "Дата и время",
+                    ReadOnly = true
+                });
+
+                // Загружаем статусы
+                _statusItems = _filterManager.GetStatusItems();
+
+                // Колонка статуса - сразу ComboBox
+                DataGridViewComboBoxColumn statusColumn = new DataGridViewComboBoxColumn
+                {
+                    Name = "Status",
+                    HeaderText = "Статус",
+                    DataSource = new BindingSource(_statusItems, null),
+                    DisplayMember = "Name",     // Отображаем название
+                    ValueMember = "ID",          // Храним ID
+                    FlatStyle = FlatStyle.Flat,
+                    ReadOnly = (_roleID != 2),   // Только админ может редактировать
+                    AutoComplete = true
+                };
+                dataGridViewRecords.Columns.Add(statusColumn);
+
+                dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = "Service",
+                    HeaderText = "Услуга",
+                    ReadOnly = true
+                });
+
+                dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = "Price",
+                    HeaderText = "Цена",
+                    ReadOnly = true
+                });
+
+                dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = "UserName",
+                    HeaderText = "Менеджер",
+                    ReadOnly = true
+                });
+
+                // Скрытая колонка для ID записи
+                DataGridViewTextBoxColumn idColumn = new DataGridViewTextBoxColumn
+                {
+                    Name = "RecordID",
+                    HeaderText = "ID",
+                    Visible = false
+                };
+                dataGridViewRecords.Columns.Add(idColumn);
+
+                // Применяем стили
+                StyleManager.ApplyGridStyles(dataGridViewRecords);
+                StyleManager.ApplyColumnAlignments(dataGridViewRecords);
+                dataGridViewRecords.ReadOnly = false;
+
+                // Подписываемся на события
+                dataGridViewRecords.CellValueChanged += DataGridViewRecords_CellValueChanged;
+                dataGridViewRecords.DataError += DataGridViewRecords_DataError;
+                dataGridViewRecords.CellBeginEdit += DataGridViewRecords_CellBeginEdit;
+                dataGridViewRecords.CellEndEdit += DataGridViewRecords_CellEndEdit;
+                dataGridViewRecords.EditingControlShowing += DataGridViewRecords_EditingControlShowing;
+                dataGridViewRecords.CellFormatting += DataGridViewRecords_CellFormatting;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при настройке DataGridView: {ex.Message}");
+            }
+        }
+
+        private void DataGridViewRecords_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            // Для колонки статуса устанавливаем цвет фона
+            if (dataGridViewRecords.Columns[e.ColumnIndex].Name == "Status" && e.RowIndex >= 0)
+            {
+                if (dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Value != null)
+                {
+                    int statusId = Convert.ToInt32(dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
+                    e.CellStyle.BackColor = StyleManager.GetStatusColor(statusId);
+                }
+            }
         }
 
         private void LoadData()
         {
             try
             {
+                // Проверяем, есть ли колонки
                 if (dataGridViewRecords.Columns.Count == 0)
                 {
-                    SetupDataGridView();
+                    MessageBox.Show("DataGridView не настроен. Сначала выполните настройку.");
+                    return;
                 }
+
+                // Отключаем обработчик событий на время загрузки
+                dataGridViewRecords.CellValueChanged -= DataGridViewRecords_CellValueChanged;
+
+                dataGridViewRecords.Rows.Clear();
 
                 string searchText = txtSearch.Text;
                 string masterFilter = cmbMasterFilter.SelectedItem?.ToString() ?? "Все мастера";
@@ -113,25 +236,14 @@ namespace NailService
                 DateTime fromDate = dtpFromDate.Value;
                 DateTime toDate = dtpToDate.Value;
 
-                // Проверяем корректность дат
+                // Проверка дат...
                 if (fromDate > toDate)
                 {
-                    // СВАПИВАЕМ ДАТЫ МЕСТАМИ
-                    MessageBox.Show("Дата 'С' не может быть больше даты 'По'. Даты будут автоматически изменены местами.",
-                                  "Коррекция дат",
-                                  MessageBoxButtons.OK,
-                                  MessageBoxIcon.Warning);
-
-                    // Меняем даты местами
                     DateTime temp = fromDate;
                     fromDate = toDate;
                     toDate = temp;
-
-                    // Обновляем значения в контролах
                     dtpFromDate.Value = fromDate;
                     dtpToDate.Value = toDate;
-
-                    // Не выходим из метода - продолжаем загрузку с исправленными датами
                 }
 
                 string sortBy = "Date";
@@ -151,26 +263,44 @@ namespace NailService
                     }
                 }
 
-                // ПЕРЕДАЕМ statusFilter В МЕТОД
-                var records = _filterManager.GetFilteredRecords(searchText, masterFilter, statusFilter, fromDate, toDate, sortBy, ascending);
+                var records = _filterManager.GetFilteredRecords(searchText, masterFilter, statusFilter,
+                    fromDate, toDate, sortBy, ascending);
 
-                dataGridViewRecords.Rows.Clear();
+                // Находим индексы колонок
+                int statusColumnIndex = -1;
+                int recordIdColumnIndex = -1;
+
+                for (int i = 0; i < dataGridViewRecords.Columns.Count; i++)
+                {
+                    if (dataGridViewRecords.Columns[i].Name == "Status")
+                        statusColumnIndex = i;
+                    if (dataGridViewRecords.Columns[i].Name == "RecordID")
+                        recordIdColumnIndex = i;
+                }
+
+                if (statusColumnIndex == -1 || recordIdColumnIndex == -1)
+                {
+                    MessageBox.Show("Не найдены необходимые колонки в DataGridView");
+                    return;
+                }
+
                 foreach (var record in records)
                 {
                     int rowIndex = dataGridViewRecords.Rows.Add(
                         record.MasterName,
                         record.ClientName,
                         record.Date.ToString("dd.MM.yyyy HH:mm"),
-                        record.Status,
+                        record.StatusID, // Для ComboBox передаем ID статуса - он сам отобразит название
                         record.Service,
                         record.Price.ToString("C0"),
-                        record.UserName
+                        record.UserName,
+                        record.RecordID
                     );
 
-                    if (rowIndex >= 0 && rowIndex < dataGridViewRecords.Rows.Count)
+                    if (rowIndex >= 0)
                     {
-                        dataGridViewRecords.Rows[rowIndex].Cells[3].Style.BackColor =
-                            StyleManager.GetStatusColor(record.StatusID);
+                        // Сохраняем значение в Tag для отслеживания изменений
+                        dataGridViewRecords.Rows[rowIndex].Cells[statusColumnIndex].Tag = record.StatusID;
                     }
                 }
 
@@ -178,17 +308,176 @@ namespace NailService
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка: {ex.Message}");
+                MessageBox.Show($"Ошибка загрузки данных: {ex.Message}");
+            }
+            finally
+            {
+                // Включаем обработчик событий обратно
+                dataGridViewRecords.CellValueChanged += DataGridViewRecords_CellValueChanged;
             }
         }
 
-        // Обработчики событий для дат - проверяем корректность при каждом изменении
+
+        private void DataGridViewRecords_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
+        {
+            // Разрешаем редактирование только администраторам (RoleID = 2) и только для колонки статуса
+            if (dataGridViewRecords.Columns[e.ColumnIndex].Name != "Status")
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            if (_roleID != 2)
+            {
+                e.Cancel = true;
+
+                // Используем флаг, чтобы показать сообщение только один раз
+                if (!_isErrorMessageShown)
+                {
+                    _isErrorMessageShown = true;
+                    MessageBox.Show("Только администратор может изменять статусы записей.",
+                        "Доступ запрещен", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                    // Сбрасываем флаг через таймер или после закрытия сообщения
+                    System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+                    timer.Interval = 100;
+                    timer.Tick += (s, args) => {
+                        _isErrorMessageShown = false;
+                        timer.Stop();
+                        timer.Dispose();
+                    };
+                    timer.Start();
+                }
+            }
+        }
+
+        private void DataGridViewRecords_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            _editingRowIndex = -1;
+            _editingColumnIndex = -1;
+        }
+
+        private void DataGridViewRecords_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
+        {
+            if (dataGridViewRecords.CurrentCell != null &&
+                dataGridViewRecords.Columns[dataGridViewRecords.CurrentCell.ColumnIndex].Name == "Status" &&
+                e.Control is ComboBox comboBox)
+            {
+                comboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+                comboBox.SelectedIndexChanged -= ComboBox_SelectedIndexChanged;
+                comboBox.SelectedIndexChanged += ComboBox_SelectedIndexChanged;
+            }
+        }
+
+        private void ComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (sender is ComboBox comboBox && _editingRowIndex >= 0 && _editingColumnIndex >= 0)
+            {
+                dataGridViewRecords.EndEdit();
+            }
+        }
+
+        private void DataGridViewRecords_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+
+            // Проверяем, что это колонка статуса
+            if (dataGridViewRecords.Columns[e.ColumnIndex].Name != "Status")
+                return;
+
+            try
+            {
+                // Находим индекс колонки с ID записи
+                int recordIdColumnIndex = -1;
+                for (int i = 0; i < dataGridViewRecords.Columns.Count; i++)
+                {
+                    if (dataGridViewRecords.Columns[i].Name == "RecordID")
+                    {
+                        recordIdColumnIndex = i;
+                        break;
+                    }
+                }
+
+                if (recordIdColumnIndex == -1)
+                {
+                    MessageBox.Show("Не найдена колонка с ID записи");
+                    return;
+                }
+
+                // Получаем ID записи из скрытой колонки
+                int recordId = Convert.ToInt32(dataGridViewRecords.Rows[e.RowIndex].Cells[recordIdColumnIndex].Value);
+
+                // Получаем новый статус (ID)
+                int newStatusId = Convert.ToInt32(dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
+
+                // Получаем старое значение статуса для проверки
+                int oldStatusId = 0;
+                if (dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Tag != null)
+                {
+                    oldStatusId = Convert.ToInt32(dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Tag);
+                }
+
+                // Если статус не изменился, ничего не делаем
+                if (oldStatusId == newStatusId)
+                    return;
+
+                // Запрашиваем подтверждение
+                DialogResult result = MessageBox.Show(
+                    "Вы уверены, что хотите изменить статус этой записи?",
+                    "Подтверждение изменения",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    // Обновляем статус в базе данных
+                    bool updated = _filterManager.UpdateRecordStatus(recordId, newStatusId);
+
+                    if (updated)
+                    {
+                        // Обновляем цвет ячейки
+                        dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor =
+                            StyleManager.GetStatusColor(newStatusId);
+
+                        // Сохраняем новое значение в Tag
+                        dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Tag = newStatusId;
+
+                        MessageBox.Show("Статус успешно обновлен!", "Успех",
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Не удалось обновить статус.",
+                            "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        // Возвращаем старое значение
+                        LoadData();
+                    }
+                }
+                else
+                {
+                    // Отменяем изменение - возвращаем старое значение
+                    LoadData();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при изменении статуса: {ex.Message}",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                LoadData();
+            }
+        }
+
+        private void DataGridViewRecords_DataError(object sender, DataGridViewDataErrorEventArgs e)
+        {
+            // Игнорируем ошибки DataGridView
+            e.Cancel = true;
+        }
+
+        // Обработчики событий фильтров
         private void dtpFromDate_ValueChanged(object sender, EventArgs e)
         {
-            // Проверяем, чтобы дата "С" не была больше даты "По"
             if (dtpFromDate.Value > dtpToDate.Value)
             {
-                // Автоматически корректируем дату "По"
                 dtpToDate.Value = dtpFromDate.Value;
             }
             LoadData();
@@ -196,16 +485,13 @@ namespace NailService
 
         private void dtpToDate_ValueChanged(object sender, EventArgs e)
         {
-            // Проверяем, чтобы дата "По" не была меньше даты "С"
             if (dtpToDate.Value < dtpFromDate.Value)
             {
-                // Автоматически корректируем дату "С"
                 dtpFromDate.Value = dtpToDate.Value;
             }
             LoadData();
         }
 
-        // Остальные обработчики событий
         private void txtSearch_TextChanged(object sender, EventArgs e) => LoadData();
         private void cmbMasterFilter_SelectedIndexChanged(object sender, EventArgs e) => LoadData();
         private void cmbSort_SelectedIndexChanged(object sender, EventArgs e) => LoadData();
@@ -218,7 +504,6 @@ namespace NailService
             cmbStatusFilter.SelectedIndex = 0;
             cmbSort.SelectedIndex = 0;
 
-            // Устанавливаем даты за последний месяц
             var dateRange = _filterManager.GetDateRange();
             DateTime defaultFrom = dateRange.MaxDate.AddMonths(-1);
             if (defaultFrom < dateRange.MinDate)
@@ -234,11 +519,24 @@ namespace NailService
 
         private void InMenu_Click(object sender, EventArgs e)
         {
-            if (!string.IsNullOrEmpty(_fio))
-                new MenuDirector(_fio).Show();
-            else
-                new Schedule().Show();
-            this.Hide();
+            if (_roleID == 2)
+            {
+                MenuAdmin menuAdmin = new MenuAdmin(_fio);
+                menuAdmin.Show();
+                this.Hide();
+            }
+            else if (_roleID == 4)
+            {
+                Schedule menuManager = new Schedule(_fio, 4,0);
+                menuManager.Show();
+                this.Hide();
+            }
+            else if (_roleID == 1)
+            {
+                MenuDirector menuManager = new MenuDirector(_fio);
+                menuManager.Show();
+                this.Hide();
+            }
         }
 
         private void ReportsButton_Click(object sender, EventArgs e)
@@ -247,8 +545,8 @@ namespace NailService
         }
 
 
-        // Создание отчёта в Excel
-        private void GenerateExcelReport()
+// Создание отчёта в Excel
+private void GenerateExcelReport()
         {
             Excel.Application excelApp = null;
             Excel.Workbook workbook = null;

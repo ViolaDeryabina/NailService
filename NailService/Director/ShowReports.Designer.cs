@@ -69,7 +69,7 @@
             // 
             this.FIOlabel.AutoSize = true;
             this.FIOlabel.Font = new System.Drawing.Font("MS Reference Sans Serif", 12.25F);
-            this.FIOlabel.Location = new System.Drawing.Point(926, 12);
+            this.FIOlabel.Location = new System.Drawing.Point(862, 12);
             this.FIOlabel.Name = "FIOlabel";
             this.FIOlabel.Size = new System.Drawing.Size(148, 22);
             this.FIOlabel.TabIndex = 14;
@@ -111,6 +111,9 @@
             this.dataGridViewRecords.Name = "dataGridViewRecords";
             this.dataGridViewRecords.Size = new System.Drawing.Size(1149, 398);
             this.dataGridViewRecords.TabIndex = 11;
+            this.dataGridViewRecords.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.DataGridViewRecords_CellBeginEdit);
+            this.dataGridViewRecords.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridViewRecords_CellEndEdit);
+            this.dataGridViewRecords.EditingControlShowing += new System.Windows.Forms.DataGridViewEditingControlShowingEventHandler(this.DataGridViewRecords_EditingControlShowing);
             // 
             // cmbSort
             // 

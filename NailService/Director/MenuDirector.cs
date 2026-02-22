@@ -29,7 +29,7 @@ namespace NailService
 
         private void Reports_Click(object sender, EventArgs e)
         {
-            ShowReports showReports = new ShowReports(_fio);
+            ShowReports showReports = new ShowReports(_fio,1);
             showReports.Show();
             this.Hide();
         }

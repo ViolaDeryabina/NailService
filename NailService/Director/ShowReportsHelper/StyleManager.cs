@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
 
-namespace NailServiceApp.Styles
+namespace NailService
 {
     public static class StyleManager
     {
@@ -55,6 +55,7 @@ namespace NailServiceApp.Styles
             grid.ColumnHeadersDefaultCellStyle.SelectionBackColor = grid.ColumnHeadersDefaultCellStyle.BackColor;
             grid.ColumnHeadersDefaultCellStyle.SelectionForeColor = grid.ColumnHeadersDefaultCellStyle.ForeColor;
         }
+
         // Новый метод для настройки выравнивания колонок
         public static void ApplyColumnAlignments(DataGridView grid)
         {
@@ -79,5 +80,8 @@ namespace NailServiceApp.Styles
                 grid.Columns["Status"].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
         }
+
+       
+        
     }
 }
