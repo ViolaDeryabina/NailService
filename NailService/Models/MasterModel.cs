@@ -12,8 +12,6 @@ namespace NailService
         public int UserId { get; set; }
         public string Description { get; set; }
         public string Phone { get; set; }
-
-        // Дополнительные свойства для отображения
         public string LastName { get; set; }
         public string FirstName { get; set; }
         public string MiddleName { get; set; }

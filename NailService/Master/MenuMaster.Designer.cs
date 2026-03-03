@@ -33,6 +33,7 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.FIOlabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.dataGridViewSchedule = new System.Windows.Forms.DataGridView();
             this.lblWeek = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
@@ -41,6 +42,7 @@
             this.btnExportToExcel = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewSchedule)).BeginInit();
             this.SuspendLayout();
             // 
@@ -49,7 +51,7 @@
             this.Exit.BackColor = System.Drawing.Color.HotPink;
             this.Exit.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.Exit.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F);
-            this.Exit.Location = new System.Drawing.Point(12, 581);
+            this.Exit.Location = new System.Drawing.Point(12, 735);
             this.Exit.Name = "Exit";
             this.Exit.Size = new System.Drawing.Size(223, 55);
             this.Exit.TabIndex = 2;
@@ -61,10 +63,11 @@
             // 
             this.groupBox1.Controls.Add(this.FIOlabel);
             this.groupBox1.Controls.Add(this.label1);
+            this.groupBox1.Controls.Add(this.pictureBox1);
             this.groupBox1.Font = new System.Drawing.Font("MS Reference Sans Serif", 8.25F);
             this.groupBox1.Location = new System.Drawing.Point(13, 7);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(1083, 81);
+            this.groupBox1.Size = new System.Drawing.Size(1276, 96);
             this.groupBox1.TabIndex = 3;
             this.groupBox1.TabStop = false;
             // 
@@ -72,7 +75,7 @@
             // 
             this.FIOlabel.AutoSize = true;
             this.FIOlabel.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F);
-            this.FIOlabel.Location = new System.Drawing.Point(702, 54);
+            this.FIOlabel.Location = new System.Drawing.Point(846, 17);
             this.FIOlabel.Name = "FIOlabel";
             this.FIOlabel.Size = new System.Drawing.Size(140, 24);
             this.FIOlabel.TabIndex = 1;
@@ -82,11 +85,21 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("MS Reference Sans Serif", 26.25F);
-            this.label1.Location = new System.Drawing.Point(350, 17);
+            this.label1.Location = new System.Drawing.Point(472, 17);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(320, 44);
             this.label1.TabIndex = 0;
             this.label1.Text = "Ногтевой сервис";
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImage = global::NailService.Properties.Resources.back_1;
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.pictureBox1.Location = new System.Drawing.Point(6, 17);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(100, 72);
+            this.pictureBox1.TabIndex = 2;
+            this.pictureBox1.TabStop = false;
             // 
             // dataGridViewSchedule
             // 
@@ -96,10 +109,10 @@
             this.dataGridViewSchedule.AllowUserToResizeRows = false;
             this.dataGridViewSchedule.BackgroundColor = System.Drawing.SystemColors.ControlLightLight;
             this.dataGridViewSchedule.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridViewSchedule.Location = new System.Drawing.Point(13, 165);
+            this.dataGridViewSchedule.Location = new System.Drawing.Point(13, 131);
             this.dataGridViewSchedule.Name = "dataGridViewSchedule";
             this.dataGridViewSchedule.ReadOnly = true;
-            this.dataGridViewSchedule.Size = new System.Drawing.Size(959, 399);
+            this.dataGridViewSchedule.Size = new System.Drawing.Size(1141, 592);
             this.dataGridViewSchedule.TabIndex = 5;
             this.dataGridViewSchedule.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridViewSchedule_CellDoubleClick);
             // 
@@ -107,15 +120,15 @@
             // 
             this.lblWeek.AutoSize = true;
             this.lblWeek.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F);
-            this.lblWeek.Location = new System.Drawing.Point(715, 138);
+            this.lblWeek.Location = new System.Drawing.Point(835, 106);
             this.lblWeek.Name = "lblWeek";
-            this.lblWeek.Size = new System.Drawing.Size(140, 24);
+            this.lblWeek.Size = new System.Drawing.Size(55, 24);
             this.lblWeek.TabIndex = 2;
-            this.lblWeek.Text = "Мастер: ФИО";
+            this.lblWeek.Text = "Дата";
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(979, 165);
+            this.button1.Location = new System.Drawing.Point(1171, 131);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(56, 46);
             this.button1.TabIndex = 6;
@@ -125,7 +138,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(1041, 165);
+            this.button2.Location = new System.Drawing.Point(1233, 131);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(56, 46);
             this.button2.TabIndex = 7;
@@ -135,7 +148,7 @@
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(783, 570);
+            this.button3.Location = new System.Drawing.Point(965, 735);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(189, 46);
             this.button3.TabIndex = 8;
@@ -145,10 +158,10 @@
             // 
             // btnExportToExcel
             // 
-            this.btnExportToExcel.BackColor = System.Drawing.Color.HotPink;
+            this.btnExportToExcel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.btnExportToExcel.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnExportToExcel.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F);
-            this.btnExportToExcel.Location = new System.Drawing.Point(252, 581);
+            this.btnExportToExcel.Location = new System.Drawing.Point(252, 735);
             this.btnExportToExcel.Name = "btnExportToExcel";
             this.btnExportToExcel.Size = new System.Drawing.Size(223, 55);
             this.btnExportToExcel.TabIndex = 9;
@@ -158,10 +171,10 @@
             // 
             // button4
             // 
-            this.button4.BackColor = System.Drawing.Color.HotPink;
+            this.button4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.button4.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F);
-            this.button4.Location = new System.Drawing.Point(481, 581);
+            this.button4.Location = new System.Drawing.Point(481, 735);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(223, 55);
             this.button4.TabIndex = 10;
@@ -175,7 +188,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.ClientSize = new System.Drawing.Size(1108, 648);
+            this.ClientSize = new System.Drawing.Size(1301, 803);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.btnExportToExcel);
             this.Controls.Add(this.button3);
@@ -186,6 +199,7 @@
             this.Controls.Add(this.dataGridViewSchedule);
             this.Controls.Add(this.groupBox1);
             this.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(7, 6, 7, 6);
             this.MaximizeBox = false;
@@ -195,6 +209,7 @@
             this.Text = "Меню мастера";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewSchedule)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -213,5 +228,6 @@
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button btnExportToExcel;
         private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }

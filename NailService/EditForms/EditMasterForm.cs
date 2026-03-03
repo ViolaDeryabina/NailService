@@ -12,11 +12,19 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace NailService
 {
+    /// <summary>
+    /// Форма для редактирования данных существующего мастера
+    /// Позволяет изменять описание и номер телефона (ФИО только для просмотра)
+    /// </summary>
     public partial class EditMasterForm : Form
     {
         private string _connection;
         public MasterModel Master { get; private set; }
 
+        /// <summary>
+        /// Конструктор формы редактирования мастера
+        /// </summary>
+        /// <param name="master">Объект мастера с текущими данными для редактирования</param>
         public EditMasterForm(MasterModel master)
         {
             InitializeComponent();
@@ -25,15 +33,20 @@ namespace NailService
             LoadMasterData();
         }
 
+        /// <summary>
+        /// Загрузка данных мастера в поля формы
+        /// </summary>
         private void LoadMasterData()
         {
-            // Заполняем поля данными мастера
-            FIO.Text = Master.FullName; // Поле только для чтения
-            FIO.Enabled = false; // ФИО нельзя редактировать
+            FIO.Text = Master.FullName;
+            FIO.Enabled = false; // ФИО нельзя редактировать (привязано к пользователю)
             Description.Text = Master.Description;
             Phone.Text = Master.Phone;
         }
 
+        /// <summary>
+        /// Сохранение изменений и закрытие формы
+        /// </summary>
         private void EditMaster_Click(object sender, EventArgs e)
         {
             if (ValidateData())
@@ -44,15 +57,23 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Отмена редактирования и закрытие формы
+        /// </summary>
         private void Back_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
             Close();
         }
 
+        #region Валидация данных
+
+        /// <summary>
+        /// Валидация введенных данных перед сохранением
+        /// </summary>
+        /// <returns>true если данные корректны</returns>
         private bool ValidateData()
         {
-            // Проверка телефона
             if (string.IsNullOrWhiteSpace(Phone.Text))
             {
                 MessageBox.Show("Введите телефон мастера", "Внимание",
@@ -61,7 +82,6 @@ namespace NailService
                 return false;
             }
 
-            // Проверка формата телефона
             string phoneDigits = new string(Phone.Text.Where(char.IsDigit).ToArray());
             if (phoneDigits.Length < 10)
             {
@@ -71,7 +91,6 @@ namespace NailService
                 return false;
             }
 
-            // Проверка уникальности телефона (если изменился)
             string currentPhoneDigits = GetPhoneDigits(Phone.Text);
             if (currentPhoneDigits != Master.Phone && !IsPhoneUnique(currentPhoneDigits))
             {
@@ -85,6 +104,11 @@ namespace NailService
             return true;
         }
 
+        /// <summary>
+        /// Проверка уникальности номера телефона (исключая текущего мастера)
+        /// </summary>
+        /// <param name="phone">Номер телефона для проверки</param>
+        /// <returns>true если номер уникален</returns>
         private bool IsPhoneUnique(string phone)
         {
             try
@@ -109,49 +133,47 @@ namespace NailService
             }
         }
 
-        private void SaveMasterData()
-        {
-            Master.Description = Description.Text.Trim();
-            Master.Phone = GetPhoneDigits(Phone.Text);
-        }
+        #endregion
 
+        #region Работа с телефоном
+
+        /// <summary>
+        /// Извлечение только цифр из строки телефона
+        /// </summary>
+        /// <returns>Строка, содержащая только цифры</returns>
         private string GetPhoneDigits(string phone)
         {
             return new string(phone.Where(char.IsDigit).ToArray());
         }
 
+        /// <summary>
+        /// Автоматическое форматирование номера телефона при вводе
+        /// </summary>
         private void Phone_TextChanged(object sender, EventArgs e)
         {
             int originalSelectionStart = Phone.SelectionStart;
             string originalText = Phone.Text;
 
-            // 1. Фильтруем текст
             string filteredText = InputValidator.FilterToPhone(originalText);
-
-            // 2. Форматируем номер
             string formattedText = InputValidator.FormatPhoneNumber(filteredText);
 
-            // Если текст изменился
             if (formattedText != originalText)
             {
-                // Сохраняем текст
                 Phone.Text = formattedText;
-
-                // Корректируем позицию курсора с учетом добавленных символов форматирования
                 int adjustedPosition = GetAdjustedCursorPosition(originalSelectionStart, originalText, formattedText);
                 Phone.SelectionStart = Math.Min(adjustedPosition, formattedText.Length);
             }
         }
 
+        /// <summary>
+        /// Корректировка позиции курсора после форматирования телефона
+        /// </summary>
         private int GetAdjustedCursorPosition(int originalPosition, string oldText, string newText)
         {
             if (originalPosition >= oldText.Length)
                 return newText.Length;
 
-            // Считаем, сколько форматирующих символов было добавлено ДО позиции курсора
             int formatCharsBeforeCursor = 0;
-
-            // Форматирующие символы в телефонном номере
             char[] formatChars = { '(', ')', ' ', '-', '+' };
 
             for (int i = 0; i < originalPosition && i < newText.Length; i++)
@@ -162,9 +184,18 @@ namespace NailService
                 }
             }
 
-            // Корректируем позицию с учетом форматирующих символов
             return originalPosition + formatCharsBeforeCursor;
         }
 
+        #endregion
+
+        /// <summary>
+        /// Сохранение данных из формы в объект Master
+        /// </summary>
+        private void SaveMasterData()
+        {
+            Master.Description = Description.Text.Trim();
+            Master.Phone = GetPhoneDigits(Phone.Text);
+        }
     }
 }

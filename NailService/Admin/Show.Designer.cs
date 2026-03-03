@@ -54,6 +54,9 @@
             this.label2 = new System.Windows.Forms.Label();
             this.dataGridViewStatuses = new System.Windows.Forms.DataGridView();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Users)).BeginInit();
@@ -65,6 +68,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewClients)).BeginInit();
             this.tabPage6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewStatuses)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -75,7 +79,7 @@
             this.tabControl1.Controls.Add(this.tabPage5);
             this.tabControl1.Controls.Add(this.tabPage6);
             this.tabControl1.Font = new System.Drawing.Font("MS Reference Sans Serif", 12.25F);
-            this.tabControl1.Location = new System.Drawing.Point(3, 2);
+            this.tabControl1.Location = new System.Drawing.Point(3, 74);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(978, 556);
@@ -98,9 +102,9 @@
             // 
             // AddUsers
             // 
-            this.AddUsers.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.AddUsers.BackColor = System.Drawing.Color.HotPink;
             this.AddUsers.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.AddUsers.Location = new System.Drawing.Point(6, 470);
+            this.AddUsers.Location = new System.Drawing.Point(683, 468);
             this.AddUsers.Name = "AddUsers";
             this.AddUsers.Size = new System.Drawing.Size(281, 48);
             this.AddUsers.TabIndex = 2;
@@ -110,9 +114,9 @@
             // 
             // InMenu
             // 
-            this.InMenu.BackColor = System.Drawing.Color.HotPink;
+            this.InMenu.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.InMenu.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.InMenu.Location = new System.Drawing.Point(683, 469);
+            this.InMenu.Location = new System.Drawing.Point(6, 468);
             this.InMenu.Name = "InMenu";
             this.InMenu.Size = new System.Drawing.Size(281, 48);
             this.InMenu.TabIndex = 1;
@@ -142,16 +146,16 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 29);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(970, 523);
+            this.tabPage2.Size = new System.Drawing.Size(970, 619);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Мастера";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // InMenuMaster
             // 
-            this.InMenuMaster.BackColor = System.Drawing.Color.HotPink;
+            this.InMenuMaster.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.InMenuMaster.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.InMenuMaster.Location = new System.Drawing.Point(683, 469);
+            this.InMenuMaster.Location = new System.Drawing.Point(6, 468);
             this.InMenuMaster.Name = "InMenuMaster";
             this.InMenuMaster.Size = new System.Drawing.Size(281, 48);
             this.InMenuMaster.TabIndex = 4;
@@ -161,9 +165,9 @@
             // 
             // AddMaster
             // 
-            this.AddMaster.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.AddMaster.BackColor = System.Drawing.Color.HotPink;
             this.AddMaster.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.AddMaster.Location = new System.Drawing.Point(6, 470);
+            this.AddMaster.Location = new System.Drawing.Point(683, 468);
             this.AddMaster.Name = "AddMaster";
             this.AddMaster.Size = new System.Drawing.Size(281, 48);
             this.AddMaster.TabIndex = 3;
@@ -193,16 +197,16 @@
             this.tabPage4.Location = new System.Drawing.Point(4, 29);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(970, 523);
+            this.tabPage4.Size = new System.Drawing.Size(970, 619);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Услуги";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
             // AddService
             // 
-            this.AddService.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.AddService.BackColor = System.Drawing.Color.HotPink;
             this.AddService.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.AddService.Location = new System.Drawing.Point(6, 469);
+            this.AddService.Location = new System.Drawing.Point(683, 468);
             this.AddService.Name = "AddService";
             this.AddService.Size = new System.Drawing.Size(281, 48);
             this.AddService.TabIndex = 7;
@@ -212,9 +216,9 @@
             // 
             // InMenuService
             // 
-            this.InMenuService.BackColor = System.Drawing.Color.HotPink;
+            this.InMenuService.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.InMenuService.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.InMenuService.Location = new System.Drawing.Point(683, 469);
+            this.InMenuService.Location = new System.Drawing.Point(6, 468);
             this.InMenuService.Name = "InMenuService";
             this.InMenuService.Size = new System.Drawing.Size(281, 48);
             this.InMenuService.TabIndex = 5;
@@ -244,16 +248,16 @@
             this.tabPage5.Location = new System.Drawing.Point(4, 29);
             this.tabPage5.Name = "tabPage5";
             this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(970, 523);
+            this.tabPage5.Size = new System.Drawing.Size(970, 619);
             this.tabPage5.TabIndex = 4;
             this.tabPage5.Text = "Клиенты";
             this.tabPage5.UseVisualStyleBackColor = true;
             // 
             // AddClient
             // 
-            this.AddClient.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.AddClient.BackColor = System.Drawing.Color.HotPink;
             this.AddClient.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.AddClient.Location = new System.Drawing.Point(6, 469);
+            this.AddClient.Location = new System.Drawing.Point(683, 468);
             this.AddClient.Name = "AddClient";
             this.AddClient.Size = new System.Drawing.Size(281, 48);
             this.AddClient.TabIndex = 7;
@@ -263,9 +267,9 @@
             // 
             // InMenuClient
             // 
-            this.InMenuClient.BackColor = System.Drawing.Color.HotPink;
+            this.InMenuClient.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.InMenuClient.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.InMenuClient.Location = new System.Drawing.Point(683, 469);
+            this.InMenuClient.Location = new System.Drawing.Point(6, 468);
             this.InMenuClient.Name = "InMenuClient";
             this.InMenuClient.Size = new System.Drawing.Size(281, 48);
             this.InMenuClient.TabIndex = 5;
@@ -283,7 +287,7 @@
             this.dataGridViewClients.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridViewClients.Location = new System.Drawing.Point(6, 7);
             this.dataGridViewClients.Name = "dataGridViewClients";
-            this.dataGridViewClients.Size = new System.Drawing.Size(958, 445);
+            this.dataGridViewClients.Size = new System.Drawing.Size(958, 455);
             this.dataGridViewClients.TabIndex = 0;
             this.dataGridViewClients.MouseClick += new System.Windows.Forms.MouseEventHandler(this.dataGridViewClients_MouseClick);
             // 
@@ -297,14 +301,14 @@
             this.tabPage6.Controls.Add(this.dataGridViewStatuses);
             this.tabPage6.Location = new System.Drawing.Point(4, 29);
             this.tabPage6.Name = "tabPage6";
-            this.tabPage6.Size = new System.Drawing.Size(970, 523);
+            this.tabPage6.Size = new System.Drawing.Size(970, 619);
             this.tabPage6.TabIndex = 5;
             this.tabPage6.Text = "Статусы";
             this.tabPage6.UseVisualStyleBackColor = true;
             // 
             // InMenuStatus
             // 
-            this.InMenuStatus.BackColor = System.Drawing.Color.HotPink;
+            this.InMenuStatus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.InMenuStatus.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.InMenuStatus.Location = new System.Drawing.Point(683, 468);
             this.InMenuStatus.Name = "InMenuStatus";
@@ -316,7 +320,7 @@
             // 
             // EditStatusButton
             // 
-            this.EditStatusButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.EditStatusButton.BackColor = System.Drawing.Color.HotPink;
             this.EditStatusButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.EditStatusButton.Location = new System.Drawing.Point(293, 469);
             this.EditStatusButton.Name = "EditStatusButton";
@@ -328,7 +332,7 @@
             // 
             // AddStatusButton
             // 
-            this.AddStatusButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.AddStatusButton.BackColor = System.Drawing.Color.HotPink;
             this.AddStatusButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.AddStatusButton.Location = new System.Drawing.Point(6, 470);
             this.AddStatusButton.Name = "AddStatusButton";
@@ -368,14 +372,48 @@
             this.dataGridViewStatuses.TabIndex = 0;
             this.dataGridViewStatuses.MouseClick += new System.Windows.Forms.MouseEventHandler(this.dataGridViewStatuses_MouseClick);
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImage = global::NailService.Properties.Resources.back_1;
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(100, 72);
+            this.pictureBox1.TabIndex = 1;
+            this.pictureBox1.TabStop = false;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("MS Reference Sans Serif", 22.25F);
+            this.label1.Location = new System.Drawing.Point(390, 9);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(223, 38);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Справочники";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("MS Reference Sans Serif", 12.25F);
+            this.label3.Location = new System.Drawing.Point(656, 0);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(105, 22);
+            this.label3.TabIndex = 3;
+            this.label3.Text = "Роль: ФИО";
+            // 
             // Show
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(984, 561);
+            this.ClientSize = new System.Drawing.Size(984, 637);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.tabControl1);
             this.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(7, 6, 7, 6);
             this.MaximizeBox = false;
@@ -396,7 +434,9 @@
             this.tabPage6.ResumeLayout(false);
             this.tabPage6.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewStatuses)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -427,5 +467,8 @@
         private System.Windows.Forms.TextBox StatusTextBox;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.DataGridView dataGridViewStatuses;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label3;
     }
 }

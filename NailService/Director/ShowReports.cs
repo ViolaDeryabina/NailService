@@ -1,5 +1,4 @@
 ﻿using MySql.Data.MySqlClient;
-
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,6 +9,11 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace NailService
 {
+    /// <summary>
+    /// Форма для просмотра и фильтрации отчетов по записям
+    /// Поддерживает фильтрацию по дате, мастеру, статусу, поиск и сортировку
+    /// Для администраторов доступно редактирование статусов записей
+    /// </summary>
     public partial class ShowReports : Form
     {
         private string _fio;
@@ -22,6 +26,11 @@ namespace NailService
         private List<StatusItem> _statusItems;
         private bool _isErrorMessageShown = false;
 
+        /// <summary>
+        /// Конструктор формы отчетов
+        /// </summary>
+        /// <param name="FIO">ФИО текущего пользователя</param>
+        /// <param name="RoleID">ID роли (1-директор, 2-админ, 4-менеджер)</param>
         public ShowReports(string FIO, int RoleID)
         {
             InitializeComponent();
@@ -30,17 +39,12 @@ namespace NailService
 
             _filterManager = new FilterManager(Connection.ConnectionString);
 
-            // Сначала настраиваем DataGridView
             SetupDataGridView();
-
-            // Затем загружаем данные для комбобоксов
             _filterManager.PopulateMastersComboBox(cmbMasterFilter);
             _filterManager.PopulateStatusComboBox(cmbStatusFilter);
 
-            // Загружаем статусы для ComboBox в DataGridView
             _statusItems = _filterManager.GetStatusItems();
 
-            // Настройка сортировки
             cmbSort.Items.AddRange(new string[] {
                 "Цена (по возрастанию)",
                 "Цена (по убыванию)",
@@ -52,35 +56,28 @@ namespace NailService
             cmbSort.SelectedIndex = 0;
 
             SetupDateTimePickers();
-
-            // Загружаем данные только после полной настройки
             LoadData();
-            if (RoleID == 1)
-            {
-                FIOlabel.Text = $"Директор: {_fio}";
-            }else if (RoleID == 2)
-            {
-                FIOlabel.Text = $"Администратор: {_fio}";
-            }
-           
+
+            FIOlabel.Text = RoleID == 1 ? $"Директор: {_fio}" :
+                           RoleID == 2 ? $"Администратор: {_fio}" : "";
         }
 
+        /// <summary>
+        /// Настройка DateTimePicker с ограничениями по датам из БД
+        /// </summary>
         private void SetupDateTimePickers()
         {
             try
             {
-                // Получаем минимальную и максимальную даты из базы данных
                 var dateRange = _filterManager.GetDateRange();
                 _minDate = dateRange.MinDate;
                 _maxDate = dateRange.MaxDate;
 
-                // Устанавливаем ограничения
                 dtpFromDate.MinDate = _minDate;
                 dtpFromDate.MaxDate = _maxDate;
                 dtpToDate.MinDate = _minDate;
                 dtpToDate.MaxDate = _maxDate;
 
-                // Устанавливаем значения по умолчанию (последний месяц)
                 DateTime defaultFrom = _maxDate.AddMonths(-1);
                 if (defaultFrom < _minDate)
                 {
@@ -90,7 +87,6 @@ namespace NailService
                 dtpFromDate.Value = defaultFrom;
                 dtpToDate.Value = _maxDate;
 
-                // НАСТРОЙКА ДЛЯ КАЛЕНДАРЯ
                 dtpFromDate.Format = DateTimePickerFormat.Custom;
                 dtpFromDate.CustomFormat = "dd.MM.yyyy";
                 dtpFromDate.ShowUpDown = false;
@@ -107,14 +103,15 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Настройка DataGridView: создание колонок, установка стилей, подписка на события
+        /// </summary>
         private void SetupDataGridView()
         {
             try
             {
-                // Очищаем колонки
                 dataGridViewRecords.Columns.Clear();
 
-                // Добавляем колонки
                 dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn
                 {
                     Name = "MasterName",
@@ -136,19 +133,17 @@ namespace NailService
                     ReadOnly = true
                 });
 
-                // Загружаем статусы
                 _statusItems = _filterManager.GetStatusItems();
 
-                // Колонка статуса - сразу ComboBox
                 DataGridViewComboBoxColumn statusColumn = new DataGridViewComboBoxColumn
                 {
                     Name = "Status",
                     HeaderText = "Статус",
                     DataSource = new BindingSource(_statusItems, null),
-                    DisplayMember = "Name",     // Отображаем название
-                    ValueMember = "ID",          // Храним ID
+                    DisplayMember = "Name",
+                    ValueMember = "ID",
                     FlatStyle = FlatStyle.Flat,
-                    ReadOnly = (_roleID != 2),   // Только админ может редактировать
+                    ReadOnly = (_roleID != 2),
                     AutoComplete = true
                 };
                 dataGridViewRecords.Columns.Add(statusColumn);
@@ -174,7 +169,6 @@ namespace NailService
                     ReadOnly = true
                 });
 
-                // Скрытая колонка для ID записи
                 DataGridViewTextBoxColumn idColumn = new DataGridViewTextBoxColumn
                 {
                     Name = "RecordID",
@@ -183,12 +177,10 @@ namespace NailService
                 };
                 dataGridViewRecords.Columns.Add(idColumn);
 
-                // Применяем стили
                 StyleManager.ApplyGridStyles(dataGridViewRecords);
                 StyleManager.ApplyColumnAlignments(dataGridViewRecords);
                 dataGridViewRecords.ReadOnly = false;
 
-                // Подписываемся на события
                 dataGridViewRecords.CellValueChanged += DataGridViewRecords_CellValueChanged;
                 dataGridViewRecords.DataError += DataGridViewRecords_DataError;
                 dataGridViewRecords.CellBeginEdit += DataGridViewRecords_CellBeginEdit;
@@ -202,9 +194,11 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Форматирование ячеек - установка цвета фона для статуса
+        /// </summary>
         private void DataGridViewRecords_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            // Для колонки статуса устанавливаем цвет фона
             if (dataGridViewRecords.Columns[e.ColumnIndex].Name == "Status" && e.RowIndex >= 0)
             {
                 if (dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Value != null)
@@ -215,21 +209,20 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Загрузка данных с применением текущих фильтров
+        /// </summary>
         private void LoadData()
         {
             try
             {
-                // Проверяем, есть ли колонки
                 if (dataGridViewRecords.Columns.Count == 0)
                 {
                     MessageBox.Show("DataGridView не настроен. Сначала выполните настройку.");
                     return;
                 }
-                
 
-                // Отключаем обработчик событий на время загрузки
                 dataGridViewRecords.CellValueChanged -= DataGridViewRecords_CellValueChanged;
-
                 dataGridViewRecords.Rows.Clear();
 
                 string searchText = txtSearch.Text;
@@ -238,7 +231,6 @@ namespace NailService
                 DateTime fromDate = dtpFromDate.Value;
                 DateTime toDate = dtpToDate.Value;
 
-                // Проверка дат...
                 if (fromDate > toDate)
                 {
                     DateTime temp = fromDate;
@@ -271,7 +263,6 @@ namespace NailService
                 decimal totalRevenue = CalculateTotalRevenue(records);
                 lblTotalRevenue.Text = $"Общая выручка: {totalRevenue:N0} руб.";
 
-                // Находим индексы колонок
                 int statusColumnIndex = -1;
                 int recordIdColumnIndex = -1;
 
@@ -295,7 +286,7 @@ namespace NailService
                         record.MasterName,
                         record.ClientName,
                         record.Date.ToString("dd.MM.yyyy HH:mm"),
-                        record.StatusID, // Для ComboBox передаем ID статуса - он сам отобразит название
+                        record.StatusID,
                         record.Service,
                         record.Price.ToString("C0"),
                         record.UserName,
@@ -304,7 +295,6 @@ namespace NailService
 
                     if (rowIndex >= 0)
                     {
-                        // Сохраняем значение в Tag для отслеживания изменений
                         dataGridViewRecords.Rows[rowIndex].Cells[statusColumnIndex].Tag = record.StatusID;
                     }
                 }
@@ -317,15 +307,15 @@ namespace NailService
             }
             finally
             {
-                // Включаем обработчик событий обратно
                 dataGridViewRecords.CellValueChanged += DataGridViewRecords_CellValueChanged;
             }
         }
 
-
+        /// <summary>
+        /// Проверка прав на редактирование при начале редактирования ячейки
+        /// </summary>
         private void DataGridViewRecords_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
         {
-            // Разрешаем редактирование только администраторам (RoleID = 2) и только для колонки статуса
             if (dataGridViewRecords.Columns[e.ColumnIndex].Name != "Status")
             {
                 e.Cancel = true;
@@ -336,14 +326,12 @@ namespace NailService
             {
                 e.Cancel = true;
 
-                // Используем флаг, чтобы показать сообщение только один раз
                 if (!_isErrorMessageShown)
                 {
                     _isErrorMessageShown = true;
                     MessageBox.Show("Только администратор может изменять статусы записей.",
                         "Доступ запрещен", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
-                    // Сбрасываем флаг через таймер или после закрытия сообщения
                     System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
                     timer.Interval = 100;
                     timer.Tick += (s, args) => {
@@ -382,17 +370,18 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Обработка изменения значения в ячейке - обновление статуса в БД
+        /// </summary>
         private void DataGridViewRecords_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
 
-            // Проверяем, что это колонка статуса
             if (dataGridViewRecords.Columns[e.ColumnIndex].Name != "Status")
                 return;
 
             try
             {
-                // Находим индекс колонки с ID записи
                 int recordIdColumnIndex = -1;
                 for (int i = 0; i < dataGridViewRecords.Columns.Count; i++)
                 {
@@ -409,24 +398,18 @@ namespace NailService
                     return;
                 }
 
-                // Получаем ID записи из скрытой колонки
                 int recordId = Convert.ToInt32(dataGridViewRecords.Rows[e.RowIndex].Cells[recordIdColumnIndex].Value);
-
-                // Получаем новый статус (ID)
                 int newStatusId = Convert.ToInt32(dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
 
-                // Получаем старое значение статуса для проверки
                 int oldStatusId = 0;
                 if (dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Tag != null)
                 {
                     oldStatusId = Convert.ToInt32(dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Tag);
                 }
 
-                // Если статус не изменился, ничего не делаем
                 if (oldStatusId == newStatusId)
                     return;
 
-                // Запрашиваем подтверждение
                 DialogResult result = MessageBox.Show(
                     "Вы уверены, что хотите изменить статус этой записи?",
                     "Подтверждение изменения",
@@ -435,16 +418,13 @@ namespace NailService
 
                 if (result == DialogResult.Yes)
                 {
-                    // Обновляем статус в базе данных
                     bool updated = _filterManager.UpdateRecordStatus(recordId, newStatusId);
 
                     if (updated)
                     {
-                        // Обновляем цвет ячейки
                         dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor =
                             StyleManager.GetStatusColor(newStatusId);
 
-                        // Сохраняем новое значение в Tag
                         dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Tag = newStatusId;
 
                         MessageBox.Show("Статус успешно обновлен!", "Успех",
@@ -454,13 +434,11 @@ namespace NailService
                     {
                         MessageBox.Show("Не удалось обновить статус.",
                             "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        // Возвращаем старое значение
                         LoadData();
                     }
                 }
                 else
                 {
-                    // Отменяем изменение - возвращаем старое значение
                     LoadData();
                 }
             }
@@ -474,11 +452,11 @@ namespace NailService
 
         private void DataGridViewRecords_DataError(object sender, DataGridViewDataErrorEventArgs e)
         {
-            // Игнорируем ошибки DataGridView
             e.Cancel = true;
         }
 
-        // Обработчики событий фильтров
+        #region Обработчики фильтров
+
         private void dtpFromDate_ValueChanged(object sender, EventArgs e)
         {
             if (dtpFromDate.Value > dtpToDate.Value)
@@ -502,6 +480,11 @@ namespace NailService
         private void cmbSort_SelectedIndexChanged(object sender, EventArgs e) => LoadData();
         private void cmbStatusFilter_SelectedIndexChanged(object sender, EventArgs e) => LoadData();
 
+        #endregion
+
+        /// <summary>
+        /// Сброс всех фильтров к значениям по умолчанию
+        /// </summary>
         private void btnClearFilters_Click(object sender, EventArgs e)
         {
             txtSearch.Text = "";
@@ -522,6 +505,9 @@ namespace NailService
             LoadData();
         }
 
+        /// <summary>
+        /// Возврат в главное меню в зависимости от роли
+        /// </summary>
         private void InMenu_Click(object sender, EventArgs e)
         {
             if (_roleID == 2)
@@ -532,7 +518,7 @@ namespace NailService
             }
             else if (_roleID == 4)
             {
-                Schedule menuManager = new Schedule(_fio, 4,0);
+                Schedule menuManager = new Schedule(_fio, 4, 0);
                 menuManager.Show();
                 this.Hide();
             }
@@ -544,13 +530,17 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Генерация Excel-отчета с текущими данными
+        /// </summary>
         private void ReportsButton_Click(object sender, EventArgs e)
         {
             GenerateExcelReport();
         }
 
-
-        // Создание отчёта в Excel
+        /// <summary>
+        /// Создание Excel-отчета с текущими отфильтрованными данными
+        /// </summary>
         private void GenerateExcelReport()
         {
             Excel.Application excelApp = null;
@@ -560,7 +550,6 @@ namespace NailService
 
             try
             {
-                // Проверяем, есть ли данные для отчета
                 if (dataGridViewRecords.Rows.Count == 0)
                 {
                     MessageBox.Show("Нет данных для формирования отчета!", "Информация",
@@ -568,7 +557,6 @@ namespace NailService
                     return;
                 }
 
-                // Создаем диалог сохранения файла
                 SaveFileDialog saveFileDialog = new SaveFileDialog
                 {
                     Filter = "Excel Files|*.xlsx",
@@ -584,12 +572,10 @@ namespace NailService
 
                 string filePath = saveFileDialog.FileName;
 
-                // Создаем приложение Excel
                 excelApp = new Excel.Application();
                 excelApp.Visible = false;
                 excelApp.DisplayAlerts = false;
 
-                // Создаем новую книгу
                 workbook = excelApp.Workbooks.Add();
                 worksheet = workbook.ActiveSheet as Excel.Worksheet;
 
@@ -598,19 +584,17 @@ namespace NailService
                     throw new Exception("Не удалось создать рабочий лист Excel");
                 }
 
-                // Настройка страницы
                 worksheet.PageSetup.Orientation = Excel.XlPageOrientation.xlLandscape;
                 worksheet.PageSetup.LeftMargin = excelApp.CentimetersToPoints(1);
                 worksheet.PageSetup.RightMargin = excelApp.CentimetersToPoints(1);
                 worksheet.PageSetup.TopMargin = excelApp.CentimetersToPoints(1.5);
                 worksheet.PageSetup.BottomMargin = excelApp.CentimetersToPoints(1);
 
-                // Цвета в стиле приложения
                 Color accentColor = Color.HotPink;
                 Color lightPink = Color.FromArgb(255, 203, 219);
                 Color lightGray = Color.FromArgb(240, 240, 240);
 
-                // ЗАГОЛОВОК ОТЧЕТА
+                // Заголовок
                 range = worksheet.Range["A1", "G1"];
                 range.Merge();
                 range.Value = "ОТЧЕТ О ЗАПИСЯХ";
@@ -624,17 +608,15 @@ namespace NailService
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
                 range = null;
 
-                // ИНФОРМАЦИЯ О ФИЛЬТРАХ
+                // Информация о фильтрах
                 int currentRow = 3;
 
-                // Период
                 worksheet.Cells[currentRow, 1] = "📅 Период:";
                 worksheet.Cells[currentRow, 2] = $"{dtpFromDate.Value:dd.MM.yyyy} - {dtpToDate.Value:dd.MM.yyyy}";
                 FormatInfoCell(worksheet, currentRow, 1, true);
                 FormatInfoCell(worksheet, currentRow, 2, false);
                 currentRow++;
 
-                // Мастер (если выбран)
                 if (cmbMasterFilter.SelectedIndex > 0)
                 {
                     worksheet.Cells[currentRow, 1] = "👤 Мастер:";
@@ -644,7 +626,6 @@ namespace NailService
                     currentRow++;
                 }
 
-                // Статус (если выбран)
                 if (cmbStatusFilter.SelectedIndex > 0)
                 {
                     worksheet.Cells[currentRow, 1] = "📊 Статус:";
@@ -654,7 +635,6 @@ namespace NailService
                     currentRow++;
                 }
 
-                // Поисковый запрос (если есть)
                 if (!string.IsNullOrEmpty(txtSearch.Text))
                 {
                     worksheet.Cells[currentRow, 1] = "🔍 Поиск:";
@@ -664,26 +644,22 @@ namespace NailService
                     currentRow++;
                 }
 
-                // Сортировка
                 worksheet.Cells[currentRow, 1] = "⬆️ Сортировка:";
                 worksheet.Cells[currentRow, 2] = cmbSort.SelectedItem?.ToString();
                 FormatInfoCell(worksheet, currentRow, 1, true);
                 FormatInfoCell(worksheet, currentRow, 2, false);
                 currentRow++;
 
-                // Дата формирования
                 worksheet.Cells[currentRow, 1] = "⏱️ Дата формирования:";
                 worksheet.Cells[currentRow, 2] = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
                 FormatInfoCell(worksheet, currentRow, 1, true);
                 FormatInfoCell(worksheet, currentRow, 2, false);
                 currentRow++;
 
-                // Количество записей
                 worksheet.Cells[currentRow, 1] = "📝 Количество записей:";
                 worksheet.Cells[currentRow, 2] = dataGridViewRecords.Rows.Count.ToString();
                 FormatInfoCell(worksheet, currentRow, 1, true);
 
-                // Выделяем количество записей жирным
                 range = worksheet.Cells[currentRow, 2];
                 range.Font.Bold = true;
                 range.Font.Color = System.Drawing.ColorTranslator.ToOle(accentColor);
@@ -691,9 +667,9 @@ namespace NailService
 
                 currentRow += 2;
 
-                // ЗАГОЛОВКИ ТАБЛИЦЫ
+                // Заголовки таблицы
                 string[] headers = { "Мастер", "Клиент", "Дата и время", "Статус", "Услуга", "Цена", "Менеджер" };
-                int columnCount = headers.Length; // = 7
+                int columnCount = headers.Length;
 
                 for (int i = 0; i < columnCount; i++)
                 {
@@ -711,18 +687,16 @@ namespace NailService
 
                 currentRow++;
 
-                // ДАННЫЕ
+                // Данные
                 decimal totalSum = 0;
                 for (int i = 0; i < dataGridViewRecords.Rows.Count; i++)
                 {
                     DataGridViewRow row = dataGridViewRecords.Rows[i];
                     if (row.IsNewRow) continue;
 
-                    // Получаем название статуса отдельно
                     string statusName = "";
                     int statusId = 0;
 
-                    // Находим колонку статуса и получаем название
                     for (int s = 0; s < dataGridViewRecords.Columns.Count; s++)
                     {
                         if (dataGridViewRecords.Columns[s].Name == "Status")
@@ -730,7 +704,6 @@ namespace NailService
                             if (row.Cells[s].Value != null)
                             {
                                 statusId = Convert.ToInt32(row.Cells[s].Value);
-                                // Получаем название статуса из _statusItems
                                 var statusItem = _statusItems.FirstOrDefault(x => x.ID == statusId);
                                 statusName = statusItem?.Name ?? statusId.ToString();
                             }
@@ -745,16 +718,13 @@ namespace NailService
 
                         if (cellValue != null)
                         {
-                            // Для столбца статуса используем название, а не ID
                             if (columnName == "Status")
                             {
                                 worksheet.Cells[currentRow, j + 1] = statusName;
 
-                                // Подкрашиваем статус
                                 range = worksheet.Cells[currentRow, j + 1];
                                 range.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
 
-                                // Устанавливаем цвет в зависимости от статуса
                                 if (statusName.Contains("Запланирован"))
                                     range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(255, 245, 157));
                                 else if (statusName.Contains("Подтвержден"))
@@ -766,7 +736,6 @@ namespace NailService
 
                                 System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
                             }
-                            // Для столбца "Цена" (индекс 5 или по имени)
                             else if (columnName == "Price" || j == 5)
                             {
                                 decimal price = 0;
@@ -801,9 +770,8 @@ namespace NailService
                             {
                                 worksheet.Cells[currentRow, j + 1] = cellValue.ToString();
 
-                                // Выравнивание для разных колонок
                                 range = worksheet.Cells[currentRow, j + 1];
-                                if (columnName == "Date" || j == 2) // Дата по центру
+                                if (columnName == "Date" || j == 2)
                                 {
                                     range.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                                 }
@@ -812,12 +780,10 @@ namespace NailService
                         }
                     }
 
-                    // Добавляем границы для строки
                     range = worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, headers.Length]];
                     range.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
                     range.Borders.Color = System.Drawing.ColorTranslator.ToOle(Color.LightGray);
 
-                    // Чередование фона строк
                     if (i % 2 == 1)
                     {
                         range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(250, 250, 250));
@@ -826,11 +792,12 @@ namespace NailService
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
                     currentRow++;
                 }
+
                 range = worksheet.Columns[8];
                 range.ClearContents();
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
 
-                // ИТОГОВАЯ СТРОКА
+                // Итог
                 range = worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, 5]];
                 range.Merge();
                 range.Value = "ИТОГО:";
@@ -858,25 +825,17 @@ namespace NailService
                 range.Interior.Color = System.Drawing.ColorTranslator.ToOle(lightPink);
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
 
-                // АВТОПОДБОР ШИРИНЫ
+                // Автоподбор ширины
                 range = worksheet.UsedRange;
                 range.Columns.AutoFit();
 
-                // Устанавливаем минимальную ширину для некоторых колонок
-                if (worksheet.Columns[1].ColumnWidth < 12) worksheet.Columns[1].ColumnWidth = 12; // Мастер
-                if (worksheet.Columns[2].ColumnWidth < 15) worksheet.Columns[2].ColumnWidth = 15; // Клиент
-                if (worksheet.Columns[4].ColumnWidth < 20) worksheet.Columns[4].ColumnWidth = 20; // Услуга
+                if (worksheet.Columns[1].ColumnWidth < 12) worksheet.Columns[1].ColumnWidth = 12;
+                if (worksheet.Columns[2].ColumnWidth < 15) worksheet.Columns[2].ColumnWidth = 15;
+                if (worksheet.Columns[4].ColumnWidth < 20) worksheet.Columns[4].ColumnWidth = 20;
 
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
 
-                // Добавляем автофильтр
-                int dataStartRow = 7; // Строка с заголовками
-                int dataEndRow = currentRow - 1;
-                range = worksheet.Range[worksheet.Cells[dataStartRow, 1], worksheet.Cells[dataEndRow, headers.Length]];
-                range.AutoFilter(1, Type.Missing, Excel.XlAutoFilterOperator.xlAnd, Type.Missing, true);
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
-
-                // Сохраняем файл
+                // Сохранение
                 workbook.SaveAs(filePath);
                 workbook.Close(false);
 
@@ -887,11 +846,9 @@ namespace NailService
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
                 excelApp = null;
 
-                // Принудительный сбор мусора
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
 
-                // Показываем сообщение об успехе
                 DialogResult result = MessageBox.Show($"Отчет успешно сохранен в файл:\n{filePath}\n\nХотите открыть файл?",
                                                      "Отчет создан",
                                                      MessageBoxButtons.YesNo,
@@ -921,7 +878,6 @@ namespace NailService
             }
             finally
             {
-                // Освобождаем ресурсы
                 try
                 {
                     if (range != null) System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
@@ -949,12 +905,15 @@ namespace NailService
                 }
             }
         }
+
+        /// <summary>
+        /// Расчет общей выручки (исключая отмененные записи)
+        /// </summary>
         private decimal CalculateTotalRevenue(List<RecordData> records)
         {
             decimal total = 0;
             foreach (var record in records)
             {
-                // Исключаем отмененные записи (StatusID = 4)
                 if (record.StatusID != 4)
                 {
                     total += record.Price;
@@ -963,7 +922,9 @@ namespace NailService
             return total;
         }
 
-        // Вспомогательный метод для форматирования информационных ячеек
+        /// <summary>
+        /// Форматирование информационных ячеек в Excel
+        /// </summary>
         private void FormatInfoCell(Excel.Worksheet worksheet, int row, int col, bool isLabel)
         {
             Excel.Range range = worksheet.Cells[row, col];

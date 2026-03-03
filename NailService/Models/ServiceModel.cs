@@ -15,11 +15,10 @@ namespace NailService
         public int Price { get; set; }
         public int Category { get; set; }
         public string CategoryName { get; set; }
-        public string Photo { get; set; } // Имя файла изображения
+        public string Photo { get; set; } 
         public bool IsActive { get; set; }
-        public Image ServiceImage { get; set; } // Объект Image для отображения
+        public Image ServiceImage { get; set; } 
 
-        // Конструктор
         public ServiceModel()
         {
             ServiceName = string.Empty;

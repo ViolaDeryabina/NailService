@@ -2,11 +2,19 @@
 
 namespace NailServiceApp.Utilities
 {
+    /// <summary>
+    /// Статический класс для форматирования фамилий, имен и отчеств
+    /// Предоставляет методы для преобразования ФИО в различные форматы
+    /// </summary>
     public static class NameFormatter
     {
         /// <summary>
-        /// Форматирует ФИО в формат "Фамилия И.О."
+        /// Форматирует отдельные компоненты ФИО в короткий формат "Фамилия И.О."
         /// </summary>
+        /// <param name="lastName">Фамилия</param>
+        /// <param name="firstName">Имя</param>
+        /// <param name="middleName">Отчество</param>
+        /// <returns>Строка вида "Фамилия И.О." или пустая строка</returns>
         public static string FormatToShortName(string lastName, string firstName, string middleName)
         {
             if (string.IsNullOrEmpty(lastName))
@@ -21,9 +29,11 @@ namespace NailServiceApp.Utilities
 
             if (!string.IsNullOrEmpty(middleName))
             {
-                result += "." + GetInitial(middleName) + ".";
+                result += "." + GetInitial(middleName);
             }
-            else if (!string.IsNullOrEmpty(firstName))
+
+            // Добавляем точку после инициала имени, если есть имя
+            if (!string.IsNullOrEmpty(firstName))
             {
                 result += ".";
             }
@@ -32,8 +42,12 @@ namespace NailServiceApp.Utilities
         }
 
         /// <summary>
-        /// Форматирует полное ФИО из отдельных частей
+        /// Форматирует отдельные компоненты ФИО в полный формат "Фамилия Имя Отчество"
         /// </summary>
+        /// <param name="lastName">Фамилия</param>
+        /// <param name="firstName">Имя</param>
+        /// <param name="middleName">Отчество</param>
+        /// <returns>Строка вида "Фамилия Имя Отчество" или пустая строка</returns>
         public static string FormatFullName(string lastName, string firstName, string middleName)
         {
             var parts = new[] { lastName, firstName, middleName };
@@ -41,8 +55,10 @@ namespace NailServiceApp.Utilities
         }
 
         /// <summary>
-        /// Форматирует существующее полное ФИО в короткий формат
+        /// Преобразует полное ФИО (из одной строки) в короткий формат "Фамилия И.О."
         /// </summary>
+        /// <param name="fullName">Полное ФИО в формате "Фамилия Имя Отчество"</param>
+        /// <returns>Строка вида "Фамилия И.О." или исходная строка при ошибке</returns>
         public static string ConvertToShortName(string fullName)
         {
             if (string.IsNullOrEmpty(fullName))
@@ -57,14 +73,16 @@ namespace NailServiceApp.Utilities
 
             if (parts.Length > 1)
             {
-                result += " " + GetInitial(parts[1]); // Имя
+                result += " " + GetInitial(parts[1]); // Инициал имени
             }
 
             if (parts.Length > 2)
             {
-                result += "." + GetInitial(parts[2]) + "."; // Отчество
+                result += "." + GetInitial(parts[2]); // Инициал отчества
             }
-            else if (parts.Length > 1)
+
+            // Добавляем точку после инициала имени, если есть имя
+            if (parts.Length > 1)
             {
                 result += ".";
             }
@@ -72,6 +90,11 @@ namespace NailServiceApp.Utilities
             return result;
         }
 
+        /// <summary>
+        /// Получает первый символ строки в верхнем регистре (инициал)
+        /// </summary>
+        /// <param name="name">Строка (имя или отчество)</param>
+        /// <returns>Первый символ строки в верхнем регистре или пустая строка</returns>
         private static string GetInitial(string name)
         {
             if (string.IsNullOrEmpty(name))

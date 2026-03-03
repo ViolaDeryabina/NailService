@@ -47,7 +47,9 @@
             this.Save = new System.Windows.Forms.Button();
             this.lblSelectedTime = new System.Windows.Forms.Label();
             this.btnSearchClient = new System.Windows.Forms.Button();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -63,7 +65,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(37, 53);
+            this.label2.Location = new System.Drawing.Point(37, 79);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(55, 24);
             this.label2.TabIndex = 1;
@@ -72,7 +74,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(15, 94);
+            this.label3.Location = new System.Drawing.Point(15, 120);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(79, 24);
             this.label3.TabIndex = 2;
@@ -81,7 +83,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(15, 132);
+            this.label4.Location = new System.Drawing.Point(15, 158);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(79, 24);
             this.label4.TabIndex = 3;
@@ -90,7 +92,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(18, 169);
+            this.label5.Location = new System.Drawing.Point(18, 195);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(75, 24);
             this.label5.TabIndex = 4;
@@ -99,7 +101,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(20, 208);
+            this.label6.Location = new System.Drawing.Point(20, 234);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(73, 24);
             this.label6.TabIndex = 5;
@@ -107,32 +109,36 @@
             // 
             // cmbClient
             // 
+            this.cmbClient.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbClient.FormattingEnabled = true;
-            this.cmbClient.Location = new System.Drawing.Point(97, 90);
+            this.cmbClient.Location = new System.Drawing.Point(97, 116);
             this.cmbClient.Name = "cmbClient";
             this.cmbClient.Size = new System.Drawing.Size(318, 32);
             this.cmbClient.TabIndex = 6;
             // 
             // cmbMaster
             // 
+            this.cmbMaster.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbMaster.FormattingEnabled = true;
-            this.cmbMaster.Location = new System.Drawing.Point(97, 128);
+            this.cmbMaster.Location = new System.Drawing.Point(97, 154);
             this.cmbMaster.Name = "cmbMaster";
             this.cmbMaster.Size = new System.Drawing.Size(318, 32);
             this.cmbMaster.TabIndex = 7;
             // 
             // cmbService
             // 
+            this.cmbService.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbService.FormattingEnabled = true;
-            this.cmbService.Location = new System.Drawing.Point(97, 166);
+            this.cmbService.Location = new System.Drawing.Point(97, 192);
             this.cmbService.Name = "cmbService";
             this.cmbService.Size = new System.Drawing.Size(318, 32);
             this.cmbService.TabIndex = 8;
             // 
             // cmbStatus
             // 
+            this.cmbStatus.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbStatus.FormattingEnabled = true;
-            this.cmbStatus.Location = new System.Drawing.Point(97, 204);
+            this.cmbStatus.Location = new System.Drawing.Point(97, 230);
             this.cmbStatus.Name = "cmbStatus";
             this.cmbStatus.Size = new System.Drawing.Size(318, 32);
             this.cmbStatus.TabIndex = 9;
@@ -141,7 +147,7 @@
             // 
             this.btnAddClient.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.btnAddClient.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnAddClient.Location = new System.Drawing.Point(423, 88);
+            this.btnAddClient.Location = new System.Drawing.Point(423, 114);
             this.btnAddClient.Name = "btnAddClient";
             this.btnAddClient.Size = new System.Drawing.Size(220, 32);
             this.btnAddClient.TabIndex = 11;
@@ -155,7 +161,7 @@
             this.groupBox1.Controls.Add(this.lblDiscountPercent);
             this.groupBox1.Controls.Add(this.lblPrice);
             this.groupBox1.Font = new System.Drawing.Font("MS Reference Sans Serif", 8.25F);
-            this.groupBox1.Location = new System.Drawing.Point(367, 254);
+            this.groupBox1.Location = new System.Drawing.Point(367, 268);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(276, 112);
             this.groupBox1.TabIndex = 12;
@@ -195,7 +201,7 @@
             // 
             this.Save.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.Save.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.Save.Location = new System.Drawing.Point(8, 372);
+            this.Save.Location = new System.Drawing.Point(8, 386);
             this.Save.Name = "Save";
             this.Save.Size = new System.Drawing.Size(635, 50);
             this.Save.TabIndex = 14;
@@ -207,7 +213,7 @@
             // 
             this.lblSelectedTime.AutoSize = true;
             this.lblSelectedTime.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F);
-            this.lblSelectedTime.Location = new System.Drawing.Point(100, 54);
+            this.lblSelectedTime.Location = new System.Drawing.Point(100, 80);
             this.lblSelectedTime.Name = "lblSelectedTime";
             this.lblSelectedTime.Size = new System.Drawing.Size(78, 24);
             this.lblSelectedTime.TabIndex = 15;
@@ -217,7 +223,7 @@
             // 
             this.btnSearchClient.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.btnSearchClient.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnSearchClient.Location = new System.Drawing.Point(423, 50);
+            this.btnSearchClient.Location = new System.Drawing.Point(423, 76);
             this.btnSearchClient.Name = "btnSearchClient";
             this.btnSearchClient.Size = new System.Drawing.Size(220, 32);
             this.btnSearchClient.TabIndex = 16;
@@ -225,12 +231,23 @@
             this.btnSearchClient.UseVisualStyleBackColor = false;
             this.btnSearchClient.Click += new System.EventHandler(this.BtnSearchClient_Click);
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImage = global::NailService.Properties.Resources.back_1;
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.pictureBox1.Location = new System.Drawing.Point(10, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(100, 72);
+            this.pictureBox1.TabIndex = 17;
+            this.pictureBox1.TabStop = false;
+            // 
             // RecordingClients
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(660, 450);
+            this.ClientSize = new System.Drawing.Size(660, 458);
+            this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.btnSearchClient);
             this.Controls.Add(this.lblSelectedTime);
             this.Controls.Add(this.Save);
@@ -247,6 +264,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(6);
             this.MaximizeBox = false;
@@ -256,6 +274,7 @@
             this.Text = "Запись";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -281,5 +300,6 @@
         private System.Windows.Forms.Button Save;
         private System.Windows.Forms.Label lblSelectedTime;
         private System.Windows.Forms.Button btnSearchClient;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }

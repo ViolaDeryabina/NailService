@@ -51,9 +51,11 @@
             this.label7 = new System.Windows.Forms.Label();
             this.cmbMasterFilter = new System.Windows.Forms.ComboBox();
             this.lblTotalRevenue = new System.Windows.Forms.Label();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRecords)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -80,7 +82,7 @@
             // 
             this.InMenu.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.InMenu.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.InMenu.Location = new System.Drawing.Point(610, 639);
+            this.InMenu.Location = new System.Drawing.Point(12, 639);
             this.InMenu.Name = "InMenu";
             this.InMenu.Size = new System.Drawing.Size(263, 45);
             this.InMenu.TabIndex = 13;
@@ -161,10 +163,11 @@
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.FIOlabel);
+            this.groupBox1.Controls.Add(this.pictureBox1);
             this.groupBox1.Font = new System.Drawing.Font("MS Reference Sans Serif", 8.25F);
             this.groupBox1.Location = new System.Drawing.Point(12, -3);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(1149, 58);
+            this.groupBox1.Size = new System.Drawing.Size(1149, 65);
             this.groupBox1.TabIndex = 19;
             this.groupBox1.TabStop = false;
             // 
@@ -293,6 +296,16 @@
             this.lblTotalRevenue.TabIndex = 28;
             this.lblTotalRevenue.Text = "руб";
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImage = global::NailService.Properties.Resources.back_1;
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.pictureBox1.Location = new System.Drawing.Point(2, 6);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(100, 57);
+            this.pictureBox1.TabIndex = 15;
+            this.pictureBox1.TabStop = false;
+            // 
             // ShowReports
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
@@ -317,6 +330,7 @@
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBox2);
             this.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(6);
             this.MaximizeBox = false;
@@ -329,6 +343,7 @@
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -358,5 +373,6 @@
         private System.Windows.Forms.ComboBox cmbMasterFilter;
         private System.Windows.Forms.ComboBox cmbStatusFilter;
         private System.Windows.Forms.Label lblTotalRevenue;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }

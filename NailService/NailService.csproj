@@ -68,6 +68,12 @@
     <Compile Include="AddForms\AddServiceForm.Designer.cs">
       <DependentUpon>AddServiceForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Manager\RecordsInfo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Manager\RecordsInfo.Designer.cs">
+      <DependentUpon>RecordsInfo.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\ClientModel.cs" />
     <Compile Include="Helpers\DataGridViewConfigurator.cs" />
     <Compile Include="EditForms\EditClientForm.cs">
@@ -172,7 +178,7 @@
       <DependentUpon>Schedule.cs</DependentUpon>
     </Compile>
     <Compile Include="Director\ShowReportsHelper\StyleManager.cs" />
-    <Compile Include="Helpers\UserModel.cs" />
+    <Compile Include="Models\UserModel.cs" />
     <Compile Include="Helpers\Validation.cs" />
     <Compile Include="Manager\SearchClient.cs">
       <SubType>Form</SubType>
@@ -216,6 +222,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Director\MenuDirector.resx">
       <DependentUpon>MenuDirector.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Manager\RecordsInfo.resx">
+      <DependentUpon>RecordsInfo.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Master\MenuMaster.resx">
       <DependentUpon>MenuMaster.cs</DependentUpon>
@@ -273,6 +282,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\delete_icon.png" />
+    <None Include="Resources\back 1.jpg" />
     <Content Include="Resources\edit_icon.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

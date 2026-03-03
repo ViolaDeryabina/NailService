@@ -6,23 +6,34 @@ using System.Windows.Forms;
 
 namespace NailService
 {
+    /// <summary>
+    /// Сервис для работы с изображениями в приложении
+    /// Предоставляет методы для загрузки, сохранения, масштабирования и управления изображениями услуг
+    /// </summary>
     public class ImageService
     {
         private string _servicesImagesPath;
         private string _defaultImagePath;
 
+        /// <summary>
+        /// Конструктор сервиса изображений
+        /// Инициализирует пути для хранения изображений
+        /// </summary>
         public ImageService()
         {
             InitializePaths();
         }
 
+        /// <summary>
+        /// Инициализация путей к папкам с изображениями
+        /// Определяет путь к папке Images/Services в корне проекта
+        /// </summary>
         private void InitializePaths()
         {
             try
             {
                 string startupPath = Application.StartupPath;
 
-                // Если запущено из bin\Debug или bin\Release
                 if (startupPath.Contains(@"\bin\Debug") || startupPath.Contains(@"\bin\Release"))
                 {
                     string projectRoot = Directory.GetParent(Directory.GetParent(startupPath).FullName).FullName;
@@ -35,7 +46,6 @@ namespace NailService
 
                 _defaultImagePath = Path.Combine(_servicesImagesPath, "Default.jpg");
 
-                // Создаем папку если ее нет
                 if (!Directory.Exists(_servicesImagesPath))
                 {
                     Directory.CreateDirectory(_servicesImagesPath);
@@ -47,33 +57,46 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Получение пути к папке с изображениями услуг
+        /// </summary>
         public string GetServicesImagesPath() => _servicesImagesPath;
 
+        /// <summary>
+        /// Получение пути к изображению-заглушке
+        /// </summary>
         public string GetDefaultImagePath() => _defaultImagePath;
 
-
-        // Расчет оптимального размера миниатюр
+        /// <summary>
+        /// Расчет оптимального размера миниатюры для отображения в DataGridView
+        /// </summary>
+        /// <param name="dataGridView">Таблица, в которой будет отображаться миниатюра</param>
+        /// <param name="desiredWidth">Желаемая ширина (по умолчанию 80)</param>
+        /// <returns>Размер миниатюры в пределах 60-100 пикселей</returns>
         public Size CalculateOptimalThumbnailSize(DataGridView dataGridView, int desiredWidth = 80)
         {
-            // Фиксированный размер для миниатюр
             int thumbnailWidth = desiredWidth;
             int thumbnailHeight = thumbnailWidth;
 
-            // Ограничиваем минимальный и максимальный размер
-            thumbnailWidth = Math.Max(60, Math.Min(thumbnailWidth, 100));  // от 60 до 100 пикселей
+            thumbnailWidth = Math.Max(60, Math.Min(thumbnailWidth, 100));
             thumbnailHeight = Math.Max(60, Math.Min(thumbnailHeight, 100));
 
             return new Size(thumbnailWidth, thumbnailHeight);
         }
 
-        // Сохранение изображения услуги
+        /// <summary>
+        /// Сохранение изображения услуги в файл
+        /// </summary>
+        /// <param name="image">Изображение для сохранения</param>
+        /// <param name="serviceName">Название услуги (используется для генерации имени файла)</param>
+        /// <param name="oldFileName">Имя предыдущего файла для удаления</param>
+        /// <returns>Имя сохраненного файла или null</returns>
         public string SaveServiceImage(Image image, string serviceName, string oldFileName = null)
         {
             try
             {
                 if (image == null || IsDefaultImage(image))
                 {
-                    // Если изображение является заглушкой
                     if (!string.IsNullOrEmpty(oldFileName))
                     {
                         DeleteOldImage(oldFileName);
@@ -81,7 +104,6 @@ namespace NailService
                     return null;
                 }
 
-                // Генерируем имя файла
                 string cleanName = serviceName.Trim().ToLower()
                     .Replace(" ", "_")
                     .Replace("/", "_")
@@ -97,13 +119,11 @@ namespace NailService
                 string fileName = $"service_{cleanName}_{DateTime.Now:yyyyMMddHHmmss}.jpg";
                 string filePath = Path.Combine(_servicesImagesPath, fileName);
 
-                // Удаляем старое изображение если оно существует
                 if (!string.IsNullOrEmpty(oldFileName) && oldFileName != fileName)
                 {
                     DeleteOldImage(oldFileName);
                 }
 
-                // Сохраняем изображение
                 image.Save(filePath, System.Drawing.Imaging.ImageFormat.Jpeg);
 
                 return fileName;
@@ -113,6 +133,12 @@ namespace NailService
                 throw new Exception($"Не удалось сохранить изображение: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Загрузка изображения услуги по имени файла
+        /// </summary>
+        /// <param name="photoFileName">Имя файла изображения</param>
+        /// <returns>Загруженное изображение или заглушка</returns>
         public Image LoadServiceImage(string photoFileName)
         {
             try
@@ -126,7 +152,6 @@ namespace NailService
 
                 if (File.Exists(imagePath))
                 {
-                    // Загружаем оригинальное изображение
                     using (FileStream stream = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
                     {
                         return Image.FromStream(stream);
@@ -137,16 +162,17 @@ namespace NailService
                     return LoadDefaultServiceImage();
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                // В случае ошибки возвращаем заглушку
                 return LoadDefaultServiceImage();
             }
         }
 
+        /// <summary>
+        /// Загрузка изображения-заглушки для услуг без фото
+        /// </summary>
         public Image LoadDefaultServiceImage()
         {
-            // Возвращаем заглушку для изображения
             string defaultImagePath = GetDefaultImagePath();
 
             if (File.Exists(defaultImagePath))
@@ -155,7 +181,6 @@ namespace NailService
             }
             else
             {
-                // Создаем программную заглушку
                 Bitmap defaultImage = new Bitmap(300, 200);
                 using (Graphics g = Graphics.FromImage(defaultImage))
                 {
@@ -174,15 +199,26 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Получение миниатюры изображения услуги
+        /// </summary>
+        /// <param name="photoFileName">Имя файла изображения</param>
+        /// <param name="maxWidth">Максимальная ширина миниатюры</param>
+        /// <param name="maxHeight">Максимальная высота миниатюры</param>
+        /// <returns>Масштабированное изображение</returns>
         public Image GetServiceThumbnail(string photoFileName, int maxWidth, int maxHeight)
         {
-            // Загружаем оригинальное изображение
             Image originalImage = LoadServiceImage(photoFileName);
-
-            // Создаем миниатюру
             return ScaleImage(originalImage, maxWidth, maxHeight);
         }
 
+        /// <summary>
+        /// Масштабирование изображения с сохранением пропорций
+        /// </summary>
+        /// <param name="image">Исходное изображение</param>
+        /// <param name="maxWidth">Максимальная ширина</param>
+        /// <param name="maxHeight">Максимальная высота</param>
+        /// <returns>Масштабированное изображение</returns>
         private Image ScaleImage(Image image, int maxWidth, int maxHeight)
         {
             var ratioX = (double)maxWidth / image.Width;
@@ -195,13 +231,16 @@ namespace NailService
             var newImage = new Bitmap(newWidth, newHeight);
             using (var graphics = Graphics.FromImage(newImage))
             {
-                graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
                 graphics.DrawImage(image, 0, 0, newWidth, newHeight);
             }
             return newImage;
         }
 
-        // Удаление старого изображения
+        /// <summary>
+        /// Удаление старого файла изображения
+        /// </summary>
+        /// <param name="fileName">Имя файла для удаления</param>
         private void DeleteOldImage(string fileName)
         {
             try
@@ -218,13 +257,14 @@ namespace NailService
             catch { }
         }
 
-        // Проверка, является ли изображение заглушкой
+        /// <summary>
+        /// Проверка, является ли изображение заглушкой
+        /// </summary>
         private bool IsDefaultImage(Image image)
         {
             try
             {
-                // Простая проверка - можно расширить при необходимости
-                return image == null || image.Width == 100 && image.Height == 100;
+                return image == null || (image.Width == 100 && image.Height == 100);
             }
             catch
             {
@@ -232,7 +272,9 @@ namespace NailService
             }
         }
 
-        // Проверка, является ли файл заглушкой по умолчанию
+        /// <summary>
+        /// Проверка, является ли файл заглушкой по умолчанию
+        /// </summary>
         private bool IsDefaultImageFile(string fileName)
         {
             try
@@ -245,7 +287,11 @@ namespace NailService
             }
         }
 
-        // Загрузка изображения из файла
+        /// <summary>
+        /// Загрузка изображения из файла по пути
+        /// </summary>
+        /// <param name="filePath">Полный путь к файлу</param>
+        /// <returns>Загруженное изображение</returns>
         public Image LoadImageFromFile(string filePath)
         {
             try

@@ -15,17 +15,24 @@ namespace NailService
     {
         private string _connection;
         public MasterModel NewMaster { get; private set; }
-        private Show _showForm; // Ссылка на главную форму
+        private Show _showForm; // Ссылка на форму Show для обновления списка после добавления
 
+        /// <summary>
+        /// Конструктор формы добавления мастера
+        /// </summary>
+        /// <param name="showForm">Ссылка на главную форму для обновления данных</param>
         public AddMasterForm(Show showForm = null)
         {
             InitializeComponent();
             _connection = Connection.ConnectionString;
-            _showForm = showForm; // Сохраняем ссылку на главную форму
+            _showForm = showForm;
             NewMaster = new MasterModel();
             LoadAvailableMasters();
         }
 
+        /// <summary>
+        /// Загрузка доступных пользователей с ролью "Мастер" для добавления или восстановления
+        /// </summary>
         private void LoadAvailableMasters()
         {
             try
@@ -34,8 +41,8 @@ namespace NailService
                 {
                     connection.Open();
 
-                    // Запрос для получения активных пользователей с ролью "Мастер" (IDRole = 3),
-                    // которых еще нет в таблице Masters или которые неактивны в Masters
+                    // Запрос для получения пользователей с ролью "Мастер" (Role ID = 3),
+                    // которые еще не добавлены в таблицу Masters или являются неактивными мастерами
                     string query = @"
                         SELECT 
                             u.IDUser,
@@ -50,7 +57,7 @@ namespace NailService
                           AND u.IsActive = 1
                           AND (m.IDMasters IS NULL OR m.IsActive = 0)
                         ORDER BY 
-                            CASE WHEN m.IsActive = 0 THEN 0 ELSE 1 END, -- сначала неактивные мастера
+                            CASE WHEN m.IsActive = 0 THEN 0 ELSE 1 END, -- Сначала неактивные мастера
                             u.LastName, u.FirstName, u.MiddleName";
 
                     MySqlCommand cmd = new MySqlCommand(query, connection);
@@ -58,14 +65,14 @@ namespace NailService
                     DataTable dt = new DataTable();
                     adapter.Fill(dt);
 
-                    // Создаем новый DataTable с объединенным столбцом ФИО
+                    // Создание таблицы с отформатированными данными для отображения в ComboBox
                     DataTable fioDt = new DataTable();
                     fioDt.Columns.Add("ID", typeof(int));
                     fioDt.Columns.Add("ФИО", typeof(string));
                     fioDt.Columns.Add("Статус", typeof(string));
                     fioDt.Columns.Add("IsInactiveMaster", typeof(bool));
 
-                    // Объединение ФИО в один столбец
+                    // Форматирование ФИО в короткий формат (Фамилия И.О.)
                     foreach (DataRow row in dt.Rows)
                     {
                         string fullName = FormatToShortName(
@@ -81,18 +88,18 @@ namespace NailService
 
                         fioDt.Rows.Add(
                             Convert.ToInt32(row["IDUser"]),
-                            fullName,
+                            fullName + status,
                             status,
                             isInactiveMaster
                         );
                     }
 
-                    // Привязываем данные к ComboBox
+                    // Привязка данных к ComboBox
                     FIO.DataSource = fioDt;
                     FIO.DisplayMember = "ФИО";
                     FIO.ValueMember = "ID";
 
-                    // Проверяем, есть ли доступные мастера
+                    // Проверка наличия доступных мастеров
                     if (FIO.Items.Count == 0)
                     {
                         MessageBox.Show("Нет доступных пользователей с ролью 'Мастер' для добавления.",
@@ -103,8 +110,6 @@ namespace NailService
                     {
                         FIO.SelectedIndex = 0;
                         AddMasterButton.Enabled = true;
-
-                        // Показываем подсказку если выбран неактивный мастер
                         CheckForInactiveMasterHint();
                     }
                 }
@@ -116,6 +121,10 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Форматирование ФИО в короткий формат (Фамилия И.О.)
+        /// </summary>
+        /// <returns>ФИО в формате "Фамилия И.О."</returns>
         private string FormatToShortName(string lastName, string firstName, string middleName)
         {
             if (string.IsNullOrEmpty(lastName) || string.IsNullOrEmpty(firstName))
@@ -131,23 +140,29 @@ namespace NailService
             return result;
         }
 
+        /// <summary>
+        /// Обработчик кнопки "Назад" - закрытие формы без сохранения
+        /// </summary>
         private void Back_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
             Close();
         }
 
+        /// <summary>
+        /// Обработчик кнопки "Добавить" - валидация и сохранение мастера
+        /// </summary>
         private void AddMasterButton_Click(object sender, EventArgs e)
         {
             if (ValidateData())
             {
-                // Проверяем, является ли выбранный мастер неактивным
+                // Проверка возможности восстановления неактивного мастера
                 if (CheckAndRestoreInactiveMaster())
                 {
                     return; // Мастер восстановлен, форма закрывается
                 }
 
-                // Иначе создаем нового мастера
+                // Создание нового мастера
                 if (AddNewMaster())
                 {
                     DialogResult = DialogResult.OK;
@@ -156,9 +171,13 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Валидация введенных данных перед сохранением
+        /// </summary>
+        /// <returns>true если данные корректны</returns>
         private bool ValidateData()
         {
-            // Проверка выбора мастера
+            // Проверка выбора пользователя
             if (FIO.SelectedIndex == -1)
             {
                 MessageBox.Show("Выберите мастера из списка", "Внимание",
@@ -167,7 +186,7 @@ namespace NailService
                 return false;
             }
 
-            // Проверка телефона
+            // Проверка заполнения телефона
             if (string.IsNullOrWhiteSpace(Phone.Text))
             {
                 MessageBox.Show("Введите телефон мастера", "Внимание",
@@ -176,7 +195,7 @@ namespace NailService
                 return false;
             }
 
-            // Проверка формата телефона
+            // Проверка корректности номера телефона (минимум 10 цифр)
             string phoneDigits = GetPhoneDigits(Phone.Text);
             if (phoneDigits.Length < 10)
             {
@@ -189,12 +208,14 @@ namespace NailService
             return true;
         }
 
-        // Проверяет и восстанавливает неактивного мастера
+        /// <summary>
+        /// Проверка и восстановление неактивного мастера
+        /// </summary>
+        /// <returns>true если мастер восстановлен и форма закрыта</returns>
         private bool CheckAndRestoreInactiveMaster()
         {
             try
             {
-                // Получаем данные о выбранном мастере
                 DataRowView selectedRow = (DataRowView)FIO.SelectedItem;
                 bool isInactiveMaster = Convert.ToBoolean(selectedRow["IsInactiveMaster"]);
 
@@ -203,7 +224,7 @@ namespace NailService
                     int userId = Convert.ToInt32(selectedRow["ID"]);
                     string fullName = selectedRow["ФИО"].ToString();
 
-                    // Нашли неактивного мастера - предлагаем восстановить
+                    // Предложение восстановить неактивного мастера
                     var result = MessageBox.Show(
                         $"Найден неактивный мастер: {fullName}\n\n" +
                         "Восстановить этого мастера с новыми данными?",
@@ -213,10 +234,7 @@ namespace NailService
 
                     if (result == DialogResult.Yes)
                     {
-                        // Сохраняем данные из формы
                         SaveMasterData();
-
-                        // Восстанавливаем мастера
                         bool restored = RestoreMasterInDatabase(userId, NewMaster);
 
                         if (restored)
@@ -244,7 +262,10 @@ namespace NailService
             return false;
         }
 
-        // Создает нового мастера или восстанавливает неактивного
+        /// <summary>
+        /// Добавление нового мастера или восстановление неактивного
+        /// </summary>
+        /// <returns>true если операция успешна</returns>
         private bool AddNewMaster()
         {
             try
@@ -256,7 +277,7 @@ namespace NailService
                 {
                     connection.Open();
 
-                    // Сначала проверяем, есть ли неактивная запись мастера для этого пользователя
+                    // Поиск неактивной записи мастера для этого пользователя
                     string checkQuery = @"SELECT m.IDMasters, m.IsActive 
                                         FROM Masters m 
                                         INNER JOIN Users u ON m.User = u.IDUser
@@ -271,9 +292,9 @@ namespace NailService
                     {
                         if (reader.Read())
                         {
-                            // Нашли неактивного мастера - восстанавливаем
+                            // Восстановление неактивного мастера
                             int masterId = reader.GetInt32("IDMasters");
-                            reader.Close(); // Закрываем reader перед выполнением другого запроса
+                            reader.Close();
 
                             string updateQuery = @"UPDATE Masters 
                                                 SET Description = @Description,
@@ -297,7 +318,7 @@ namespace NailService
                         }
                     }
 
-                    // Проверяем, есть ли активный мастер для этого пользователя
+                    // Проверка наличия активного мастера для этого пользователя
                     string checkActiveQuery = @"SELECT COUNT(*) FROM Masters 
                                               WHERE User = @UserId AND IsActive = 1";
                     MySqlCommand checkActiveCmd = new MySqlCommand(checkActiveQuery, connection);
@@ -312,7 +333,7 @@ namespace NailService
                         return false;
                     }
 
-                    // Создаем нового мастера
+                    // Создание нового мастера
                     string insertQuery = @"INSERT INTO Masters 
                                         (User, Description, Phone, IsActive) 
                                         VALUES (@UserId, @Description, @Phone, 1)";
@@ -360,7 +381,10 @@ namespace NailService
             }
         }
 
-        // Восстанавливает мастера в базе данных
+        /// <summary>
+        /// Восстановление неактивного мастера в базе данных
+        /// </summary>
+        /// <returns>true если восстановление успешно</returns>
         private bool RestoreMasterInDatabase(int userId, MasterModel masterData)
         {
             try
@@ -390,6 +414,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Сохранение данных из формы в объект NewMaster
+        /// </summary>
         private void SaveMasterData()
         {
             NewMaster.UserId = Convert.ToInt32(FIO.SelectedValue);
@@ -397,12 +424,18 @@ namespace NailService
             NewMaster.Phone = GetPhoneDigits(Phone.Text);
         }
 
+        /// <summary>
+        /// Извлечение только цифр из строки телефона
+        /// </summary>
+        /// <returns>Строка, содержащая только цифры</returns>
         private string GetPhoneDigits(string phone)
         {
             return new string(phone.Where(char.IsDigit).ToArray());
         }
 
-        // Обработчики событий для телефона (без изменений)
+        /// <summary>
+        /// Автоматическое форматирование номера телефона при вводе
+        /// </summary>
         private void Phone_TextChanged(object sender, EventArgs e)
         {
             int originalSelectionStart = Phone.SelectionStart;
@@ -419,6 +452,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Корректировка позиции курсора после форматирования телефона
+        /// </summary>
         private int GetAdjustedCursorPosition(int originalPosition, string oldText, string newText)
         {
             if (originalPosition >= oldText.Length)
@@ -438,7 +474,9 @@ namespace NailService
             return originalPosition + formatCharsBeforeCursor;
         }
 
-        // Проверка подсказки о неактивном мастере
+        /// <summary>
+        /// Проверка наличия подсказки о неактивном мастере при выборе в ComboBox
+        /// </summary>
         private void CheckForInactiveMasterHint()
         {
             try
@@ -452,9 +490,9 @@ namespace NailService
                 if (isInactiveMaster)
                 {
                     string fullName = selectedRow["ФИО"].ToString();
-                    
+                    // Здесь можно добавить визуальную подсказку о найденном неактивном мастере
+                    // Например, изменить цвет фона или показать иконку
                 }
-                
             }
             catch
             {
@@ -462,23 +500,24 @@ namespace NailService
             }
         }
 
-        // При изменении выбора в ComboBox
+        /// <summary>
+        /// Обработчик изменения выбора в ComboBox
+        /// </summary>
         private void FIO_SelectedIndexChanged(object sender, EventArgs e)
         {
             CheckForInactiveMasterHint();
-
-            // Если выбран неактивный мастер, можно предварительно загрузить его данные
-            if (FIO.SelectedIndex != -1)
-            {
-                LoadMasterDataIfExists();
-            }
+            LoadMasterDataIfExists();
         }
 
-        // Загружает данные мастера, если он существует (но неактивен)
+        /// <summary>
+        /// Загрузка существующих данных неактивного мастера при выборе
+        /// </summary>
         private void LoadMasterDataIfExists()
         {
             try
             {
+                if (FIO.SelectedIndex == -1) return;
+
                 int userId = Convert.ToInt32(FIO.SelectedValue);
 
                 using (var connection = new MySqlConnection(_connection))
@@ -495,7 +534,7 @@ namespace NailService
                     {
                         if (reader.Read())
                         {
-                            // Заполняем поля данными из базы
+                            // Заполнение полей данными из базы для неактивного мастера
                             Description.Text = reader["Description"]?.ToString() ?? "";
 
                             string phone = reader["Phone"]?.ToString() ?? "";
@@ -506,7 +545,7 @@ namespace NailService
                         }
                         else
                         {
-                            // Очищаем поля если мастер новый
+                            // Очистка полей для нового мастера
                             Description.Text = "";
                             Phone.Text = "";
                         }
@@ -519,7 +558,9 @@ namespace NailService
             }
         }
 
-        // При нажатии на кнопку "Обновить список"
+        /// <summary>
+        /// Обработчик кнопки "Обновить список" - перезагрузка доступных мастеров
+        /// </summary>
         private void RefreshButton_Click(object sender, EventArgs e)
         {
             LoadAvailableMasters();

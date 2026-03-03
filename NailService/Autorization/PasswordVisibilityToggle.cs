@@ -8,14 +8,24 @@ using System.Windows.Forms;
 
 namespace NailService
 {
+    /// <summary>
+    /// Класс для управления видимостью пароля в текстовом поле
+    /// Позволяет переключать отображение символов пароля и скрытого режима
+    /// </summary>
     public class PasswordVisibilityToggle
     {
         private PictureBox _toggleButton;
         private TextBox _passwordTextBox;
         private bool _isPasswordVisible = false;
 
-        private Image _showPasswordIcon = null; // Иконка "показать пароль"
-        private Image _hidePasswordIcon = null; // Иконка "скрыть пароль"
+        private Image _showPasswordIcon; // Иконка "показать пароль" (глаз открыт)
+        private Image _hidePasswordIcon; // Иконка "скрыть пароль" (глаз закрыт)
+
+        /// <summary>
+        /// Конструктор с автоматической загрузкой иконок из ресурсов
+        /// </summary>
+        /// <param name="toggleButton">PictureBox для переключения видимости</param>
+        /// <param name="passwordTextBox">Текстовое поле с паролем</param>
         public PasswordVisibilityToggle(PictureBox toggleButton, TextBox passwordTextBox)
         {
             _toggleButton = toggleButton;
@@ -24,6 +34,13 @@ namespace NailService
             Initialize();
         }
 
+        /// <summary>
+        /// Конструктор с пользовательскими иконками
+        /// </summary>
+        /// <param name="toggleButton">PictureBox для переключения видимости</param>
+        /// <param name="passwordTextBox">Текстовое поле с паролем</param>
+        /// <param name="showIcon">Иконка для режима "показать пароль"</param>
+        /// <param name="hideIcon">Иконка для режима "скрыть пароль"</param>
         public PasswordVisibilityToggle(PictureBox toggleButton, TextBox passwordTextBox,
                                       Image showIcon, Image hideIcon)
         {
@@ -35,45 +52,54 @@ namespace NailService
             Initialize();
         }
 
+        /// <summary>
+        /// Инициализация компонента: настройка внешнего вида и подписка на события
+        /// </summary>
         private void Initialize()
         {
-            // Настройка внешнего вида
             _toggleButton.Cursor = Cursors.Hand;
             _toggleButton.SizeMode = PictureBoxSizeMode.CenterImage;
 
-            // Установка начального состояния
             UpdatePasswordVisibility();
 
-            // Подписка на событие клика
             _toggleButton.Click += ToggleButton_Click;
         }
 
-        
-
+        /// <summary>
+        /// Обработчик клика по кнопке - переключение видимости пароля
+        /// </summary>
         private void ToggleButton_Click(object sender, EventArgs e)
         {
             ToggleVisibility();
         }
 
+        /// <summary>
+        /// Переключение видимости пароля
+        /// </summary>
         public void ToggleVisibility()
         {
             _isPasswordVisible = !_isPasswordVisible;
             UpdatePasswordVisibility();
         }
+
+        /// <summary>
+        /// Обновление состояния полей: режим отображения пароля и иконка
+        /// </summary>
         private void UpdatePasswordVisibility()
         {
-            // Изменяем свойство UseSystemPasswordChar
             _passwordTextBox.UseSystemPasswordChar = !_isPasswordVisible;
 
-            // Обновляем иконку
             _toggleButton.Image = _isPasswordVisible ? _hidePasswordIcon : _showPasswordIcon;
 
-            // ToolTip для подсказки
             _toggleButton.Parent?.Controls.OfType<ToolTip>().FirstOrDefault()?
                 .SetToolTip(_toggleButton, _isPasswordVisible ? "Скрыть пароль" : "Показать пароль");
         }
 
-        // Метод для установки кастомных иконок
+        /// <summary>
+        /// Установка пользовательских иконок для переключения
+        /// </summary>
+        /// <param name="showIcon">Иконка для режима "показать пароль"</param>
+        /// <param name="hideIcon">Иконка для режима "скрыть пароль"</param>
         public void SetIcons(Image showIcon, Image hideIcon)
         {
             _showPasswordIcon = showIcon;
@@ -81,7 +107,9 @@ namespace NailService
             UpdatePasswordVisibility();
         }
 
-        // Очистка ресурсов
+        /// <summary>
+        /// Освобождение ресурсов (отписка от событий)
+        /// </summary>
         public void Dispose()
         {
             if (_toggleButton != null)

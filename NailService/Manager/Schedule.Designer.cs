@@ -33,6 +33,7 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.FIOlabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.dataGridViewSchedule = new System.Windows.Forms.DataGridView();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -43,7 +44,10 @@
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.btnWeeklyReport = new System.Windows.Forms.Button();
+            this.label5 = new System.Windows.Forms.Label();
+            this.panel3 = new System.Windows.Forms.Panel();
             this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewSchedule)).BeginInit();
             this.SuspendLayout();
             // 
@@ -64,6 +68,7 @@
             // 
             this.groupBox1.Controls.Add(this.FIOlabel);
             this.groupBox1.Controls.Add(this.label1);
+            this.groupBox1.Controls.Add(this.pictureBox1);
             this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.groupBox1.Location = new System.Drawing.Point(13, 7);
             this.groupBox1.Name = "groupBox1";
@@ -91,6 +96,16 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "Ногтевой сервис";
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImage = global::NailService.Properties.Resources.back_1;
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.pictureBox1.Location = new System.Drawing.Point(0, 8);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(100, 72);
+            this.pictureBox1.TabIndex = 2;
+            this.pictureBox1.TabStop = false;
+            // 
             // dataGridViewSchedule
             // 
             this.dataGridViewSchedule.AllowUserToAddRows = false;
@@ -109,7 +124,7 @@
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.Color.PaleGreen;
-            this.panel1.Location = new System.Drawing.Point(803, 729);
+            this.panel1.Location = new System.Drawing.Point(1163, 203);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(26, 17);
             this.panel1.TabIndex = 6;
@@ -117,7 +132,7 @@
             // panel2
             // 
             this.panel2.BackColor = System.Drawing.Color.Gold;
-            this.panel2.Location = new System.Drawing.Point(803, 759);
+            this.panel2.Location = new System.Drawing.Point(1163, 228);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(26, 17);
             this.panel2.TabIndex = 7;
@@ -126,7 +141,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F);
-            this.label2.Location = new System.Drawing.Point(845, 728);
+            this.label2.Location = new System.Drawing.Point(1205, 202);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(81, 18);
             this.label2.TabIndex = 2;
@@ -136,7 +151,7 @@
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F);
-            this.label3.Location = new System.Drawing.Point(845, 758);
+            this.label3.Location = new System.Drawing.Point(1205, 227);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(56, 18);
             this.label3.TabIndex = 8;
@@ -146,7 +161,7 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F);
-            this.label4.Location = new System.Drawing.Point(1014, 91);
+            this.label4.Location = new System.Drawing.Point(823, 100);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(64, 18);
             this.label4.TabIndex = 9;
@@ -187,7 +202,7 @@
             // 
             // btnWeeklyReport
             // 
-            this.btnWeeklyReport.BackColor = System.Drawing.Color.HotPink;
+            this.btnWeeklyReport.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.btnWeeklyReport.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnWeeklyReport.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
             this.btnWeeklyReport.Location = new System.Drawing.Point(256, 736);
@@ -198,12 +213,32 @@
             this.btnWeeklyReport.UseVisualStyleBackColor = false;
             this.btnWeeklyReport.Click += new System.EventHandler(this.btnMonthlyReport_Click);
             // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F);
+            this.label5.Location = new System.Drawing.Point(1205, 252);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(76, 18);
+            this.label5.TabIndex = 15;
+            this.label5.Text = "отменено";
+            // 
+            // panel3
+            // 
+            this.panel3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(171)))), ((int)(((byte)(145)))));
+            this.panel3.Location = new System.Drawing.Point(1163, 253);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(26, 17);
+            this.panel3.TabIndex = 14;
+            // 
             // Schedule
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(1301, 803);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.panel3);
             this.Controls.Add(this.btnWeeklyReport);
             this.Controls.Add(this.InMenu);
             this.Controls.Add(this.button4);
@@ -216,6 +251,7 @@
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.dataGridViewSchedule);
             this.Controls.Add(this.groupBox1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -224,6 +260,7 @@
             this.Text = "Расписание";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewSchedule)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -245,5 +282,8 @@
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Button btnWeeklyReport;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Panel panel3;
     }
 }

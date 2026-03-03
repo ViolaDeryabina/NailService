@@ -8,6 +8,10 @@ using System.Windows.Forms;
 
 namespace NailService
 {
+    /// <summary>
+    /// Форма для создания новой записи клиента на услугу
+    /// Позволяет выбрать клиента, мастера, услугу, применить скидку и создать чек
+    /// </summary>
     public partial class RecordingClients : Form
     {
         private DateTime? _selectedDateTime;
@@ -18,13 +22,16 @@ namespace NailService
         private int _selectedStatusId = 1;
         private decimal _discount = 0;
         private decimal _totalPrice = 0;
-        private bool _isUpdatingFromComboBox = false; // Флаг для предотвращения зацикливания
+        private bool _isUpdatingFromComboBox = false; // Предотвращает зацикливание событий
 
         private string _fio;
 
+        /// <summary>
+        /// Конструктор формы записи клиента
+        /// </summary>
+        /// <param name="FIO">ФИО текущего пользователя (менеджера)</param>
         public RecordingClients(string FIO)
         {
-
             _fio = FIO;
             InitializeComponent();
             LoadMasters();
@@ -33,20 +40,25 @@ namespace NailService
             SetupEventHandlers();
             LoadInitialClients();
 
-            // Настройка ComboBox для клиентов
             cmbClient.DisplayMember = "FullName";
             cmbClient.ValueMember = "ID";
             cmbClient.SelectedIndexChanged += CmbClient_SelectedIndexChanged;
-
         }
 
+        /// <summary>
+        /// Подписка на события изменения выбора в комбобоксах
+        /// </summary>
         private void SetupEventHandlers()
         {
-            
             cmbService.SelectedIndexChanged += CmbService_SelectedIndexChanged;
             cmbStatus.SelectedIndexChanged += CmbStatus_SelectedIndexChanged;
         }
 
+        #region Загрузка данных
+
+        /// <summary>
+        /// Загрузка начального списка клиентов (первые 20)
+        /// </summary>
         private void LoadInitialClients()
         {
             try
@@ -55,10 +67,10 @@ namespace NailService
                 {
                     con.Open();
                     string query = @"
-                SELECT IDClient, LastName, FirstName, MiddleName, Phone 
-                FROM Client 
-                ORDER BY LastName, FirstName
-                LIMIT 20";
+                        SELECT IDClient, LastName, FirstName, MiddleName, Phone 
+                        FROM Client 
+                        ORDER BY LastName, FirstName
+                        LIMIT 20";
 
                     MySqlCommand cmd = new MySqlCommand(query, con);
                     DataTable dt = new DataTable();
@@ -90,7 +102,6 @@ namespace NailService
                         cmbClient.DisplayMember = "FullName";
                         cmbClient.ValueMember = "ID";
 
-                        // Если есть выбранный клиент, пытаемся его восстановить
                         if (_selectedClientId != 0)
                         {
                             foreach (ClientItem client in clients)
@@ -106,10 +117,6 @@ namespace NailService
                         {
                             cmbClient.SelectedIndex = -1;
                         }
-
-                    }
-                    else
-                    {
                     }
                 }
             }
@@ -119,25 +126,9 @@ namespace NailService
             }
         }
 
-        public void SetSelectedDateTime(DateTime dateTime)
-        {
-            _selectedDateTime = dateTime;
-            lblSelectedTime.Text = dateTime.ToString("dd.MM.yyyy HH:mm");
-
-            if (dateTime.Hour < 12)
-            {
-                _discount = 5;
-                lblDiscountPercent.Text = "5% (утренняя скидка)";
-            }
-            else
-            {
-                _discount = 0;
-                lblDiscountPercent.Text = "0%";
-            }
-
-            UpdatePriceDisplay();
-        }
-
+        /// <summary>
+        /// Загрузка списка мастеров
+        /// </summary>
         private void LoadMasters()
         {
             try
@@ -183,6 +174,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Загрузка списка услуг
+        /// </summary>
         private void LoadServices()
         {
             try
@@ -208,6 +202,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Загрузка статусов записи (Запланирован, Подтвержден)
+        /// </summary>
         private void LoadStatuses()
         {
             try
@@ -233,31 +230,62 @@ namespace NailService
             }
         }
 
-       
-        // Метод для оценки точности совпадения номера
+        #endregion
+
+        #region Установка даты и времени
+
+        /// <summary>
+        /// Установка выбранной даты и времени из формы расписания
+        /// </summary>
+        /// <param name="dateTime">Выбранная дата и время</param>
+        public void SetSelectedDateTime(DateTime dateTime)
+        {
+            _selectedDateTime = dateTime;
+            lblSelectedTime.Text = dateTime.ToString("dd.MM.yyyy HH:mm");
+
+            if (dateTime.Hour < 12)
+            {
+                _discount = 5;
+                lblDiscountPercent.Text = "5% (утренняя скидка)";
+            }
+            else
+            {
+                _discount = 0;
+                lblDiscountPercent.Text = "0%";
+            }
+
+            UpdatePriceDisplay();
+        }
+
+        #endregion
+
+        #region Обработчики событий ComboBox
+
+        /// <summary>
+        /// Оценка точности совпадения номера телефона при поиске
+        /// </summary>
         private int GetPhoneMatchScore(string dbPhone, string searchDigits)
         {
             string cleanDbPhone = InputValidator.FilterToPhone(dbPhone);
 
-            // Проверяем точное совпадение
             if (cleanDbPhone == searchDigits)
                 return 100;
 
-            // Проверяем, начинается ли номер с искомых цифр
             if (cleanDbPhone.StartsWith(searchDigits))
                 return 90;
 
-            // Проверяем, заканчивается ли номер искомыми цифрами
             if (cleanDbPhone.EndsWith(searchDigits))
                 return 80;
 
-            // Проверяем, содержит ли номер искомые цифры
             if (cleanDbPhone.Contains(searchDigits))
                 return 70;
 
             return 0;
         }
 
+        /// <summary>
+        /// Обработчик изменения выбранного клиента
+        /// </summary>
         private void CmbClient_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (cmbClient.SelectedItem != null)
@@ -266,22 +294,8 @@ namespace NailService
                 if (selectedClient != null)
                 {
                     _selectedClientId = selectedClient.ID;
-
-                    string fullName = NameFormatter.FormatToFullName(
-                        selectedClient.LastName,
-                        selectedClient.FirstName,
-                        selectedClient.MiddleName
-                    );
-
-                    //lblClientInfo.Text = $"Клиент: {fullName}\nТелефон: {selectedClient.Phone}";
-
-                    // Устанавливаем флаг, чтобы не вызвать TextChanged
                     _isUpdatingFromComboBox = true;
-
-                    // Форматируем номер для отображения
                     string cleanPhone = InputValidator.GetCleanPhoneNumber(selectedClient.Phone);
-                    //txtPhone.Text = InputValidator.FormatPhoneNumber(cleanPhone);
-
                     _isUpdatingFromComboBox = false;
                 }
             }
@@ -291,6 +305,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Обработчик изменения выбранной услуги
+        /// </summary>
         private void CmbService_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (cmbService.SelectedItem != null)
@@ -305,6 +322,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Обработчик изменения выбранного статуса
+        /// </summary>
         private void CmbStatus_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (cmbStatus.SelectedValue != null)
@@ -313,6 +333,13 @@ namespace NailService
             }
         }
 
+        #endregion
+
+        #region Расчет стоимости
+
+        /// <summary>
+        /// Обновление отображения цены с учетом скидки
+        /// </summary>
         private void UpdatePriceDisplay()
         {
             decimal price = _selectedServicePrice;
@@ -324,15 +351,62 @@ namespace NailService
             lblTotalPrice.Text = $"С учётом скидки: {_totalPrice:N0} руб.";
         }
 
+        #endregion
+
+        #region Добавление клиента
+
+        /// <summary>
+        /// Открытие формы добавления нового клиента
+        /// </summary>
         private void btnAddClient_Click(object sender, EventArgs e)
         {
-            Show show = new Show(_fio,4);
+            AddClientForm show = new AddClientForm();
+
             if (show.ShowDialog() == DialogResult.OK)
             {
-                
+                int newClientId = show.AddedClientId;
+
+                if (newClientId > 0)
+                {
+                    MessageBox.Show("Клиент успешно добавлен!", "Успех",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    LoadInitialClients();
+                    SelectClientById(newClientId);
+                }
             }
         }
 
+        /// <summary>
+        /// Выбор клиента по ID после добавления
+        /// </summary>
+        private void SelectClientById(int clientId)
+        {
+            if (cmbClient.Items.Count == 0) return;
+
+            foreach (var item in cmbClient.Items)
+            {
+                if (item is ClientItem client && client.ID == clientId)
+                {
+                    cmbClient.SelectedItem = item;
+                    _selectedClientId = clientId;
+
+                    _isUpdatingFromComboBox = true;
+                    string cleanPhone = InputValidator.GetCleanPhoneNumber(client.Phone);
+                    _isUpdatingFromComboBox = false;
+
+                    break;
+                }
+            }
+        }
+
+        #endregion
+
+        #region Сохранение записи
+
+        /// <summary>
+        /// Сохранение записи в базу данных
+        /// </summary>
         private void btnSave_Click(object sender, EventArgs e)
         {
             if (!ValidateForm())
@@ -344,10 +418,10 @@ namespace NailService
                 {
                     con.Open();
                     string query = @"
-                INSERT INTO Record 
-                (Client, Master, Date, Service, Status, User, discount) 
-                VALUES 
-                (@Client, @Master, @Date, @Service, @Status, @User, @discount)";
+                        INSERT INTO Record 
+                        (Client, Master, Date, Service, Status, User, discount) 
+                        VALUES 
+                        (@Client, @Master, @Date, @Service, @Status, @User, @discount)";
 
                     MySqlCommand cmd = new MySqlCommand(query, con);
                     cmd.Parameters.AddWithValue("@Client", _selectedClientId);
@@ -356,7 +430,7 @@ namespace NailService
                     cmd.Parameters.AddWithValue("@Service", _selectedServiceId);
                     cmd.Parameters.AddWithValue("@Status", _selectedStatusId);
                     cmd.Parameters.AddWithValue("@User", GetCurrentUserId());
-                    cmd.Parameters.AddWithValue("@discount", _discount > 0); // TRUE если скидка есть
+                    cmd.Parameters.AddWithValue("@discount", _discount > 0);
 
                     int rowsAffected = cmd.ExecuteNonQuery();
 
@@ -385,6 +459,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Валидация формы перед сохранением
+        /// </summary>
         private bool ValidateForm()
         {
             if (_selectedClientId == 0)
@@ -431,6 +508,9 @@ namespace NailService
             return true;
         }
 
+        /// <summary>
+        /// Проверка доступности временного слота
+        /// </summary>
         private bool IsTimeSlotAvailable()
         {
             try
@@ -458,11 +538,21 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Получение ID текущего пользователя (заглушка)
+        /// </summary>
         private int GetCurrentUserId()
         {
             return 1;
         }
 
+        #endregion
+
+        #region Создание чека
+
+        /// <summary>
+        /// Генерация чека в формате Word
+        /// </summary>
         private void GenerateReceipt()
         {
             try
@@ -472,7 +562,6 @@ namespace NailService
 
                 Microsoft.Office.Interop.Word.Document doc = wordApp.Documents.Add();
 
-                // Настройка страницы
                 doc.PageSetup.TopMargin = wordApp.CentimetersToPoints(2f);
                 doc.PageSetup.BottomMargin = wordApp.CentimetersToPoints(2f);
                 doc.PageSetup.LeftMargin = wordApp.CentimetersToPoints(3f);
@@ -481,7 +570,7 @@ namespace NailService
                 object missing = System.Reflection.Missing.Value;
                 Microsoft.Office.Interop.Word.Paragraph para;
 
-                // ЗАГОЛОВОК
+                // Заголовок
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = "ЧЕК";
                 para.Range.Font.Bold = 1;
@@ -491,7 +580,7 @@ namespace NailService
                 para.Range.ParagraphFormat.SpaceAfter = 10;
                 para.Range.InsertParagraphAfter();
 
-                // НАЗВАНИЕ САЛОНА
+                // Название салона
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = "Салон красоты NailService";
                 para.Range.Font.Size = 16;
@@ -501,7 +590,7 @@ namespace NailService
                 para.Range.ParagraphFormat.SpaceAfter = 20;
                 para.Range.InsertParagraphAfter();
 
-                // РАЗДЕЛИТЕЛЬ
+                // Разделитель
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = "═══════════════════════════════════════";
                 para.Range.Font.Size = 12;
@@ -510,7 +599,7 @@ namespace NailService
                 para.Range.ParagraphFormat.SpaceAfter = 10;
                 para.Range.InsertParagraphAfter();
 
-                // ДАТА И ВРЕМЯ
+                // Дата и время
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = $"Дата: {_selectedDateTime:dd.MM.yyyy}";
                 para.Range.Font.Size = 14;
@@ -527,7 +616,7 @@ namespace NailService
                 para.Range.ParagraphFormat.SpaceAfter = 10;
                 para.Range.InsertParagraphAfter();
 
-                // ИНФОРМАЦИЯ О КЛИЕНТЕ
+                // Информация о клиенте
                 if (cmbClient.SelectedItem != null)
                 {
                     ClientItem client = cmbClient.SelectedItem as ClientItem;
@@ -551,7 +640,7 @@ namespace NailService
                     para.Range.InsertParagraphAfter();
                 }
 
-                // УСЛУГА
+                // Услуга
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = $"Услуга: {cmbService.Text}";
                 para.Range.Font.Size = 14;
@@ -560,7 +649,7 @@ namespace NailService
                 para.Range.ParagraphFormat.SpaceAfter = 5;
                 para.Range.InsertParagraphAfter();
 
-                // МАСТЕР
+                // Мастер
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = $"Мастер: {cmbMaster.Text}";
                 para.Range.Font.Size = 14;
@@ -569,7 +658,7 @@ namespace NailService
                 para.Range.ParagraphFormat.SpaceAfter = 5;
                 para.Range.InsertParagraphAfter();
 
-                // СТАТУС
+                // Статус
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = $"Статус: {cmbStatus.Text}";
                 para.Range.Font.Size = 14;
@@ -578,7 +667,7 @@ namespace NailService
                 para.Range.ParagraphFormat.SpaceAfter = 15;
                 para.Range.InsertParagraphAfter();
 
-                // РАЗДЕЛИТЕЛЬ
+                // Разделитель
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = "───────────────────────────────────────";
                 para.Range.Font.Size = 12;
@@ -587,7 +676,7 @@ namespace NailService
                 para.Range.ParagraphFormat.SpaceAfter = 10;
                 para.Range.InsertParagraphAfter();
 
-                // ЦЕНЫ
+                // Цены
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = $"Стоимость: {_selectedServicePrice:N0} руб.";
                 para.Range.Font.Size = 14;
@@ -618,7 +707,7 @@ namespace NailService
                 para.Range.ParagraphFormat.SpaceAfter = 20;
                 para.Range.InsertParagraphAfter();
 
-                // ПОДПИСЬ
+                // Подпись
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = "Спасибо за визит!";
                 para.Range.Font.Size = 14;
@@ -636,7 +725,7 @@ namespace NailService
                 para.Range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphCenter;
                 para.Range.InsertParagraphAfter();
 
-                // Сохраняем документ
+                // Сохранение документа
                 string fileName = $"Чек_{_selectedDateTime:yyyyMMdd_HHmm}.docx";
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 string fullPath = System.IO.Path.Combine(desktopPath, fileName);
@@ -652,6 +741,11 @@ namespace NailService
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        #endregion
+
+        #region Навигация и поиск
+
         private void button3_Click(object sender, EventArgs e)
         {
             this.Close();
@@ -662,6 +756,9 @@ namespace NailService
             btnSave_Click(sender, e);
         }
 
+        /// <summary>
+        /// Открытие формы расширенного поиска клиента
+        /// </summary>
         private void BtnSearchClient_Click(object sender, EventArgs e)
         {
             using (SearchClient searchForm = new SearchClient())
@@ -676,44 +773,42 @@ namespace NailService
                 }
             }
         }
+
+        /// <summary>
+        /// Установка выбранного клиента из поиска
+        /// </summary>
         private void SetSelectedClient(ClientItem client)
         {
             if (client == null) return;
 
             _selectedClientId = client.ID;
 
-            // Обновляем ComboBox
             List<ClientItem> singleClientList = new List<ClientItem> { client };
             cmbClient.DataSource = singleClientList;
             cmbClient.DisplayMember = "FullName";
             cmbClient.ValueMember = "ID";
             cmbClient.SelectedItem = client;
 
-            // Обновляем информацию о клиенте
-            string fullName = NameFormatter.FormatToFullName(
-                client.LastName,
-                client.FirstName,
-                client.MiddleName
-            );
-
-            // Можно добавить Label для отображения информации
-            // lblClientInfo.Text = $"Клиент: {fullName}\nТелефон: {client.Phone}";
-
-            // Устанавливаем флаг и обновляем поле телефона
             _isUpdatingFromComboBox = true;
             string cleanPhone = InputValidator.GetCleanPhoneNumber(client.Phone);
-            //txtPhone.Text = InputValidator.FormatPhoneNumber(cleanPhone);
             _isUpdatingFromComboBox = false;
         }
 
+        #endregion
     }
 
+    /// <summary>
+    /// Модель данных для мастера
+    /// </summary>
     public class MasterItem
     {
         public int ID { get; set; }
         public string FullName { get; set; }
     }
 
+    /// <summary>
+    /// Модель данных для клиента
+    /// </summary>
     public class ClientItem
     {
         public int ID { get; set; }
@@ -724,8 +819,14 @@ namespace NailService
         public string MiddleName { get; set; }
     }
 
+    /// <summary>
+    /// Вспомогательный класс для форматирования ФИО
+    /// </summary>
     public static class NameFormatter
     {
+        /// <summary>
+        /// Форматирование в короткий формат (Фамилия И.О.)
+        /// </summary>
         public static string FormatToShortName(string lastName, string firstName, string middleName)
         {
             string result = lastName;
@@ -736,6 +837,9 @@ namespace NailService
             return result;
         }
 
+        /// <summary>
+        /// Форматирование в полный формат (Фамилия Имя Отчество)
+        /// </summary>
         public static string FormatToFullName(string lastName, string firstName, string middleName)
         {
             return $"{lastName} {firstName} {middleName}".Trim();

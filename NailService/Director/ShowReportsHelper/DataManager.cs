@@ -5,6 +5,9 @@ using NailServiceApp.Utilities;
 
 namespace NailService
 {
+    /// <summary>
+    /// Модель данных для записи (одной строки в расписании)
+    /// </summary>
     public class RecordData
     {
         public int RecordID { get; set; }
@@ -18,15 +21,27 @@ namespace NailService
         public int StatusID { get; set; }
     }
 
+    /// <summary>
+    /// Класс для управления данными приложения
+    /// Выполняет операции с базой данных: получение записей, статусов, обновление статусов
+    /// </summary>
     public class DataManager
     {
         private string _connectionString;
 
+        /// <summary>
+        /// Конструктор менеджера данных
+        /// </summary>
+        /// <param name="connectionString">Строка подключения к базе данных</param>
         public DataManager(string connectionString)
         {
             _connectionString = connectionString;
         }
 
+        /// <summary>
+        /// Получение всех записей из базы данных с полной информацией
+        /// </summary>
+        /// <returns>Список записей RecordData</returns>
         public List<RecordData> GetAllRecords()
         {
             var records = new List<RecordData>();
@@ -68,21 +83,18 @@ namespace NailService
                     {
                         while (reader.Read())
                         {
-                            // Форматируем ФИО мастеров
                             string masterShortName = NameFormatter.FormatToShortName(
                                 reader["MasterLastName"].ToString(),
                                 reader["MasterFirstName"].ToString(),
                                 reader["MasterMiddleName"].ToString()
                             );
 
-                            // Форматируем ФИО клиентов
                             string clientShortName = NameFormatter.FormatToShortName(
                                 reader["ClientLastName"].ToString(),
                                 reader["ClientFirstName"].ToString(),
                                 reader["ClientMiddleName"].ToString()
                             );
 
-                            // Форматируем ФИО пользователей (менеджеров)
                             string userShortName = NameFormatter.FormatToShortName(
                                 reader["UserLastName"].ToString(),
                                 reader["UserFirstName"].ToString(),
@@ -113,6 +125,10 @@ namespace NailService
             return records;
         }
 
+        /// <summary>
+        /// Получение списка названий статусов для фильтрации
+        /// </summary>
+        /// <returns>Список статусов с добавленным элементом "Все статусы"</returns>
         public List<string> GetStatusList()
         {
             var statuses = new List<string> { "Все статусы" };
@@ -122,7 +138,6 @@ namespace NailService
                 using (var connection = new MySqlConnection(_connectionString))
                 {
                     connection.Open();
-                    // Убрано условие WHERE IsActive = 1
                     string query = "SELECT StatusName FROM Status ORDER BY StatusName";
 
                     using (var command = new MySqlCommand(query, connection))
@@ -143,7 +158,10 @@ namespace NailService
             return statuses;
         }
 
-        // НОВЫЙ МЕТОД: Получение списка статусов с ID для ComboBox в DataGridView
+        /// <summary>
+        /// Получение списка статусов с ID для использования в ComboBox DataGridView
+        /// </summary>
+        /// <returns>Список объектов StatusItem с ID и Name</returns>
         public List<StatusItem> GetStatusItems()
         {
             var statuses = new List<StatusItem>();
@@ -153,7 +171,6 @@ namespace NailService
                 using (var connection = new MySqlConnection(_connectionString))
                 {
                     connection.Open();
-                    // Убрано условие WHERE IsActive = 1
                     string query = "SELECT IDStatus, StatusName FROM Status ORDER BY StatusName";
 
                     using (var command = new MySqlCommand(query, connection))
@@ -178,7 +195,12 @@ namespace NailService
             return statuses;
         }
 
-        // НОВЫЙ МЕТОД: Обновление статуса записи
+        /// <summary>
+        /// Обновление статуса записи в базе данных
+        /// </summary>
+        /// <param name="recordId">ID записи</param>
+        /// <param name="newStatusId">Новый ID статуса</param>
+        /// <returns>true если обновление успешно</returns>
         public bool UpdateRecordStatus(int recordId, int newStatusId)
         {
             try
@@ -207,7 +229,11 @@ namespace NailService
             }
         }
 
-        // НОВЫЙ МЕТОД: Получение названия статуса по ID
+        /// <summary>
+        /// Получение названия статуса по его ID
+        /// </summary>
+        /// <param name="statusId">ID статуса</param>
+        /// <returns>Название статуса или пустая строка</returns>
         public string GetStatusNameById(int statusId)
         {
             try
@@ -234,13 +260,18 @@ namespace NailService
         }
     }
 
-    // НОВЫЙ КЛАСС: Для хранения статуса с ID и именем
+    /// <summary>
+    /// Модель для статуса с ID и названием
+    /// Используется в ComboBox для выбора статуса
+    /// </summary>
     public class StatusItem
     {
         public int ID { get; set; }
         public string Name { get; set; }
 
-        // Для отображения в ComboBox
+        /// <summary>
+        /// Переопределение для корректного отображения в ComboBox
+        /// </summary>
         public override string ToString()
         {
             return Name;

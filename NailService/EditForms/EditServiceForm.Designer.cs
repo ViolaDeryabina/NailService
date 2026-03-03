@@ -40,10 +40,12 @@
             this.Description = new System.Windows.Forms.TextBox();
             this.EditService = new System.Windows.Forms.Button();
             this.Back = new System.Windows.Forms.Button();
-            this.pictureBoxService = new System.Windows.Forms.PictureBox();
             this.btnLoadImage = new System.Windows.Forms.Button();
             this.lblCharCount = new System.Windows.Forms.Label();
+            this.pictureBoxService = new System.Windows.Forms.PictureBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxService)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -98,6 +100,7 @@
             // 
             // CategoryCb
             // 
+            this.CategoryCb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CategoryCb.FormattingEnabled = true;
             this.CategoryCb.Location = new System.Drawing.Point(139, 118);
             this.CategoryCb.Name = "CategoryCb";
@@ -156,18 +159,6 @@
             this.Back.UseVisualStyleBackColor = false;
             this.Back.Click += new System.EventHandler(this.Back_Click);
             // 
-            // pictureBoxService
-            // 
-            this.pictureBoxService.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.pictureBoxService.Location = new System.Drawing.Point(519, 75);
-            this.pictureBoxService.Name = "pictureBoxService";
-            this.pictureBoxService.Size = new System.Drawing.Size(252, 219);
-            this.pictureBoxService.TabIndex = 11;
-            this.pictureBoxService.TabStop = false;
-            this.pictureBoxService.Click += new System.EventHandler(this.pictureBoxService_Click);
-            this.pictureBoxService.DragDrop += new System.Windows.Forms.DragEventHandler(this.pictureBoxService_DragDrop);
-            this.pictureBoxService.DragEnter += new System.Windows.Forms.DragEventHandler(this.pictureBoxService_DragEnter);
-            // 
             // btnLoadImage
             // 
             this.btnLoadImage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
@@ -190,12 +181,35 @@
             this.lblCharCount.TabIndex = 13;
             this.lblCharCount.Text = "label6";
             // 
+            // pictureBoxService
+            // 
+            this.pictureBoxService.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.pictureBoxService.Location = new System.Drawing.Point(519, 75);
+            this.pictureBoxService.Name = "pictureBoxService";
+            this.pictureBoxService.Size = new System.Drawing.Size(252, 219);
+            this.pictureBoxService.TabIndex = 11;
+            this.pictureBoxService.TabStop = false;
+            this.pictureBoxService.Click += new System.EventHandler(this.pictureBoxService_Click);
+            this.pictureBoxService.DragDrop += new System.Windows.Forms.DragEventHandler(this.pictureBoxService_DragDrop);
+            this.pictureBoxService.DragEnter += new System.Windows.Forms.DragEventHandler(this.pictureBoxService_DragEnter);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImage = global::NailService.Properties.Resources.back_1;
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.pictureBox1.Location = new System.Drawing.Point(10, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(100, 72);
+            this.pictureBox1.TabIndex = 14;
+            this.pictureBox1.TabStop = false;
+            // 
             // EditServiceForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(788, 442);
+            this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.lblCharCount);
             this.Controls.Add(this.btnLoadImage);
             this.Controls.Add(this.pictureBoxService);
@@ -211,6 +225,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(6);
             this.MaximizeBox = false;
@@ -219,6 +234,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Редактирование услуги";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxService)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -240,5 +256,6 @@
         private System.Windows.Forms.PictureBox pictureBoxService;
         private System.Windows.Forms.Button btnLoadImage;
         private System.Windows.Forms.Label lblCharCount;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }

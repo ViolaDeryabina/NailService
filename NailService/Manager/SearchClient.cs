@@ -8,12 +8,19 @@ using System.Windows.Forms;
 
 namespace NailService
 {
+    /// <summary>
+    /// Форма для поиска и выбора клиента по номеру телефона
+    /// Используется при создании новой записи для быстрого поиска существующего клиента
+    /// </summary>
     public partial class SearchClient : Form
     {
         private ClientItem _selectedClient = null;
         private int _currentSelectedId = 0;
         private bool _isUpdatingFromComboBox = false;
 
+        /// <summary>
+        /// Конструктор формы поиска клиента
+        /// </summary>
         public SearchClient()
         {
             InitializeComponent();
@@ -22,9 +29,13 @@ namespace NailService
             SetupEventHandlers();
         }
 
+        #region Настройка интерфейса
+
+        /// <summary>
+        /// Настройка DataGridView для отображения списка клиентов
+        /// </summary>
         private void SetupDataGridView()
         {
-            // Настройка DataGridView
             dataGridViewClient.AllowUserToAddRows = false;
             dataGridViewClient.AllowUserToDeleteRows = false;
             dataGridViewClient.ReadOnly = true;
@@ -33,32 +44,38 @@ namespace NailService
             dataGridViewClient.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridViewClient.RowHeadersVisible = false;
 
-            // Добавляем колонки
             dataGridViewClient.Columns.Add("ID", "ID");
             dataGridViewClient.Columns.Add("LastName", "Фамилия");
             dataGridViewClient.Columns.Add("FirstName", "Имя");
             dataGridViewClient.Columns.Add("MiddleName", "Отчество");
             dataGridViewClient.Columns.Add("Phone", "Телефон");
 
-            // Скрываем колонку ID
             dataGridViewClient.Columns["ID"].Visible = false;
 
-            // Настройка ширины колонок
             dataGridViewClient.Columns["LastName"].FillWeight = 25;
             dataGridViewClient.Columns["FirstName"].FillWeight = 25;
             dataGridViewClient.Columns["MiddleName"].FillWeight = 25;
             dataGridViewClient.Columns["Phone"].FillWeight = 25;
 
-            // Применяем стили
             StyleManager.ApplyGridStyles(dataGridViewClient);
         }
 
+        /// <summary>
+        /// Подписка на события формы
+        /// </summary>
         private void SetupEventHandlers()
         {
             txtPhone.TextChanged += TxtPhone_TextChanged;
             dataGridViewClient.CellDoubleClick += DataGridViewClient_CellDoubleClick;
         }
 
+        #endregion
+
+        #region Загрузка и поиск данных
+
+        /// <summary>
+        /// Загрузка всех клиентов из базы данных
+        /// </summary>
         private void LoadAllClients()
         {
             try
@@ -85,6 +102,10 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Обработчик изменения текста в поле поиска
+        /// Запускает поиск при вводе 3 и более символов
+        /// </summary>
         private void TxtPhone_TextChanged(object sender, EventArgs e)
         {
             if (_isUpdatingFromComboBox) return;
@@ -101,6 +122,10 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Поиск клиентов по номеру телефона с ранжированием результатов
+        /// </summary>
+        /// <param name="phone">Введенный номер телефона</param>
         private void SearchClientsByPhone(string phone)
         {
             try
@@ -109,7 +134,6 @@ namespace NailService
                 {
                     con.Open();
 
-                    // Очищаем телефон от форматирования для поиска
                     string cleanPhone = InputValidator.GetCleanPhoneNumber(phone);
 
                     string query = @"
@@ -135,19 +159,7 @@ namespace NailService
                     dt.Load(cmd.ExecuteReader());
 
                     FillDataGridView(dt);
-
-                    if (dt.Rows.Count == 1)
-                    {
-                        lblResultCount.Text = "Найден 1 клиент";
-                    }
-                    else if (dt.Rows.Count >= 2 && dt.Rows.Count <= 4)
-                    {
-                        lblResultCount.Text = $"Найдено {dt.Rows.Count} клиента";
-                    }
-                    else
-                    {
-                        lblResultCount.Text = $"Найдено {dt.Rows.Count} клиентов";
-                    }
+                    UpdateResultCountMessage(dt.Rows.Count);
                 }
             }
             catch (Exception ex)
@@ -156,6 +168,28 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Обновление сообщения о количестве найденных клиентов
+        /// </summary>
+        private void UpdateResultCountMessage(int count)
+        {
+            if (count == 1)
+            {
+                lblResultCount.Text = "Найден 1 клиент";
+            }
+            else if (count >= 2 && count <= 4)
+            {
+                lblResultCount.Text = $"Найдено {count} клиента";
+            }
+            else
+            {
+                lblResultCount.Text = $"Найдено {count} клиентов";
+            }
+        }
+
+        /// <summary>
+        /// Заполнение DataGridView данными из DataTable
+        /// </summary>
         private void FillDataGridView(DataTable dt)
         {
             dataGridViewClient.Rows.Clear();
@@ -171,7 +205,7 @@ namespace NailService
                 );
             }
 
-            // Выделяем ранее выбранного клиента, если он есть в списке
+            // Восстановление выделения ранее выбранного клиента
             if (_currentSelectedId != 0)
             {
                 foreach (DataGridViewRow row in dataGridViewClient.Rows)
@@ -186,21 +220,32 @@ namespace NailService
             }
         }
 
+        #endregion
+
+        #region Обработка выбора клиента
+
+        /// <summary>
+        /// Обработчик двойного клика по строке клиента
+        /// </summary>
         private void DataGridViewClient_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
             {
-               // SelectCurrentClient();
+                // Можно реализовать автоматический выбор при двойном клике
             }
         }
 
-        
-
+        /// <summary>
+        /// Получение выбранного клиента
+        /// </summary>
         public ClientItem GetSelectedClient()
         {
             return _selectedClient;
         }
 
+        /// <summary>
+        /// Обработчик кнопки "Выбрать" - сохранение выбранного клиента
+        /// </summary>
         private void btnSelect_Click(object sender, EventArgs e)
         {
             if (dataGridViewClient.SelectedRows.Count > 0)
@@ -221,9 +266,7 @@ namespace NailService
                     )
                 };
 
-                // Только устанавливаем DialogResult - форма закроется сама
                 this.DialogResult = DialogResult.OK;
-                // Не вызываем Close()!
             }
             else
             {
@@ -232,18 +275,24 @@ namespace NailService
             }
         }
 
-
-
+        /// <summary>
+        /// Обработчик кнопки "Отмена" - закрытие формы без выбора
+        /// </summary>
         private void btnCancel_Click(object sender, EventArgs e)
         {
             this.DialogResult = DialogResult.Cancel;
             this.Close();
         }
 
+        /// <summary>
+        /// Обработчик кнопки "Очистить" - сброс поиска и загрузка всех клиентов
+        /// </summary>
         private void btnClear_Click(object sender, EventArgs e)
         {
             txtPhone.Clear();
             LoadAllClients();
         }
+
+        #endregion
     }
 }

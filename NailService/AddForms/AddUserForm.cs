@@ -15,17 +15,24 @@ namespace NailService
     {
         private string _connection;
         public UserModel NewUser { get; private set; }
-        private Show _showForm; // Ссылка на главную форму для вызова методов
+        private Show _showForm; // Ссылка на форму Show для вызова методов проверки/восстановления
 
+        /// <summary>
+        /// Конструктор формы добавления пользователя
+        /// </summary>
+        /// <param name="showForm">Ссылка на главную форму для проверки существующих пользователей</param>
         public AddUserForm(Show showForm = null)
         {
             InitializeComponent();
             _connection = Connection.ConnectionString;
-            _showForm = showForm; // Сохраняем ссылку на главную форму
+            _showForm = showForm;
             NewUser = new UserModel();
             LoadRoles();
         }
 
+        /// <summary>
+        /// Загрузка доступных ролей из базы данных
+        /// </summary>
         private void LoadRoles()
         {
             try
@@ -56,17 +63,18 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Обработчик кнопки "Сохранить" - валидация и сохранение пользователя
+        /// </summary>
         private void btnSave_Click(object sender, EventArgs e)
         {
             if (ValidateData())
             {
-                // Проверяем, есть ли неактивный пользователь для восстановления
                 if (_showForm != null && CheckAndRestoreInactiveUser())
                 {
                     return; // Пользователь восстановлен, форма закрывается
                 }
 
-                // Иначе создаем нового пользователя
                 if (AddNewUser())
                 {
                     DialogResult = DialogResult.OK;
@@ -75,15 +83,21 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Обработчик кнопки "Отмена" - закрытие формы без сохранения
+        /// </summary>
         private void btnCancel_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
             Close();
         }
 
+        /// <summary>
+        /// Валидация введенных данных перед сохранением
+        /// </summary>
+        /// <returns>true если данные корректны</returns>
         private bool ValidateData()
         {
-            // Проверка фамилии
             if (string.IsNullOrWhiteSpace(LastName.Text))
             {
                 MessageBox.Show("Введите фамилию пользователя", "Внимание",
@@ -92,7 +106,6 @@ namespace NailService
                 return false;
             }
 
-            // Проверка имени
             if (string.IsNullOrWhiteSpace(FirstName.Text))
             {
                 MessageBox.Show("Введите имя пользователя", "Внимание",
@@ -101,7 +114,6 @@ namespace NailService
                 return false;
             }
 
-            // Проверка логина
             if (string.IsNullOrWhiteSpace(Login.Text))
             {
                 MessageBox.Show("Введите логин пользователя", "Внимание",
@@ -110,7 +122,6 @@ namespace NailService
                 return false;
             }
 
-            // Проверка пароля
             if (string.IsNullOrWhiteSpace(Password.Text))
             {
                 MessageBox.Show("Введите пароль пользователя", "Внимание",
@@ -119,7 +130,6 @@ namespace NailService
                 return false;
             }
 
-            // Проверка, что логин не занят активным пользователем
             if (IsActiveUserExists())
             {
                 MessageBox.Show("Пользователь с таким логином уже существует и активен", "Ошибка",
@@ -132,7 +142,9 @@ namespace NailService
             return true;
         }
 
-        // Проверяет, есть ли активный пользователь с таким логином
+        /// <summary>
+        /// Проверка существования активного пользователя с таким логином
+        /// </summary>
         private bool IsActiveUserExists()
         {
             try
@@ -152,11 +164,14 @@ namespace NailService
             {
                 MessageBox.Show($"Ошибка проверки логина: {ex.Message}", "Ошибка",
                               MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return true; // В случае ошибки считаем, что пользователь существует
+                return true; // При ошибке блокируем добавление для безопасности
             }
         }
 
-        // Проверяет и восстанавливает неактивного пользователя
+        /// <summary>
+        /// Проверка и восстановление неактивного пользователя
+        /// </summary>
+        /// <returns>true если пользователь восстановлен и форма закрыта</returns>
         private bool CheckAndRestoreInactiveUser()
         {
             try
@@ -165,12 +180,10 @@ namespace NailService
                 string firstName = FirstName.Text.Trim();
                 string login = Login.Text.Trim();
 
-                // Проверяем через метод главной формы
                 var (exists, isActive, userId) = _showForm.CheckUserExists(lastName, firstName, login);
 
                 if (exists && !isActive)
                 {
-                    // Нашли неактивного пользователя - предлагаем восстановить
                     var result = MessageBox.Show(
                         $"Найден неактивный пользователь с такими данными:\n" +
                         $"ФИО: {lastName} {firstName}\n" +
@@ -182,10 +195,7 @@ namespace NailService
 
                     if (result == DialogResult.Yes)
                     {
-                        // Сохраняем данные из формы
                         SaveUserData();
-
-                        // Восстанавливаем пользователя
                         bool restored = _showForm.RestoreUser(userId, NewUser);
 
                         if (restored)
@@ -202,17 +212,6 @@ namespace NailService
                                           MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
-                    else
-                    {
-                        // Пользователь отказался от восстановления
-                        // Можем создать нового или просто вернуть false
-                        return false;
-                    }
-                }
-                else if (exists && isActive)
-                {
-                    // Активный пользователь уже существует - проверка уже была в ValidateData
-                    return false;
                 }
             }
             catch (Exception ex)
@@ -224,7 +223,9 @@ namespace NailService
             return false;
         }
 
-        // Создает нового пользователя
+        /// <summary>
+        /// Добавление нового пользователя или восстановление неактивного
+        /// </summary>
         private bool AddNewUser()
         {
             try
@@ -235,7 +236,7 @@ namespace NailService
                 {
                     connection.Open();
 
-                    // Сначала проверяем, нет ли неактивного пользователя с таким логином
+                    // Поиск неактивного пользователя с таким логином
                     string checkQuery = "SELECT IDUser FROM Users WHERE Login = @Login AND IsActive = 0";
                     MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
                     checkCmd.Parameters.AddWithValue("@Login", NewUser.Login);
@@ -244,7 +245,7 @@ namespace NailService
 
                     if (inactiveUserId != null && inactiveUserId != DBNull.Value)
                     {
-                        // Нашли неактивного пользователя с таким логином - восстанавливаем
+                        // Восстановление неактивного пользователя
                         int userId = Convert.ToInt32(inactiveUserId);
 
                         string updateQuery = @"UPDATE Users 
@@ -275,7 +276,7 @@ namespace NailService
                     }
                     else
                     {
-                        // Создаем нового пользователя
+                        // Создание нового пользователя
                         string insertQuery = @"INSERT INTO Users 
                                             (LastName, FirstName, MiddleName, Login, Password, Role, IsActive) 
                                             VALUES (@LastName, @FirstName, @MiddleName, @Login, @Password, @Role, 1)";
@@ -325,6 +326,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Сохранение данных из формы в объект NewUser
+        /// </summary>
         private void SaveUserData()
         {
             string passwordHash = MySQLHelper.GetHash(Password.Text);
@@ -335,13 +339,11 @@ namespace NailService
             NewUser.Login = Login.Text.Trim();
             NewUser.Password = passwordHash;
             NewUser.RoleId = (int)RoleCb.SelectedValue;
-
-            // Дополнительные поля (если есть в UserModel)
-            // NewUser.Phone = PhoneTextBox.Text.Trim();
-            // NewUser.Email = EmailTextBox.Text.Trim();
         }
 
-        // Обработчики фильтрации ввода (остаются без изменений)
+        /// <summary>
+        /// Фильтрация ввода в поле фамилии (только русские буквы)
+        /// </summary>
         private void LastName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = LastName.SelectionStart;
@@ -354,6 +356,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Фильтрация ввода в поле имени (только русские буквы)
+        /// </summary>
         private void FirstName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = FirstName.SelectionStart;
@@ -366,6 +371,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Фильтрация ввода в поле отчества (только русские буквы)
+        /// </summary>
         private void MiddleName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = MiddleName.SelectionStart;
@@ -378,6 +386,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Фильтрация ввода в поле логина (латиница, цифры, _, .)
+        /// </summary>
         private void Login_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = Login.SelectionStart;
@@ -393,16 +404,20 @@ namespace NailService
             }
         }
 
-        // Проверка при вводе логина (можно добавить авто-подсказку)
+        /// <summary>
+        /// Проверка при потере фокуса поля логина
+        /// </summary>
         private void Login_Leave(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(Login.Text) && _showForm != null)
             {
-                // Можно добавить проверку и показ подсказки о неактивном пользователе
                 CheckForInactiveUserHint();
             }
         }
 
+        /// <summary>
+        /// Проверка наличия неактивного пользователя с таким логином
+        /// </summary>
         private void CheckForInactiveUserHint()
         {
             try
@@ -431,13 +446,7 @@ namespace NailService
                             string middleName = reader["MiddleName"]?.ToString() ?? "";
                             string roleName = reader["RoleName"]?.ToString() ?? "";
 
-                            // Можно показать подсказку под полем логина
-                            //lblHint.Text = $"Найден неактивный пользователь: {lastName} {firstName} {middleName} ({roleName})";
-                            //lblHint.Visible = true;
-                        }
-                        else
-                        {
-                            //lblHint.Visible = false;
+                            // Здесь можно добавить визуальную подсказку
                         }
                     }
                 }
@@ -447,13 +456,5 @@ namespace NailService
                 // Игнорируем ошибки при проверке подсказки
             }
         }
-
-        private void Password_TextChanged(object sender, EventArgs e)
-        {
-            // Можно добавить проверку сложности пароля
-           //CheckPasswordStrength();
-        }
-
-        
     }
 }

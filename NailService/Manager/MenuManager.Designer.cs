@@ -35,7 +35,6 @@
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.Exit = new System.Windows.Forms.Button();
             this.ListButton = new System.Windows.Forms.Button();
-            this.ReportsButton = new System.Windows.Forms.Button();
             this.RecordButton = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.groupBox1.SuspendLayout();
@@ -57,10 +56,10 @@
             // FIOlabel
             // 
             this.FIOlabel.AutoSize = true;
-            this.FIOlabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
+            this.FIOlabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.25F);
             this.FIOlabel.Location = new System.Drawing.Point(786, 11);
             this.FIOlabel.Name = "FIOlabel";
-            this.FIOlabel.Size = new System.Drawing.Size(161, 24);
+            this.FIOlabel.Size = new System.Drawing.Size(147, 20);
             this.FIOlabel.TabIndex = 1;
             this.FIOlabel.Text = "Менеджер: ФИО";
             // 
@@ -68,7 +67,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 26.25F);
-            this.label1.Location = new System.Drawing.Point(338, 20);
+            this.label1.Location = new System.Drawing.Point(428, 25);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(289, 39);
             this.label1.TabIndex = 0;
@@ -78,7 +77,6 @@
             // 
             this.groupBox2.Controls.Add(this.Exit);
             this.groupBox2.Controls.Add(this.ListButton);
-            this.groupBox2.Controls.Add(this.ReportsButton);
             this.groupBox2.Controls.Add(this.RecordButton);
             this.groupBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.groupBox2.Location = new System.Drawing.Point(13, 83);
@@ -98,31 +96,20 @@
             this.Exit.TabIndex = 4;
             this.Exit.Text = "Выйти из аккаунта";
             this.Exit.UseVisualStyleBackColor = false;
+            this.Exit.Click += new System.EventHandler(this.Exit_Click);
             // 
             // ListButton
             // 
             this.ListButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.ListButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.ListButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
-            this.ListButton.Location = new System.Drawing.Point(6, 142);
+            this.ListButton.Location = new System.Drawing.Point(6, 81);
             this.ListButton.Name = "ListButton";
             this.ListButton.Size = new System.Drawing.Size(223, 55);
             this.ListButton.TabIndex = 2;
             this.ListButton.Text = "Справочники";
             this.ListButton.UseVisualStyleBackColor = false;
             this.ListButton.Click += new System.EventHandler(this.ListButton_Click);
-            // 
-            // ReportsButton
-            // 
-            this.ReportsButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
-            this.ReportsButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.ReportsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
-            this.ReportsButton.Location = new System.Drawing.Point(6, 81);
-            this.ReportsButton.Name = "ReportsButton";
-            this.ReportsButton.Size = new System.Drawing.Size(223, 55);
-            this.ReportsButton.TabIndex = 1;
-            this.ReportsButton.Text = "Отчёты";
-            this.ReportsButton.UseVisualStyleBackColor = false;
             // 
             // RecordButton
             // 
@@ -157,6 +144,7 @@
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(6);
             this.MaximizeBox = false;
@@ -182,6 +170,5 @@
         private System.Windows.Forms.Button RecordButton;
         private System.Windows.Forms.Button Exit;
         private System.Windows.Forms.Button ListButton;
-        private System.Windows.Forms.Button ReportsButton;
     }
 }

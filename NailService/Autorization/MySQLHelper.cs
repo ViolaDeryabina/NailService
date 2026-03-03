@@ -9,9 +9,19 @@ using System.Threading.Tasks;
 
 namespace NailService
 {
+    /// <summary>
+    /// Вспомогательный класс для работы с MySQL и криптографией
+    /// Содержит методы для хеширования паролей, получения информации о пользователях
+    /// </summary>
     public class MySQLHelper
     {
         private static string _connection = Connection.ConnectionString;
+
+        /// <summary>
+        /// Вычисляет SHA-256 хеш от переданной строки
+        /// </summary>
+        /// <param name="str">Исходная строка (пароль)</param>
+        /// <returns>Хеш строки в нижнем регистре без дефисов</returns>
         static public string GetHash(string str)
         {
             var sha2 = SHA256.Create();
@@ -19,6 +29,13 @@ namespace NailService
 
             return BitConverter.ToString(hbyte).Replace("-", "").ToLower();
         }
+
+        /// <summary>
+        /// Получает название роли пользователя по логину и паролю
+        /// </summary>
+        /// <param name="login">Логин пользователя</param>
+        /// <param name="password">Пароль пользователя (в открытом виде)</param>
+        /// <returns>Название роли или null, если пользователь не найден</returns>
         static public string GetRoleName(string login, string password)
         {
             string roleName = null;
@@ -52,6 +69,13 @@ namespace NailService
 
             return roleName;
         }
+
+        /// <summary>
+        /// Получает ID роли активного пользователя по логину и хешу пароля
+        /// </summary>
+        /// <param name="login">Логин пользователя</param>
+        /// <param name="passwordHash">Хеш пароля</param>
+        /// <returns>ID роли или 0, если пользователь не найден</returns>
         public static int GetRoleId(string login, string passwordHash)
         {
             using (MySqlConnection con = new MySqlConnection(Connection.ConnectionString))
@@ -72,9 +96,12 @@ namespace NailService
             }
         }
 
-
-
-        // Получение фамилии и инициалов
+        /// <summary>
+        /// Получает фамилию с инициалами пользователя по логину и паролю
+        /// </summary>
+        /// <param name="login">Логин пользователя</param>
+        /// <param name="password">Пароль пользователя</param>
+        /// <returns>Фамилия с инициалами (например: "Иванов И.И.") или null, если пользователь не найден</returns>
         static public string GetLastNameWithInitials(string login, string password)
         {
             using (MySqlConnection con = new MySqlConnection(_connection))
@@ -104,7 +131,13 @@ namespace NailService
             return null;
         }
 
-        // Форматирование фамилии с инициалами
+        /// <summary>
+        /// Форматирует фамилию с инициалами из отдельных компонентов
+        /// </summary>
+        /// <param name="lastName">Фамилия</param>
+        /// <param name="firstName">Имя</param>
+        /// <param name="middleName">Отчество</param>
+        /// <returns>Форматированная строка вида "Фамилия И.О."</returns>
         static private string FormatLastNameWithInitials(string lastName, string firstName, string middleName)
         {
             if (string.IsNullOrWhiteSpace(lastName))
@@ -122,4 +155,3 @@ namespace NailService
         }
     }
 }
-

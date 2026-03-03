@@ -13,6 +13,10 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace NailService
 {
+    /// <summary>
+    /// Форма для редактирования данных существующего пользователя
+    /// Позволяет изменять ФИО, логин, пароль и роль (с ограничениями для администраторов)
+    /// </summary>
     public partial class EditUserForm : Form
     {
         private string _connection;
@@ -20,17 +24,27 @@ namespace NailService
         public bool IsEditMode { get; private set; }
         private bool _isPasswordChanged = false;
 
+        /// <summary>
+        /// Конструктор формы редактирования пользователя
+        /// </summary>
+        /// <param name="user">Объект пользователя с текущими данными</param>
         public EditUserForm(UserModel user)
         {
             InitializeComponent();
-            _connection = Connection.ConnectionString;            
+            _connection = Connection.ConnectionString;
             LoadRoles();
             User = user;
             IsEditMode = true;
             LoadTextBoxs();
         }
 
-        private void LoadTextBoxs() {
+        #region Загрузка данных
+
+        /// <summary>
+        /// Загрузка данных пользователя в поля формы
+        /// </summary>
+        private void LoadTextBoxs()
+        {
             LastName.Text = User.LastName;
             FirstName.Text = User.FirstName;
             MiddleName.Text = User.MiddleName;
@@ -39,21 +53,15 @@ namespace NailService
             Password.PasswordChar = '*';
             RoleCb.Text = User.RoleName;
 
-            if (IsAdminUser())
-            {
-                RoleCb.Enabled = false;
-            }
-            else
-            {
-                RoleCb.Enabled = true;
-            }
-            
+            // Блокировка изменения роли для администраторов
+            RoleCb.Enabled = !IsAdminUser();
         }
 
-
+        /// <summary>
+        /// Загрузка списка ролей из базы данных
+        /// </summary>
         private void LoadRoles()
         {
-            // Загрузка ролей в комбобокс
             try
             {
                 using (var connection = new MySqlConnection(_connection))
@@ -74,25 +82,15 @@ namespace NailService
             {
                 MessageBox.Show($"Ошибка загрузки ролей: {ex.Message}");
             }
-           
         }
 
-        private bool IsAdminUser()
-        {
-            // Проверяем, является ли пользователь администратором
-            // Можно проверять по RoleId или по названию роли
-            return User.RoleName?.ToLower() == "админ" ||
-                   User.RoleName?.ToLower() == "administrator" ||
-                   User.RoleName?.ToLower() == "admin" ||
-                   User.RoleId == GetAdminRoleId(); // если знаете ID роли админа
-        }
+        #endregion
 
-        // Метод для получения ID роли администратора (если известно)
-        private int GetAdminRoleId()
-        {
-            return 2; 
-        }
+        #region Валидация и сохранение
 
+        /// <summary>
+        /// Сохранение изменений и закрытие формы
+        /// </summary>
         private void btnSave_Click(object sender, EventArgs e)
         {
             if (ValidateData())
@@ -103,35 +101,50 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Отмена редактирования и закрытие формы
+        /// </summary>
         private void btnCancel_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
             Close();
         }
 
+        /// <summary>
+        /// Валидация введенных данных перед сохранением
+        /// </summary>
         private bool ValidateData()
         {
             if (string.IsNullOrWhiteSpace(LastName.Text))
             {
-                MessageBox.Show("Введите фамилию");
+                MessageBox.Show("Введите фамилию", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                LastName.Focus();
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(FirstName.Text))
             {
-                MessageBox.Show("Введите имя");
+                MessageBox.Show("Введите имя", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                FirstName.Focus();
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(Login.Text))
             {
-                MessageBox.Show("Введите логин");
+                MessageBox.Show("Введите логин", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                Login.Focus();
                 return false;
             }
 
             return true;
         }
 
+        /// <summary>
+        /// Сохранение данных из формы в объект User
+        /// </summary>
         private void SaveUserData()
         {
             User.LastName = LastName.Text.Trim();
@@ -140,16 +153,43 @@ namespace NailService
             User.Login = Login.Text.Trim();
             User.RoleId = (int)RoleCb.SelectedValue;
 
-            // Обновляем пароль только если он был изменен
             if (_isPasswordChanged && !string.IsNullOrWhiteSpace(Password.Text))
             {
-                // Хешируем новый пароль
-
                 User.Password = MySQLHelper.GetHash(Password.Text);
-                
             }
         }
 
+        #endregion
+
+        #region Проверка прав
+
+        /// <summary>
+        /// Проверка, является ли редактируемый пользователь администратором
+        /// </summary>
+        /// <returns>true если пользователь администратор</returns>
+        private bool IsAdminUser()
+        {
+            return User.RoleName?.ToLower() == "админ" ||
+                   User.RoleName?.ToLower() == "administrator" ||
+                   User.RoleName?.ToLower() == "admin" ||
+                   User.RoleId == GetAdminRoleId();
+        }
+
+        /// <summary>
+        /// Получение ID роли администратора (фиксированное значение)
+        /// </summary>
+        private int GetAdminRoleId()
+        {
+            return 2;
+        }
+
+        #endregion
+
+        #region Фильтрация ввода
+
+        /// <summary>
+        /// Фильтрация ввода в поле фамилии (только русские буквы)
+        /// </summary>
         private void LastName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = LastName.SelectionStart;
@@ -162,6 +202,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Фильтрация ввода в поле имени (только русские буквы)
+        /// </summary>
         private void FirstName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = FirstName.SelectionStart;
@@ -174,6 +217,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Фильтрация ввода в поле отчества (только русские буквы)
+        /// </summary>
         private void MiddleName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = MiddleName.SelectionStart;
@@ -186,6 +232,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Фильтрация ввода в поле логина (латиница, цифры, _, .)
+        /// </summary>
         private void Login_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = Login.SelectionStart;
@@ -201,6 +250,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Отслеживание изменения пароля
+        /// </summary>
         private void Password_TextChanged(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(Password.Text))
@@ -208,5 +260,7 @@ namespace NailService
                 _isPasswordChanged = true;
             }
         }
+
+        #endregion
     }
 }

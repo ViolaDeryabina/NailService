@@ -56,10 +56,10 @@
             // FIOlabel
             // 
             this.FIOlabel.AutoSize = true;
-            this.FIOlabel.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F);
-            this.FIOlabel.Location = new System.Drawing.Point(687, 54);
+            this.FIOlabel.Font = new System.Drawing.Font("MS Reference Sans Serif", 12.25F);
+            this.FIOlabel.Location = new System.Drawing.Point(675, 10);
             this.FIOlabel.Name = "FIOlabel";
-            this.FIOlabel.Size = new System.Drawing.Size(164, 24);
+            this.FIOlabel.Size = new System.Drawing.Size(148, 22);
             this.FIOlabel.TabIndex = 1;
             this.FIOlabel.Text = "Директор: ФИО";
             // 
@@ -144,6 +144,7 @@
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(7, 6, 7, 6);
             this.MaximizeBox = false;

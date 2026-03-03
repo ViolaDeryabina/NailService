@@ -9,14 +9,25 @@ using System.Windows.Forms;
 
 namespace NailService
 {
+    /// <summary>
+    /// Класс для выполнения операций редактирования данных в базе
+    /// Содержит методы для загрузки и обновления пользователей, услуг, клиентов, мастеров
+    /// </summary>
     public class EditUserClass
     {
         private string _connection = Connection.ConnectionString;
 
+        /// <summary>
+        /// Создание нового подключения к базе данных
+        /// </summary>
         private MySqlConnection GetNewConnection()
         {
             return new MySqlConnection(_connection);
         }
+
+        /// <summary>
+        /// Получение ID мастера по логину и паролю (для входа)
+        /// </summary>
         public static int GetMasterId(string login, string passwordHash)
         {
             try
@@ -26,12 +37,12 @@ namespace NailService
                     con.Open();
 
                     string query = @"
-                SELECT m.IDMasters 
-                FROM Users u
-                INNER JOIN Masters m ON u.IDUser = m.User
-                WHERE u.Login = @Login 
-                AND u.Password = @Password 
-                AND u.IsActive = 1";
+                        SELECT m.IDMasters 
+                        FROM Users u
+                        INNER JOIN Masters m ON u.IDUser = m.User
+                        WHERE u.Login = @Login 
+                        AND u.Password = @Password 
+                        AND u.IsActive = 1";
 
                     MySqlCommand cmd = new MySqlCommand(query, con);
                     cmd.Parameters.AddWithValue("@Login", login);
@@ -44,7 +55,7 @@ namespace NailService
                         return Convert.ToInt32(result);
                     }
 
-                    return 0; // Мастер не найден
+                    return 0;
                 }
             }
             catch (Exception ex)
@@ -53,26 +64,31 @@ namespace NailService
                 return 0;
             }
         }
-        //ПОЛЬЗОВАТЕЛИ
+
+        #region Работа с пользователями
+
+        /// <summary>
+        /// Загрузка данных пользователя по ID
+        /// </summary>
         public UserModel LoadUserById(int userId)
         {
-            using (var connection = GetNewConnection()) // Используем новое соединение
+            using (var connection = GetNewConnection())
             {
                 try
                 {
                     connection.Open();
                     string query = @"SELECT 
-                    u.IDUser,
-                    u.LastName,
-                    u.FirstName,
-                    u.MiddleName,
-                    u.Login,
-                    u.Password,
-                    u.Role as RoleID,
-                    r.RoleName
-                FROM Users u
-                INNER JOIN Role r ON u.Role = r.IDRole
-                WHERE u.IDUser = @UserId";
+                        u.IDUser,
+                        u.LastName,
+                        u.FirstName,
+                        u.MiddleName,
+                        u.Login,
+                        u.Password,
+                        u.Role as RoleID,
+                        r.RoleName
+                    FROM Users u
+                    INNER JOIN Role r ON u.Role = r.IDRole
+                    WHERE u.IDUser = @UserId";
 
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@UserId", userId);
@@ -105,9 +121,12 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Обновление данных пользователя в базе
+        /// </summary>
         public void UpdateUserInDatabase(UserModel user)
         {
-            using (var connection = GetNewConnection()) // Используем новое соединение
+            using (var connection = GetNewConnection())
             {
                 try
                 {
@@ -140,7 +159,13 @@ namespace NailService
             }
         }
 
-        //УСЛУГИ
+        #endregion
+
+        #region Работа с услугами
+
+        /// <summary>
+        /// Загрузка данных услуги по ID
+        /// </summary>
         public ServiceModel LoadServiceById(int serviceId)
         {
             ServiceModel service = null;
@@ -151,17 +176,17 @@ namespace NailService
                 {
                     connection.Open();
                     string query = @"SELECT 
-                s.IDServices,
-                s.ServiceName,
-                s.Description,
-                s.Price,
-                s.Category,
-                s.Photo,
-                s.IsActive,
-                c.CategoryName
-            FROM services s
-            LEFT JOIN Category c ON s.Category = c.IDCategory
-            WHERE s.IDServices = @ServiceId";
+                        s.IDServices,
+                        s.ServiceName,
+                        s.Description,
+                        s.Price,
+                        s.Category,
+                        s.Photo,
+                        s.IsActive,
+                        c.CategoryName
+                    FROM services s
+                    LEFT JOIN Category c ON s.Category = c.IDCategory
+                    WHERE s.IDServices = @ServiceId";
 
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@ServiceId", serviceId);
@@ -180,22 +205,23 @@ namespace NailService
                                 CategoryName = reader["CategoryName"]?.ToString() ?? "",
                                 Photo = reader["Photo"]?.ToString(),
                                 IsActive = Convert.ToBoolean(reader["IsActive"]),
-                                ServiceImage = null // Будет загружено отдельно
+                                ServiceImage = null
                             };
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    // Логирование ошибки
                     Debug.WriteLine($"Ошибка загрузки услуги: {ex.Message}");
-                    // Можно также записать в журнал или показать пользователю
                 }
             }
 
             return service;
         }
 
+        /// <summary>
+        /// Обновление данных услуги в базе
+        /// </summary>
         public bool UpdateServiceInDatabase(ServiceModel service)
         {
             using (var connection = GetNewConnection())
@@ -219,7 +245,6 @@ namespace NailService
                     cmd.Parameters.AddWithValue("@Price", service.Price);
                     cmd.Parameters.AddWithValue("@Category", service.Category);
 
-                    // Добавляем фото
                     if (!string.IsNullOrEmpty(service.Photo))
                     {
                         cmd.Parameters.AddWithValue("@Photo", service.Photo);
@@ -239,7 +264,13 @@ namespace NailService
             }
         }
 
-        //КЛИЕНТЫ
+        #endregion
+
+        #region Работа с клиентами
+
+        /// <summary>
+        /// Загрузка данных клиента по ID
+        /// </summary>
         public ClientModel LoadClientById(int clientId)
         {
             using (var connection = GetNewConnection())
@@ -248,13 +279,13 @@ namespace NailService
                 {
                     connection.Open();
                     string query = @"SELECT 
-                IDClient,
-                LastName,
-                FirstName,
-                MiddleName,
-                Phone
-            FROM Client
-            WHERE IDClient = @ClientId";
+                        IDClient,
+                        LastName,
+                        FirstName,
+                        MiddleName,
+                        Phone
+                    FROM Client
+                    WHERE IDClient = @ClientId";
 
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@ClientId", clientId);
@@ -284,6 +315,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Обновление данных клиента в базе
+        /// </summary>
         public void UpdateClientInDatabase(ClientModel client)
         {
             using (var connection = GetNewConnection())
@@ -292,11 +326,11 @@ namespace NailService
                 {
                     connection.Open();
                     string query = @"UPDATE Client 
-                SET LastName = @LastName, 
-                    FirstName = @FirstName, 
-                    MiddleName = @MiddleName, 
-                    Phone = @Phone 
-                WHERE IDClient = @ClientId";
+                        SET LastName = @LastName, 
+                            FirstName = @FirstName, 
+                            MiddleName = @MiddleName, 
+                            Phone = @Phone 
+                        WHERE IDClient = @ClientId";
 
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@LastName", client.LastName);
@@ -315,9 +349,13 @@ namespace NailService
             }
         }
 
+        #endregion
 
-        //МАСТЕРА   
+        #region Работа с мастерами
 
+        /// <summary>
+        /// Загрузка данных мастера по ID
+        /// </summary>
         public MasterModel LoadMasterById(int masterId)
         {
             using (var connection = GetNewConnection())
@@ -326,17 +364,17 @@ namespace NailService
                 {
                     connection.Open();
                     string query = @"
-                SELECT 
-                    m.IDMasters,
-                    m.User,
-                    m.Description,
-                    m.Phone,
-                    u.LastName,
-                    u.FirstName,
-                    u.MiddleName
-                FROM Masters m
-                INNER JOIN Users u ON m.User = u.IDUser
-                WHERE m.IDMasters = @MasterId";
+                        SELECT 
+                            m.IDMasters,
+                            m.User,
+                            m.Description,
+                            m.Phone,
+                            u.LastName,
+                            u.FirstName,
+                            u.MiddleName
+                        FROM Masters m
+                        INNER JOIN Users u ON m.User = u.IDUser
+                        WHERE m.IDMasters = @MasterId";
 
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@MasterId", masterId);
@@ -368,6 +406,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Обновление данных мастера в базе
+        /// </summary>
         public void UpdateMasterInDatabase(MasterModel master)
         {
             using (var connection = GetNewConnection())
@@ -376,10 +417,10 @@ namespace NailService
                 {
                     connection.Open();
                     string query = @"
-                UPDATE Masters 
-                SET Description = @Description, 
-                    Phone = @Phone 
-                WHERE IDMasters = @MasterId";
+                        UPDATE Masters 
+                        SET Description = @Description, 
+                            Phone = @Phone 
+                        WHERE IDMasters = @MasterId";
 
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@Description", master.Description);
@@ -396,7 +437,13 @@ namespace NailService
             }
         }
 
-        // СТАТУСЫ
+        #endregion
+
+        #region Работа со статусами
+
+        /// <summary>
+        /// Обновление названия статуса в базе
+        /// </summary>
         private void UpdateStatusInDatabase(int statusId, string newStatusName)
         {
             using (var connection = GetNewConnection())
@@ -405,7 +452,6 @@ namespace NailService
                 {
                     connection.Open();
 
-                    // Проверяем, существует ли уже такой статус
                     string checkQuery = "SELECT COUNT(*) FROM Status WHERE StatusName = @StatusName AND IDStatus != @StatusId";
                     MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
                     checkCmd.Parameters.AddWithValue("@StatusName", newStatusName);
@@ -421,7 +467,6 @@ namespace NailService
                         return;
                     }
 
-                    // Обновляем статус
                     string query = "UPDATE Status SET StatusName = @StatusName WHERE IDStatus = @StatusId";
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@StatusName", newStatusName);
@@ -446,6 +491,12 @@ namespace NailService
                 }
             }
         }
+
+        #endregion
+
+        /// <summary>
+        /// Отображение информационного сообщения
+        /// </summary>
         private void ShowInfo(string message)
         {
             MessageBox.Show(message, "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);

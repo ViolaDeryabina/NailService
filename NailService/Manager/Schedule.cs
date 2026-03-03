@@ -9,6 +9,10 @@ using System.Windows.Forms;
 
 namespace NailService
 {
+    /// <summary>
+    /// Форма расписания записей на неделю
+    /// Отображает записи по дням и временным слотам с цветовой индикацией статусов
+    /// </summary>
     public partial class Schedule : Form
     {
         private DateTime currentWeekStart;
@@ -16,6 +20,12 @@ namespace NailService
         private string _userFIO;
         private int _userId;
 
+        /// <summary>
+        /// Конструктор формы расписания
+        /// </summary>
+        /// <param name="userFIO">ФИО текущего пользователя</param>
+        /// <param name="roleID">ID роли пользователя</param>
+        /// <param name="userId">ID пользователя</param>
         public Schedule(string userFIO, int roleID, int userId)
         {
             InitializeComponent();
@@ -24,10 +34,7 @@ namespace NailService
             _userId = userId;
             currentWeekStart = GetMonday(DateTime.Today);
 
-            // СНАЧАЛА применяем стили
             ApplyCustomStyles();
-
-            // ПОТОМ загружаем данные
             FillScheduleWithData();
 
             FIOlabel.Text = $"Менеджер: {_userFIO}";
@@ -41,43 +48,38 @@ namespace NailService
                 _roleID = 4; // Менеджер по умолчанию
             }
         }
+
+        #region Стили и оформление
+
+        /// <summary>
+        /// Применение стилей к DataGridView
+        /// </summary>
         private void ApplyCustomStyles()
         {
-            // Цвета согласно вашим требованиям
-            Color selectionColor = Color.FromArgb(255, 203, 219); // Цвет выделения
-            Color accentColor = Color.HotPink; // Акцентный цвет
+            Color selectionColor = Color.FromArgb(255, 203, 219);
+            Color accentColor = Color.HotPink;
 
-            // Применяем базовые стили из StyleManager
             dataGridViewSchedule.DefaultCellStyle.Font = new Font("MS Reference Sans Serif", 10);
             dataGridViewSchedule.ColumnHeadersDefaultCellStyle.Font = new Font("MS Reference Sans Serif", 11, FontStyle.Bold);
 
-
-            // Цвет выделения ВСЕЙ строки
             dataGridViewSchedule.DefaultCellStyle.SelectionBackColor = Color.FromArgb(220, 235, 252);
             dataGridViewSchedule.DefaultCellStyle.SelectionForeColor = Color.Black;
 
-
-            // Настройки таблицы
             dataGridViewSchedule.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridViewSchedule.ReadOnly = true;
 
-
-            dataGridViewSchedule.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridViewSchedule.ReadOnly = true;
-
-            // Настройки для расписания
             dataGridViewSchedule.RowHeadersVisible = true;
             dataGridViewSchedule.RowHeadersWidth = 70;
             dataGridViewSchedule.RowTemplate.Height = 80;
 
-
-            // Подсветка выходных
             dataGridViewSchedule.CellFormatting += DataGridViewSchedule_CellFormatting;
         }
 
+        /// <summary>
+        /// Форматирование ячеек - подсветка выходных дней
+        /// </summary>
         private void DataGridViewSchedule_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            // Подсвечиваем выходные дни очень светлым розовым
             if (e.RowIndex >= 0 && e.ColumnIndex >= 1 && e.ColumnIndex <= 5)
             {
                 DateTime[] weekDates = GetCurrentWeekDates();
@@ -86,17 +88,41 @@ namespace NailService
                 if (dayIndex >= 0 && dayIndex < weekDates.Length)
                 {
                     DayOfWeek day = weekDates[dayIndex].DayOfWeek;
-                    if (day == DayOfWeek.Saturday || day == DayOfWeek.Sunday)
+                    if ((day == DayOfWeek.Saturday || day == DayOfWeek.Sunday) && e.Value == null)
                     {
-                        if (e.Value == null)
-                        {
-                           // e.CellStyle.BackColor = Color.FromArgb(255, 240, 245); // Очень светлый розовый
-                        }
+                        // Можно раскомментировать для подсветки выходных
+                        // e.CellStyle.BackColor = Color.FromArgb(255, 240, 245);
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Возвращает цвет для статуса записи
+        /// </summary>
+        private Color GetStatusColor(int statusId)
+        {
+            switch (statusId)
+            {
+                case 3: // Выполнен
+                    return Color.FromArgb(197, 225, 165);
+                case 1: // Запланирован
+                case 2: // Подтвержден
+                    return Color.FromArgb(255, 245, 157);
+                case 4: // Отменен
+                    return Color.FromArgb(255, 171, 145);
+                default:
+                    return Color.White;
+            }
+        }
+
+        #endregion
+
+        #region Навигация по неделям
+
+        /// <summary>
+        /// Получение понедельника указанной даты
+        /// </summary>
         private DateTime GetMonday(DateTime date)
         {
             int delta = DayOfWeek.Monday - date.DayOfWeek;
@@ -104,19 +130,43 @@ namespace NailService
             return date.AddDays(delta);
         }
 
+        /// <summary>
+        /// Смена недели
+        /// </summary>
         private void ChangeWeek(int weeks)
         {
             currentWeekStart = currentWeekStart.AddDays(weeks * 7);
             FillScheduleWithData();
         }
 
+        /// <summary>
+        /// Получение дат текущей недели (пн-пт)
+        /// </summary>
+        private DateTime[] GetCurrentWeekDates()
+        {
+            DateTime[] weekDates = new DateTime[5];
+            for (int i = 0; i < 5; i++)
+            {
+                weekDates[i] = currentWeekStart.AddDays(i);
+            }
+            return weekDates;
+        }
+
+        #endregion
+
+        #region Загрузка и отображение данных
+
+        /// <summary>
+        /// Заполнение расписания данными
+        /// </summary>
         private void FillScheduleWithData()
         {
             try
             {
-                // Обновляем информацию о неделе
                 DateTime weekEnd = currentWeekStart.AddDays(4);
                 label4.Text = $"Неделя: {currentWeekStart:dd.MM.yyyy} - {weekEnd:dd.MM.yyyy}";
+                label4.ForeColor = Color.Black;
+                label4.Font = new Font("MS Reference Sans Serif", 12, FontStyle.Bold);
 
                 var weekDates = new DateTime[5];
                 for (int i = 0; i < 5; i++)
@@ -124,17 +174,11 @@ namespace NailService
                     weekDates[i] = currentWeekStart.AddDays(i);
                 }
 
-                // Очищаем существующие данные
                 dataGridViewSchedule.Rows.Clear();
-                dataGridViewSchedule.Columns.Clear(); // ОЧЕНЬ ВАЖНО: очищаем и колонки тоже
+                dataGridViewSchedule.Columns.Clear();
 
-                // Создаем колонки заново
                 CreateColumns(weekDates);
-
-                // Добавляем строки с временами
                 AddTimeRows();
-
-                // Загружаем реальные данные из базы
                 LoadScheduleData(weekDates);
             }
             catch (Exception ex)
@@ -144,11 +188,13 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Создание колонок для дней недели
+        /// </summary>
         private void CreateColumns(DateTime[] weekDates)
         {
             Color accentColor = Color.HotPink;
 
-            // Добавляем колонку для времени
             DataGridViewTextBoxColumn timeColumn = new DataGridViewTextBoxColumn
             {
                 Name = "Time",
@@ -165,28 +211,22 @@ namespace NailService
             };
             dataGridViewSchedule.Columns.Add(timeColumn);
 
-            // Добавляем колонки для дней недели
             for (int i = 0; i < 5; i++)
             {
                 string dayName = weekDates[i].ToString("dd.MM");
                 string dayOfWeek = GetRussianDayOfWeekFull(weekDates[i].DayOfWeek);
-
-                // Отладочный вывод
-                Console.WriteLine($"День {i}: {dayOfWeek} {dayName}");
-
                 string headerText = $"{dayOfWeek}\n{dayName}";
 
-                // Определяем цвет заголовка для текущего дня
                 Color headerBackColor = accentColor;
                 if (weekDates[i].Date == DateTime.Today)
                 {
-                    headerBackColor = Color.FromArgb(255, 100, 150); // Чуть ярче для сегодня
+                    headerBackColor = Color.FromArgb(255, 100, 150);
                 }
 
                 DataGridViewTextBoxColumn dayColumn = new DataGridViewTextBoxColumn
                 {
                     Name = headerText,
-                    HeaderText = headerText,  // Это то, что отображается
+                    HeaderText = headerText,
                     ReadOnly = true,
                     Width = 150,
                     HeaderCell = new DataGridViewColumnHeaderCell
@@ -214,10 +254,12 @@ namespace NailService
                 dataGridViewSchedule.Columns.Add(dayColumn);
             }
 
-            // Принудительно обновляем заголовки
             dataGridViewSchedule.Refresh();
         }
 
+        /// <summary>
+        /// Получение полного названия дня недели на русском
+        /// </summary>
         private string GetRussianDayOfWeekFull(DayOfWeek dayOfWeek)
         {
             switch (dayOfWeek)
@@ -233,8 +275,9 @@ namespace NailService
             }
         }
 
-
-
+        /// <summary>
+        /// Добавление строк с временными слотами
+        /// </summary>
         private void AddTimeRows()
         {
             int[] timeSlots = { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
@@ -244,7 +287,6 @@ namespace NailService
                 int rowIndex = dataGridViewSchedule.Rows.Add();
                 dataGridViewSchedule.Rows[rowIndex].Cells["Time"].Value = $"{hour:00}:00";
 
-                // БЕЛЫЙ ФОН для всех строк
                 for (int col = 1; col <= 5; col++)
                 {
                     dataGridViewSchedule.Rows[rowIndex].Cells[col].Style.BackColor = Color.White;
@@ -252,22 +294,10 @@ namespace NailService
             }
         }
 
-        private string GetShortRussianDayOfWeek(DayOfWeek dayOfWeek)
-        {
-            switch (dayOfWeek)
-            {
-                case DayOfWeek.Monday: return "ПН";
-                case DayOfWeek.Tuesday: return "ВТ";
-                case DayOfWeek.Wednesday: return "СР";
-                case DayOfWeek.Thursday: return "ЧТ";
-                case DayOfWeek.Friday: return "ПТ";
-                case DayOfWeek.Saturday: return "СБ";
-                case DayOfWeek.Sunday: return "ВС";
-                default: return "";
-            }
-        }
-
-       private void HighlightCurrentTimeSlot()
+        /// <summary>
+        /// Подсветка текущего временного слота
+        /// </summary>
+        private void HighlightCurrentTimeSlot()
         {
             int currentHour = DateTime.Now.Hour;
 
@@ -278,7 +308,6 @@ namespace NailService
                 {
                     int rowHour = int.Parse(timeValue.Split(':')[0]);
 
-                    // Подсвечиваем текущий часовой слот очень светлым розовым
                     if (rowHour == currentHour)
                     {
                         for (int col = 1; col <= 5; col++)
@@ -293,11 +322,13 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Загрузка данных записей из базы данных
+        /// </summary>
         private void LoadScheduleData(DateTime[] weekDates)
         {
             try
             {
-                // Очищаем все ячейки (кроме колонки времени) - ставим БЕЛЫЙ ФОН
                 for (int row = 0; row < dataGridViewSchedule.Rows.Count; row++)
                 {
                     for (int col = 1; col <= 5; col++)
@@ -333,7 +364,7 @@ namespace NailService
                         INNER JOIN Masters m ON r.Master = m.IDMasters
                         INNER JOIN Users u_m ON m.User = u_m.IDUser
                         WHERE r.Date BETWEEN @startDate AND @endDate 
-                        AND r.Status IN (1, 2)";
+                        AND r.Status IN (1, 2, 3, 4)";
 
                     MySqlCommand cmd = new MySqlCommand(query, con);
                     cmd.Parameters.AddWithValue("@startDate", weekDates[0].Date);
@@ -357,7 +388,6 @@ namespace NailService
                             );
                             int statusId = Convert.ToInt32(reader["IDStatus"]);
 
-                            // Находим соответствующий день
                             int dayIndex = -1;
                             for (int i = 0; i < weekDates.Length; i++)
                             {
@@ -368,7 +398,6 @@ namespace NailService
                                 }
                             }
 
-                            // Находим соответствующий час
                             int timeIndex = -1;
                             for (int row = 0; row < dataGridViewSchedule.Rows.Count; row++)
                             {
@@ -386,8 +415,7 @@ namespace NailService
                                 dataGridViewSchedule.Rows[timeIndex].Cells[dayIndex + 1].Value = cellValue;
                                 dataGridViewSchedule.Rows[timeIndex].Cells[dayIndex + 1].Tag = reader["IDRecord"];
 
-                                // Используем StyleManager для цвета статуса
-                                Color statusColor = StyleManager.GetStatusColor(statusId);
+                                Color statusColor = GetStatusColor(statusId);
                                 dataGridViewSchedule.Rows[timeIndex].Cells[dayIndex + 1].Style.BackColor = statusColor;
                                 dataGridViewSchedule.Rows[timeIndex].Cells[dayIndex + 1].Style.ForeColor = Color.Black;
                                 dataGridViewSchedule.Rows[timeIndex].Cells[dayIndex + 1].Style.Font =
@@ -397,7 +425,6 @@ namespace NailService
                     }
                 }
 
-                // Подсвечиваем текущее время
                 HighlightCurrentTimeSlot();
             }
             catch (Exception ex)
@@ -407,37 +434,26 @@ namespace NailService
             }
         }
 
-        private void UpdateWeekLabel()
-        {
-            DateTime weekEnd = currentWeekStart.AddDays(4);
-            string[] months = { "января", "февраля", "марта", "апреля", "мая", "июня",
-                               "июля", "августа", "сентября", "октября", "ноября", "декабря" };
+        #endregion
 
-            string startStr = $"{currentWeekStart.Day} {months[currentWeekStart.Month - 1]}";
-            string endStr = $"{weekEnd.Day} {months[weekEnd.Month - 1]} {weekEnd.Year}";
+        #region Обработка событий DataGridView
 
-            label4.Text = $"📅 {startStr} — {endStr}";
-            label4.ForeColor = Color.HotPink;
-            label4.Font = new Font("MS Reference Sans Serif", 10, FontStyle.Bold);
-        }
-
-        private DateTime[] GetCurrentWeekDates()
-        {
-            DateTime[] weekDates = new DateTime[5];
-            for (int i = 0; i < 5; i++)
-            {
-                weekDates[i] = currentWeekStart.AddDays(i);
-            }
-            return weekDates;
-        }
-
+        /// <summary>
+        /// Обработка двойного клика по ячейке
+        /// </summary>
         private void DataGridViewSchedule_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0 && e.ColumnIndex >= 1 && e.ColumnIndex <= 5)
             {
                 if (dataGridViewSchedule.Rows[e.RowIndex].Cells[e.ColumnIndex].Value != null)
                 {
-                    ShowExistingRecordInfo(e.RowIndex, e.ColumnIndex);
+                    int recordId = Convert.ToInt32(dataGridViewSchedule.Rows[e.RowIndex].Cells[e.ColumnIndex].Tag);
+                    RecordsInfo recordsInfo = new RecordsInfo(recordId, _userFIO, _roleID);
+
+                    if (recordsInfo.ShowDialog() == DialogResult.OK)
+                    {
+                        FillScheduleWithData();
+                    }
                 }
                 else
                 {
@@ -446,23 +462,39 @@ namespace NailService
             }
         }
 
-        private void ShowExistingRecordInfo(int rowIndex, int columnIndex)
+        /// <summary>
+        /// Создание новой записи
+        /// </summary>
+        private void CreateNewRecord(int rowIndex, int columnIndex)
         {
-            string cellValue = dataGridViewSchedule.Rows[rowIndex].Cells[columnIndex].Value.ToString();
-            int recordId = Convert.ToInt32(dataGridViewSchedule.Rows[rowIndex].Cells[columnIndex].Tag);
+            DateTime[] weekDates = GetCurrentWeekDates();
+            DateTime selectedDate = weekDates[columnIndex - 1];
 
-            DialogResult result = MessageBox.Show(
-                $"Запись:\n{cellValue}\n\nХотите отменить эту запись?",
-                "Информация о записи",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question);
+            string timeStr = dataGridViewSchedule.Rows[rowIndex].Cells["Time"].Value?.ToString();
+            if (string.IsNullOrEmpty(timeStr)) return;
 
-            if (result == DialogResult.Yes)
+            int hour = int.Parse(timeStr.Split(':')[0]);
+            DateTime selectedDateTime = selectedDate.Date.AddHours(hour);
+
+            if (selectedDateTime < DateTime.Now)
             {
-                CancelRecord(recordId, rowIndex, columnIndex);
+                MessageBox.Show("Нельзя создать запись на прошедшее время!", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            RecordingClients recordingForm = new RecordingClients(_userFIO);
+            recordingForm.SetSelectedDateTime(selectedDateTime);
+
+            if (recordingForm.ShowDialog() == DialogResult.OK)
+            {
+                FillScheduleWithData();
             }
         }
 
+        /// <summary>
+        /// Отмена записи
+        /// </summary>
         private void CancelRecord(int recordId, int rowIndex, int columnIndex)
         {
             try
@@ -494,34 +526,10 @@ namespace NailService
             }
         }
 
-        private void CreateNewRecord(int rowIndex, int columnIndex)
-        {
-            DateTime[] weekDates = GetCurrentWeekDates();
-            DateTime selectedDate = weekDates[columnIndex - 1];
+        #endregion
 
-            string timeStr = dataGridViewSchedule.Rows[rowIndex].Cells["Time"].Value?.ToString();
-            if (string.IsNullOrEmpty(timeStr)) return;
+        #region Навигация по неделям (кнопки)
 
-            int hour = int.Parse(timeStr.Split(':')[0]);
-            DateTime selectedDateTime = selectedDate.Date.AddHours(hour);
-
-            if (selectedDateTime < DateTime.Now)
-            {
-                MessageBox.Show("Нельзя создать запись на прошедшее время!", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            RecordingClients recordingForm = new RecordingClients(_userFIO);
-            recordingForm.SetSelectedDateTime(selectedDateTime);
-
-            if (recordingForm.ShowDialog() == DialogResult.OK)
-            {
-                FillScheduleWithData();
-            }
-        }
-
-        // Навигация по неделям
         private void btnPrevWeek_Click(object sender, EventArgs e)
         {
             ChangeWeek(-1);
@@ -538,7 +546,10 @@ namespace NailService
             FillScheduleWithData();
         }
 
-        // Переход к другим формам
+        #endregion
+
+        #region Переход к другим формам
+
         private void ListButton_Click(object sender, EventArgs e)
         {
             Show showForm = new Show(_userFIO, _roleID);
@@ -555,17 +566,17 @@ namespace NailService
 
         private void InMenu_Click(object sender, EventArgs e)
         {
-            if (_roleID == 1) // Директор
+            if (_roleID == 1)
             {
                 MenuDirector menuDirector = new MenuDirector(_userFIO);
                 menuDirector.Show();
             }
-            else if (_roleID == 2) // Админ
+            else if (_roleID == 2)
             {
                 MenuAdmin menuAdmin = new MenuAdmin(_userFIO);
                 menuAdmin.Show();
             }
-            else // Менеджер
+            else
             {
                 MenuManager menuManager = new MenuManager(_userFIO);
                 menuManager.Show();
@@ -573,21 +584,34 @@ namespace NailService
             this.Hide();
         }
 
+        #endregion
+
+        #region Генерация отчетов
+
         private void btnMonthlyReport_Click(object sender, EventArgs e)
         {
             GenerateMonthlyReport();
         }
 
+        /// <summary>
+        /// Получение начала месяца
+        /// </summary>
         private DateTime GetMonthStart(DateTime date)
         {
             return new DateTime(date.Year, date.Month, 1);
         }
 
+        /// <summary>
+        /// Получение конца месяца
+        /// </summary>
         private DateTime GetMonthEnd(DateTime date)
         {
             return GetMonthStart(date).AddMonths(1).AddDays(-1).Date.AddHours(23).AddMinutes(59).AddSeconds(59);
         }
 
+        /// <summary>
+        /// Получение данных для месячного отчета
+        /// </summary>
         private DataTable GetMonthlyReportData(DateTime monthDate)
         {
             DataTable dt = new DataTable();
@@ -602,33 +626,33 @@ namespace NailService
                     DateTime monthEnd = GetMonthEnd(monthDate);
 
                     string query = @"
-                SELECT 
-                    DATE_FORMAT(r.Date, '%d.%m.%Y') as 'Дата',
-                    DATE_FORMAT(r.Date, '%H:%i') as 'Время',
-                    CONCAT(c.LastName, ' ', LEFT(c.FirstName, 1), '.', LEFT(c.MiddleName, 1), '.') as 'Клиент',
-                    CONCAT(u_m.LastName, ' ', LEFT(u_m.FirstName, 1), '.') as 'Мастер',
-                    s.ServiceName as 'Услуга',
-                    s.Price as 'Цена',
-                    CASE 
-                        WHEN r.discount = 1 THEN '5%' 
-                        ELSE '-' 
-                    END as 'Скидка',
-                    CASE 
-                        WHEN r.Status = 1 THEN 'Запланирован'
-                        WHEN r.Status = 2 THEN 'Подтвержден'
-                        WHEN r.Status = 3 THEN 'Выполнен'
-                        WHEN r.Status = 4 THEN 'Отменен'
-                        ELSE 'Неизвестно'
-                    END as 'Статус',
-                    u_u.LastName as 'Менеджер'
-                FROM Record r
-                INNER JOIN Client c ON r.Client = c.IDClient
-                INNER JOIN Services s ON r.Service = s.IDServices
-                INNER JOIN Masters m ON r.Master = m.IDMasters
-                INNER JOIN Users u_m ON m.User = u_m.IDUser
-                INNER JOIN Users u_u ON r.User = u_u.IDUser
-                WHERE r.Date BETWEEN @startDate AND @endDate 
-                ORDER BY r.Date";
+                        SELECT 
+                            DATE_FORMAT(r.Date, '%d.%m.%Y') as 'Дата',
+                            DATE_FORMAT(r.Date, '%H:%i') as 'Время',
+                            CONCAT(c.LastName, ' ', LEFT(c.FirstName, 1), '.', LEFT(c.MiddleName, 1), '.') as 'Клиент',
+                            CONCAT(u_m.LastName, ' ', LEFT(u_m.FirstName, 1), '.') as 'Мастер',
+                            s.ServiceName as 'Услуга',
+                            s.Price as 'Цена',
+                            CASE 
+                                WHEN r.discount = 1 THEN '5%' 
+                                ELSE '-' 
+                            END as 'Скидка',
+                            CASE 
+                                WHEN r.Status = 1 THEN 'Запланирован'
+                                WHEN r.Status = 2 THEN 'Подтвержден'
+                                WHEN r.Status = 3 THEN 'Выполнен'
+                                WHEN r.Status = 4 THEN 'Отменен'
+                                ELSE 'Неизвестно'
+                            END as 'Статус',
+                            u_u.LastName as 'Менеджер'
+                        FROM Record r
+                        INNER JOIN Client c ON r.Client = c.IDClient
+                        INNER JOIN Services s ON r.Service = s.IDServices
+                        INNER JOIN Masters m ON r.Master = m.IDMasters
+                        INNER JOIN Users u_m ON m.User = u_m.IDUser
+                        INNER JOIN Users u_u ON r.User = u_u.IDUser
+                        WHERE r.Date BETWEEN @startDate AND @endDate 
+                        ORDER BY r.Date";
 
                     MySqlCommand cmd = new MySqlCommand(query, con);
                     cmd.Parameters.AddWithValue("@startDate", monthStart);
@@ -647,6 +671,9 @@ namespace NailService
             return dt;
         }
 
+        /// <summary>
+        /// Получение статистики за месяц
+        /// </summary>
         private Dictionary<string, decimal> GetMonthlyStatistics(DateTime monthDate)
         {
             Dictionary<string, decimal> stats = new Dictionary<string, decimal>();
@@ -661,18 +688,18 @@ namespace NailService
                     DateTime monthEnd = GetMonthEnd(monthDate);
 
                     string query = @"
-                SELECT 
-                    COUNT(*) as TotalRecords,
-                    SUM(CASE WHEN r.Status = 3 THEN 1 ELSE 0 END) as Completed,
-                    SUM(CASE WHEN r.Status = 4 THEN 1 ELSE 0 END) as Cancelled,
-                    SUM(CASE WHEN r.Status = 1 THEN 1 ELSE 0 END) as Planned,
-                    SUM(CASE WHEN r.Status = 2 THEN 1 ELSE 0 END) as Confirmed,
-                    SUM(CASE WHEN r.Status = 3 THEN s.Price ELSE 0 END) as Revenue,
-                    COUNT(DISTINCT r.Master) as ActiveMasters,
-                    COUNT(DISTINCT r.Client) as UniqueClients
-                FROM Record r
-                INNER JOIN Services s ON r.Service = s.IDServices
-                WHERE r.Date BETWEEN @startDate AND @endDate";
+                        SELECT 
+                            COUNT(*) as TotalRecords,
+                            SUM(CASE WHEN r.Status = 3 THEN 1 ELSE 0 END) as Completed,
+                            SUM(CASE WHEN r.Status = 4 THEN 1 ELSE 0 END) as Cancelled,
+                            SUM(CASE WHEN r.Status = 1 THEN 1 ELSE 0 END) as Planned,
+                            SUM(CASE WHEN r.Status = 2 THEN 1 ELSE 0 END) as Confirmed,
+                            SUM(CASE WHEN r.Status = 3 THEN s.Price ELSE 0 END) as Revenue,
+                            COUNT(DISTINCT r.Master) as ActiveMasters,
+                            COUNT(DISTINCT r.Client) as UniqueClients
+                        FROM Record r
+                        INNER JOIN Services s ON r.Service = s.IDServices
+                        WHERE r.Date BETWEEN @startDate AND @endDate";
 
                     MySqlCommand cmd = new MySqlCommand(query, con);
                     cmd.Parameters.AddWithValue("@startDate", monthStart);
@@ -702,13 +729,19 @@ namespace NailService
             return stats;
         }
 
+        /// <summary>
+        /// Получение названия месяца
+        /// </summary>
         private string GetMonthName(int month)
         {
             string[] months = { "январь", "февраль", "март", "апрель", "май", "июнь",
-                       "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь" };
+                               "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь" };
             return months[month - 1];
         }
 
+        /// <summary>
+        /// Генерация Excel-отчета за месяц
+        /// </summary>
         private void GenerateMonthlyReport()
         {
             Microsoft.Office.Interop.Excel.Application excelApp = null;
@@ -718,13 +751,8 @@ namespace NailService
 
             try
             {
-                // Выбираем месяц для отчета
                 DateTime selectedMonth = currentWeekStart;
 
-                // Можно добавить диалог выбора месяца
-                // Но для простоты используем текущий месяц из расписания
-
-                // Получаем данные за месяц
                 DataTable reportData = GetMonthlyReportData(selectedMonth);
                 Dictionary<string, decimal> statistics = GetMonthlyStatistics(selectedMonth);
 
@@ -735,7 +763,6 @@ namespace NailService
                     return;
                 }
 
-                // Создаем диалог сохранения файла
                 SaveFileDialog saveDialog = new SaveFileDialog
                 {
                     Filter = "Excel Files|*.xlsx",
@@ -749,7 +776,6 @@ namespace NailService
 
                 string filePath = saveDialog.FileName;
 
-                // Создаем Excel приложение
                 excelApp = new Microsoft.Office.Interop.Excel.Application();
                 excelApp.Visible = false;
                 excelApp.DisplayAlerts = false;
@@ -757,20 +783,16 @@ namespace NailService
                 workbook = excelApp.Workbooks.Add();
                 worksheet = workbook.ActiveSheet;
 
-                // Настройка страницы
                 worksheet.PageSetup.Orientation = Microsoft.Office.Interop.Excel.XlPageOrientation.xlLandscape;
                 worksheet.PageSetup.LeftMargin = excelApp.CentimetersToPoints(1);
                 worksheet.PageSetup.RightMargin = excelApp.CentimetersToPoints(1);
                 worksheet.PageSetup.TopMargin = excelApp.CentimetersToPoints(1.5);
                 worksheet.PageSetup.BottomMargin = excelApp.CentimetersToPoints(1);
 
-                // Цвета в стиле приложения
                 Color accentColor = Color.HotPink;
                 Color lightPink = Color.FromArgb(255, 203, 219);
-                Color lightGreen = Color.FromArgb(197, 225, 165);
-                Color lightCoral = Color.FromArgb(255, 171, 145);
 
-                // ЗАГОЛОВОК
+                // Заголовок
                 range = worksheet.Range["A1", "I1"];
                 range.Merge();
                 range.Value = $"МЕСЯЧНЫЙ ОТЧЕТ";
@@ -804,7 +826,7 @@ namespace NailService
                 range.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
 
-                // СТАТИСТИКА
+                // Статистика
                 int currentRow = 5;
 
                 worksheet.Cells[currentRow, 1] = "📊 СТАТИСТИКА ЗА МЕСЯЦ";
@@ -849,8 +871,7 @@ namespace NailService
                 FormatStatCell(worksheet, currentRow, 2, false);
                 currentRow += 2;
 
-                // Правая колонка статистики (начинаем с той же строки, но сдвигаем по колонкам)
-                int statRow = currentRow - 7; // Возвращаемся к началу статистики
+                int statRow = currentRow - 7;
 
                 worksheet.Cells[statRow, 4] = "Активных мастеров:";
                 worksheet.Cells[statRow, 5] = statistics["ActiveMasters"];
@@ -883,7 +904,7 @@ namespace NailService
 
                 currentRow = statRow + 3;
 
-                // ЗАГОЛОВКИ ТАБЛИЦЫ
+                // Заголовки таблицы
                 string[] headers = { "Дата", "Время", "Клиент", "Мастер", "Услуга", "Цена", "Скидка", "Статус", "Менеджер" };
 
                 for (int i = 0; i < headers.Length; i++)
@@ -902,7 +923,7 @@ namespace NailService
 
                 currentRow++;
 
-                // ДАННЫЕ
+                // Данные
                 for (int i = 0; i < reportData.Rows.Count; i++)
                 {
                     DataRow row = reportData.Rows[i];
@@ -915,12 +936,11 @@ namespace NailService
                         range.Font.Size = 10;
                         range.Borders.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
 
-                        // Выравнивание
-                        if (j == 0 || j == 1) // Дата и время по центру
+                        if (j == 0 || j == 1)
                         {
                             range.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
                         }
-                        else if (j == 5) // Цена по правому краю
+                        else if (j == 5)
                         {
                             range.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignRight;
                         }
@@ -929,16 +949,13 @@ namespace NailService
                             range.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignLeft;
                         }
 
-                        // Подкрашиваем статус
-                        if (j == 7) // Статус
+                        if (j == 7)
                         {
                             string status_val = row[j].ToString();
-                            if (status_val.Contains("Запланирован"))
+                            if (status_val.Contains("Запланирован") || status_val.Contains("Подтвержден"))
                                 range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(255, 245, 157));
-                            else if (status_val.Contains("Подтвержден"))
-                                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(197, 225, 165));
                             else if (status_val.Contains("Выполнен"))
-                                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(225, 225, 225));
+                                range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(197, 225, 165));
                             else if (status_val.Contains("Отменен"))
                                 range.Interior.Color = System.Drawing.ColorTranslator.ToOle(Color.FromArgb(255, 171, 145));
                         }
@@ -946,7 +963,6 @@ namespace NailService
                         System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
                     }
 
-                    // Чередование фона строк
                     if (i % 2 == 1)
                     {
                         range = worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, headers.Length]];
@@ -957,7 +973,7 @@ namespace NailService
                     currentRow++;
                 }
 
-                // ИТОГ
+                // Итог
                 currentRow += 1;
                 range = worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, 4]];
                 range.Merge();
@@ -979,17 +995,14 @@ namespace NailService
                 range.Borders.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
 
-                // АВТОПОДБОР ШИРИНЫ
                 worksheet.Columns.AutoFit();
 
-                // Сохраняем файл
                 workbook.SaveAs(filePath);
                 workbook.Close();
 
                 MessageBox.Show($"Отчет за {GetMonthName(selectedMonth.Month)} {selectedMonth.Year} успешно сохранен!\n\n{filePath}",
                     "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                // Спрашиваем, открыть ли файл
                 if (MessageBox.Show("Открыть отчет?", "Вопрос",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
@@ -1003,12 +1016,10 @@ namespace NailService
             }
             finally
             {
-                // Освобождаем ресурсы
                 if (range != null) System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
                 if (worksheet != null) System.Runtime.InteropServices.Marshal.ReleaseComObject(worksheet);
                 if (workbook != null)
                 {
-                    workbook.Close(false);
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
                 }
                 if (excelApp != null)
@@ -1022,6 +1033,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Форматирование ячейки статистики в Excel
+        /// </summary>
         private void FormatStatCell(Microsoft.Office.Interop.Excel.Worksheet worksheet, int row, int col, bool isLabel)
         {
             Microsoft.Office.Interop.Excel.Range range = worksheet.Cells[row, col];
@@ -1038,6 +1052,6 @@ namespace NailService
             System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
         }
 
-
+        #endregion
     }
 }

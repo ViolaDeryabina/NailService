@@ -13,6 +13,10 @@ using System.Windows.Forms;
 
 namespace NailService
 {
+    /// <summary>
+    /// Форма для редактирования данных существующей услуги
+    /// Позволяет изменять название, описание, цену, категорию и изображение
+    /// </summary>
     public partial class EditServiceForm : Form
     {
         private string _connection;
@@ -25,6 +29,11 @@ namespace NailService
         private ImageService _imageService;
         private const long MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3 МБ
 
+        /// <summary>
+        /// Конструктор формы редактирования услуги
+        /// </summary>
+        /// <param name="service">Объект услуги с текущими данными</param>
+        /// <param name="imageService">Сервис для работы с изображениями</param>
         public EditServiceForm(ServiceModel service, ImageService imageService = null)
         {
             InitializeComponent();
@@ -33,21 +42,23 @@ namespace NailService
             _dataService = new EditUserClass();
             _imageService = imageService ?? new ImageService();
 
-            // Инициализация путей для изображений
             InitializeImagePaths();
-
             LoadCategory();
             LoadTextBoxs();
             LoadServiceImage();
         }
 
+        #region Инициализация и загрузка данных
+
+        /// <summary>
+        /// Инициализация путей для сохранения изображений услуг
+        /// </summary>
         private void InitializeImagePaths()
         {
             try
             {
                 string startupPath = Application.StartupPath;
 
-                // Если запущено из bin\Debug или bin\Release
                 if (startupPath.Contains(@"\bin\Debug") || startupPath.Contains(@"\bin\Release"))
                 {
                     string projectRoot = Directory.GetParent(Directory.GetParent(startupPath).FullName).FullName;
@@ -60,7 +71,6 @@ namespace NailService
 
                 _defaultImagePath = Path.Combine(_servicesImagesPath, "Default.jpg");
 
-                // Создаем папку если ее нет
                 if (!Directory.Exists(_servicesImagesPath))
                 {
                     Directory.CreateDirectory(_servicesImagesPath);
@@ -73,6 +83,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Загрузка изображения услуги или заглушки
+        /// </summary>
         private void LoadServiceImage()
         {
             try
@@ -84,7 +97,6 @@ namespace NailService
                 }
                 else if (!string.IsNullOrEmpty(Service.Photo))
                 {
-                    // Получаем путь к изображениям через ImageService
                     string imagesPath = _imageService.GetServicesImagesPath();
                     string imagePath = Path.Combine(imagesPath, Service.Photo);
 
@@ -111,6 +123,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Загрузка изображения-заглушки
+        /// </summary>
         private void LoadDefaultImage()
         {
             try
@@ -122,7 +137,6 @@ namespace NailService
                 }
                 else
                 {
-                    // Создаем заглушку
                     Bitmap defaultImage = new Bitmap(pictureBoxService.Width, pictureBoxService.Height);
                     using (Graphics g = Graphics.FromImage(defaultImage))
                     {
@@ -148,6 +162,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Масштабирование изображения с сохранением пропорций
+        /// </summary>
         private Image ScaleImage(Image image, int maxWidth, int maxHeight)
         {
             var ratioX = (double)maxWidth / image.Width;
@@ -165,36 +182,20 @@ namespace NailService
             return newImage;
         }
 
+        /// <summary>
+        /// Загрузка текстовых данных услуги в поля формы
+        /// </summary>
         private void LoadTextBoxs()
         {
             NameService.Text = Service.ServiceName;
             Price.Text = Service.Price.ToString();
             Description.Text = Service.Description;
-
-            // Счетчик символов для описания
             UpdateCharCount();
         }
 
-        private void UpdateCharCount()
-        {
-            int charCount = Description.Text.Length;
-            int maxChars = 500;
-            lblCharCount.Text = $"{charCount}/{maxChars}";
-
-            if (charCount > maxChars * 0.9) // 90% от лимита
-            {
-                lblCharCount.ForeColor = Color.Orange;
-            }
-            else if (charCount > maxChars)
-            {
-                lblCharCount.ForeColor = Color.Red;
-            }
-            else
-            {
-                lblCharCount.ForeColor = Color.Green;
-            }
-        }
-
+        /// <summary>
+        /// Загрузка категорий из базы данных
+        /// </summary>
         private void LoadCategory()
         {
             try
@@ -212,7 +213,6 @@ namespace NailService
                     CategoryCb.DisplayMember = "CategoryName";
                     CategoryCb.ValueMember = "IDCategory";
 
-                    // Устанавливаем выбранную категорию
                     if (CategoryCb.Items.Count > 0)
                     {
                         for (int i = 0; i < CategoryCb.Items.Count; i++)
@@ -234,19 +234,42 @@ namespace NailService
             }
         }
 
-        private void Back_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Обновление счетчика символов в описании
+        /// </summary>
+        private void UpdateCharCount()
         {
-            DialogResult = DialogResult.Cancel;
-            Close();
+            int charCount = Description.Text.Length;
+            int maxChars = 500;
+            lblCharCount.Text = $"{charCount}/{maxChars}";
+
+            if (charCount > maxChars * 0.9)
+            {
+                lblCharCount.ForeColor = Color.Orange;
+            }
+            else if (charCount > maxChars)
+            {
+                lblCharCount.ForeColor = Color.Red;
+            }
+            else
+            {
+                lblCharCount.ForeColor = Color.Green;
+            }
         }
 
+        #endregion
+
+        #region Сохранение данных
+
+        /// <summary>
+        /// Сохранение изменений и закрытие формы
+        /// </summary>
         private void EditService_Click(object sender, EventArgs e)
         {
             if (ValidateData())
             {
                 SaveServiceData();
 
-                // Сохраняем изображение через ImageService
                 if (_imageChanged && _selectedImage != null)
                 {
                     try
@@ -276,10 +299,20 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Отмена редактирования и закрытие формы
+        /// </summary>
+        private void Back_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            Close();
+        }
 
+        /// <summary>
+        /// Валидация введенных данных перед сохранением
+        /// </summary>
         private bool ValidateData()
         {
-            // Проверка названия
             if (string.IsNullOrWhiteSpace(NameService.Text))
             {
                 MessageBox.Show("Введите название услуги", "Ошибка",
@@ -288,7 +321,6 @@ namespace NailService
                 return false;
             }
 
-            // Проверка цены
             if (string.IsNullOrWhiteSpace(Price.Text))
             {
                 MessageBox.Show("Введите стоимость услуги", "Ошибка",
@@ -297,7 +329,6 @@ namespace NailService
                 return false;
             }
 
-            // Проверка корректности цены
             if (!decimal.TryParse(Price.Text.Trim(), out decimal price) || price <= 0)
             {
                 MessageBox.Show("Введите корректную стоимость (число больше 0)", "Ошибка",
@@ -307,7 +338,6 @@ namespace NailService
                 return false;
             }
 
-            // Проверка описания
             if (string.IsNullOrWhiteSpace(Description.Text))
             {
                 MessageBox.Show("Введите описание услуги", "Ошибка",
@@ -316,7 +346,6 @@ namespace NailService
                 return false;
             }
 
-            // Проверка категории
             if (CategoryCb.SelectedValue == null)
             {
                 MessageBox.Show("Выберите категорию", "Ошибка",
@@ -328,6 +357,9 @@ namespace NailService
             return true;
         }
 
+        /// <summary>
+        /// Сохранение данных из формы в объект Service
+        /// </summary>
         private void SaveServiceData()
         {
             Service.ServiceName = NameService.Text.Trim();
@@ -343,93 +375,12 @@ namespace NailService
 
             Service.Description = Description.Text.Trim();
             Service.Category = (int)CategoryCb.SelectedValue;
-            Service.ServiceImage = _selectedImage; // Сохраняем изображение в модель
+            Service.ServiceImage = _selectedImage;
         }
 
-        private string SaveServiceImage()
-        {
-            try
-            {
-                if (_selectedImage == null || IsDefaultImage())
-                {
-                    // Если выбрана заглушка, удаляем старое фото
-                    if (!string.IsNullOrEmpty(Service.Photo))
-                    {
-                        string oldFilePath = Path.Combine(_servicesImagesPath, Service.Photo);
-                        if (File.Exists(oldFilePath) && !IsDefaultImageFile(oldFilePath))
-                        {
-                            File.Delete(oldFilePath);
-                        }
-                    }
-                    return null; // Возвращаем null для заглушки
-                }
-
-                // Генерируем уникальное имя файла
-                string serviceName = NameService.Text.Trim().ToLower()
-                    .Replace(" ", "_")
-                    .Replace("/", "_")
-                    .Replace("\\", "_")
-                    .Replace(":", "")
-                    .Replace("*", "")
-                    .Replace("?", "")
-                    .Replace("\"", "")
-                    .Replace("<", "")
-                    .Replace(">", "")
-                    .Replace("|", "");
-
-                string fileName = $"service_{serviceName}_{DateTime.Now:yyyyMMddHHmmss}.jpg";
-                string filePath = Path.Combine(_servicesImagesPath, fileName);
-
-                // Удаляем старое изображение если оно существует и это не заглушка
-                if (!string.IsNullOrEmpty(Service.Photo) && Service.Photo != fileName)
-                {
-                    string oldFilePath = Path.Combine(_servicesImagesPath, Service.Photo);
-                    if (File.Exists(oldFilePath) && !IsDefaultImageFile(oldFilePath))
-                    {
-                        File.Delete(oldFilePath);
-                    }
-                }
-
-                // Сохраняем новое изображение
-                _selectedImage.Save(filePath, System.Drawing.Imaging.ImageFormat.Jpeg);
-
-                return fileName;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Не удалось сохранить изображение: {ex.Message}", "Ошибка",
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return Service.Photo; // Возвращаем старое имя файла в случае ошибки
-            }
-        }
-
-        private bool IsDefaultImage()
-        {
-            try
-            {
-                return _selectedImage == null ||
-                       (_defaultImagePath != null &&
-                        pictureBoxService.ImageLocation == _defaultImagePath);
-            }
-            catch
-            {
-                return true;
-            }
-        }
-
-        private bool IsDefaultImageFile(string filePath)
-        {
-            try
-            {
-                return Path.GetFileName(filePath) == "Default.jpg" ||
-                       Path.GetFileName(filePath) == "default_service.jpg";
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
+        /// <summary>
+        /// Обновление данных услуги в базе данных
+        /// </summary>
         private bool UpdateServiceInDatabase()
         {
             try
@@ -453,17 +404,13 @@ namespace NailService
             }
         }
 
-        // Обработчики для кнопок управления изображением
-        private void btnLoadImage_Click(object sender, EventArgs e)
-        {
-            LoadImageFromFile();
-        }
+        #endregion
 
-        private void btnRemoveImage_Click(object sender, EventArgs e)
-        {
-            RemoveImage();
-        }
+        #region Управление изображением
 
+        /// <summary>
+        /// Загрузка изображения из файла
+        /// </summary>
         private void LoadImageFromFile()
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -473,7 +420,6 @@ namespace NailService
                 openFileDialog.Title = $"Выберите изображение услуги (макс. {MAX_IMAGE_SIZE / (1024 * 1024)} МБ)";
                 openFileDialog.RestoreDirectory = true;
 
-                // Добавляем обработчик для проверки размера файла
                 openFileDialog.FileOk += OpenFileDialog_FileOk;
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -482,7 +428,6 @@ namespace NailService
                     {
                         string filePath = openFileDialog.FileName;
 
-                        // Проверяем размер файла
                         FileInfo fileInfo = new FileInfo(filePath);
                         if (fileInfo.Length > MAX_IMAGE_SIZE)
                         {
@@ -495,7 +440,6 @@ namespace NailService
                             return;
                         }
 
-                        // Проверяем расширение файла
                         string extension = Path.GetExtension(filePath).ToLower();
                         string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
 
@@ -509,10 +453,8 @@ namespace NailService
                             return;
                         }
 
-                        // Загружаем изображение
                         _selectedImage = Image.FromFile(filePath);
 
-                        // Дополнительная проверка размера изображения в пикселях
                         if (_selectedImage.Width > 4000 || _selectedImage.Height > 4000)
                         {
                             var result = MessageBox.Show($"Разрешение изображения очень большое ({_selectedImage.Width}x{_selectedImage.Height}).\n" +
@@ -530,7 +472,6 @@ namespace NailService
                             }
                         }
 
-                        // Масштабируем изображение для PictureBox
                         pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
                         _imageChanged = true;
                     }
@@ -548,11 +489,13 @@ namespace NailService
                     }
                 }
 
-                // Отписываемся от события
                 openFileDialog.FileOk -= OpenFileDialog_FileOk;
             }
         }
 
+        /// <summary>
+        /// Проверка файла перед загрузкой (размер, формат)
+        /// </summary>
         private void OpenFileDialog_FileOk(object sender, CancelEventArgs e)
         {
             var openFileDialog = sender as OpenFileDialog;
@@ -562,7 +505,6 @@ namespace NailService
                 {
                     FileInfo fileInfo = new FileInfo(openFileDialog.FileName);
 
-                    // Проверяем размер файла
                     if (fileInfo.Length > MAX_IMAGE_SIZE)
                     {
                         MessageBox.Show($"Размер файла слишком большой ({fileInfo.Length / (1024 * 1024)} МБ).\n" +
@@ -574,7 +516,6 @@ namespace NailService
                         return;
                     }
 
-                    // Проверяем расширение
                     string extension = Path.GetExtension(openFileDialog.FileName).ToLower();
                     string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
 
@@ -599,53 +540,42 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Удаление текущего изображения (замена на заглушку)
+        /// </summary>
+        private void btnRemoveImage_Click(object sender, EventArgs e)
+        {
+            RemoveImage();
+        }
+
+        /// <summary>
+        /// Удаление текущего изображения (замена на заглушку)
+        /// </summary>
         private void RemoveImage()
         {
             LoadDefaultImage();
             _imageChanged = true;
         }
 
-        // Обработчики фильтрации ввода
-        private void NameService_TextChanged(object sender, EventArgs e)
+        /// <summary>
+        /// Загрузка изображения при клике на PictureBox
+        /// </summary>
+        private void pictureBoxService_Click(object sender, EventArgs e)
         {
-            int selectionStart = NameService.SelectionStart;
-            string filteredText = InputValidator.FilterToRussianLetters(NameService.Text, true);
-
-            if (filteredText != NameService.Text)
-            {
-                NameService.Text = filteredText;
-                NameService.SelectionStart = Math.Min(selectionStart, NameService.Text.Length);
-            }
+            LoadImageFromFile();
         }
 
-        private void Price_TextChanged(object sender, EventArgs e)
+        /// <summary>
+        /// Загрузка изображения через кнопку
+        /// </summary>
+        private void btnLoadImage_Click(object sender, EventArgs e)
         {
-            int selectionStart = Price.SelectionStart;
-            bool allowDecimal = true;
-            string filteredText = InputValidator.FilterToDigitsOnly(Price.Text, allowDecimal);
-
-            if (filteredText != Price.Text)
-            {
-                Price.Text = filteredText;
-                Price.SelectionStart = Math.Min(selectionStart, Price.Text.Length);
-            }
+            LoadImageFromFile();
         }
 
-        private void Description_TextChanged(object sender, EventArgs e)
-        {
-            int selectionStart = Description.SelectionStart;
-            string filteredText = InputValidator.FilterToRussianLetters(Description.Text, true);
-
-            if (filteredText != Description.Text)
-            {
-                Description.Text = filteredText;
-                Description.SelectionStart = Math.Min(selectionStart, Description.Text.Length);
-            }
-
-            UpdateCharCount();
-        }
-
-        // Drag & Drop для PictureBox
+        /// <summary>
+        /// Обработка перетаскивания файла на PictureBox
+        /// </summary>
         private void pictureBoxService_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -658,20 +588,20 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Обработка сброса файла на PictureBox
+        /// </summary>
         private void pictureBoxService_DragDrop(object sender, DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (files.Length > 0)
             {
                 string filePath = files[0];
-
-                // Проверяем расширение файла
                 string extension = Path.GetExtension(filePath).ToLower();
                 string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
 
                 if (allowedExtensions.Contains(extension))
                 {
-                    // Проверяем размер файла перед загрузкой
                     try
                     {
                         FileInfo fileInfo = new FileInfo(filePath);
@@ -685,7 +615,6 @@ namespace NailService
                             return;
                         }
 
-                        // Проверяем размер изображения в пикселях
                         using (Image tempImage = Image.FromFile(filePath))
                         {
                             if (tempImage.Width > 4000 || tempImage.Height > 4000)
@@ -704,7 +633,6 @@ namespace NailService
                             }
                         }
 
-                        // Загружаем изображение
                         _selectedImage = Image.FromFile(filePath);
                         pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
                         _imageChanged = true;
@@ -730,10 +658,58 @@ namespace NailService
             }
         }
 
-        // Клик по PictureBox для загрузки изображения
-        private void pictureBoxService_Click(object sender, EventArgs e)
+        #endregion
+
+        #region Фильтрация ввода
+
+        /// <summary>
+        /// Фильтрация ввода в поле названия услуги (только русские буквы)
+        /// </summary>
+        private void NameService_TextChanged(object sender, EventArgs e)
         {
-            LoadImageFromFile();
+            int selectionStart = NameService.SelectionStart;
+            string filteredText = InputValidator.FilterToRussianLetters(NameService.Text, true);
+
+            if (filteredText != NameService.Text)
+            {
+                NameService.Text = filteredText;
+                NameService.SelectionStart = Math.Min(selectionStart, NameService.Text.Length);
+            }
         }
+
+        /// <summary>
+        /// Фильтрация ввода в поле цены (только цифры и точка)
+        /// </summary>
+        private void Price_TextChanged(object sender, EventArgs e)
+        {
+            int selectionStart = Price.SelectionStart;
+            bool allowDecimal = true;
+            string filteredText = InputValidator.FilterToDigitsOnly(Price.Text, allowDecimal);
+
+            if (filteredText != Price.Text)
+            {
+                Price.Text = filteredText;
+                Price.SelectionStart = Math.Min(selectionStart, Price.Text.Length);
+            }
+        }
+
+        /// <summary>
+        /// Фильтрация ввода в поле описания и счетчик символов
+        /// </summary>
+        private void Description_TextChanged(object sender, EventArgs e)
+        {
+            int selectionStart = Description.SelectionStart;
+            string filteredText = InputValidator.FilterToRussianLetters(Description.Text, true);
+
+            if (filteredText != Description.Text)
+            {
+                Description.Text = filteredText;
+                Description.SelectionStart = Math.Min(selectionStart, Description.Text.Length);
+            }
+
+            UpdateCharCount();
+        }
+
+        #endregion
     }
 }

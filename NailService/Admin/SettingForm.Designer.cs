@@ -34,7 +34,7 @@
             this.Server = new System.Windows.Forms.TextBox();
             this.DB = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.Name = new System.Windows.Forms.TextBox();
+            this.NameUser = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.Password = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
@@ -86,13 +86,13 @@
             this.label3.TabIndex = 3;
             this.label3.Text = "База данных";
             // 
-            // Name
+            // NameUser
             // 
-            this.Name.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.25F);
-            this.Name.Location = new System.Drawing.Point(23, 224);
-            this.Name.Name = "Name";
-            this.Name.Size = new System.Drawing.Size(297, 32);
-            this.Name.TabIndex = 6;
+            this.NameUser.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.25F);
+            this.NameUser.Location = new System.Drawing.Point(23, 224);
+            this.NameUser.Name = "NameUser";
+            this.NameUser.Size = new System.Drawing.Size(297, 32);
+            this.NameUser.TabIndex = 6;
             // 
             // label4
             // 
@@ -140,7 +140,7 @@
             this.Exit.Name = "Exit";
             this.Exit.Size = new System.Drawing.Size(297, 49);
             this.Exit.TabIndex = 10;
-            this.Exit.Text = "Выйти";
+            this.Exit.Text = "Перезапуск";
             this.Exit.UseVisualStyleBackColor = false;
             this.Exit.Click += new System.EventHandler(this.Exit_Click);
             // 
@@ -154,7 +154,7 @@
             this.Controls.Add(this.Connection);
             this.Controls.Add(this.Password);
             this.Controls.Add(this.label5);
-            this.Controls.Add(this.Name);
+            this.Controls.Add(this.NameUser);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.DB);
             this.Controls.Add(this.label3);
@@ -162,10 +162,12 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(6);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
+            this.Name = "SettingForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Настройки";
             this.ResumeLayout(false);
@@ -180,7 +182,7 @@
         private System.Windows.Forms.TextBox Server;
         private System.Windows.Forms.TextBox DB;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox Name;
+        private System.Windows.Forms.TextBox NameUser;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox Password;
         private System.Windows.Forms.Label label5;

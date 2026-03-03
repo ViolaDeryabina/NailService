@@ -15,27 +15,35 @@ namespace NailService
     {
         private string _connection;
         public ClientModel NewClient { get; private set; }
-        private Show _showForm; // Ссылка на главную форму
+        public int AddedClientId { get; private set; }
+        private Show _showForm; // Ссылка на форму Show для обновления списка после добавления
 
+        /// <summary>
+        /// Конструктор формы добавления клиента
+        /// </summary>
+        /// <param name="showForm">Ссылка на главную форму для обновления данных</param>
         public AddClientForm(Show showForm = null)
         {
             InitializeComponent();
             _connection = Connection.ConnectionString;
-            _showForm = showForm; // Сохраняем ссылку на главную форму
+            _showForm = showForm;
             NewClient = new ClientModel();
         }
 
+        /// <summary>
+        /// Обработчик кнопки "Добавить" - валидация и сохранение клиента
+        /// </summary>
         private void AddClient_Click(object sender, EventArgs e)
         {
             if (ValidateData())
             {
-                // Проверяем, есть ли неактивный клиент для восстановления
+                // Проверяем наличие неактивного клиента для восстановления
                 if (_showForm != null && CheckAndRestoreInactiveClient())
                 {
                     return; // Клиент восстановлен, форма закрывается
                 }
 
-                // Иначе создаем нового клиента
+                // Создание нового клиента
                 if (AddNewClient())
                 {
                     DialogResult = DialogResult.OK;
@@ -44,15 +52,22 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Обработчик кнопки "Назад" - закрытие формы без сохранения
+        /// </summary>
         private void Back_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
             Close();
         }
 
+        /// <summary>
+        /// Валидация введенных данных перед сохранением
+        /// </summary>
+        /// <returns>true если данные корректны</returns>
         private bool ValidateData()
         {
-            // Проверка фамилии
+            // Проверка обязательных полей
             if (string.IsNullOrWhiteSpace(LastName.Text))
             {
                 MessageBox.Show("Введите фамилию клиента", "Внимание",
@@ -61,7 +76,6 @@ namespace NailService
                 return false;
             }
 
-            // Проверка имени
             if (string.IsNullOrWhiteSpace(FirstName.Text))
             {
                 MessageBox.Show("Введите имя клиента", "Внимание",
@@ -70,7 +84,6 @@ namespace NailService
                 return false;
             }
 
-            // Проверка телефона
             if (string.IsNullOrWhiteSpace(Phone.Text))
             {
                 MessageBox.Show("Введите телефон клиента", "Внимание",
@@ -79,7 +92,7 @@ namespace NailService
                 return false;
             }
 
-            // Проверка формата телефона
+            // Проверка корректности номера телефона (минимум 10 цифр)
             string phoneDigits = GetPhoneDigits(Phone.Text);
             if (phoneDigits.Length < 10)
             {
@@ -89,7 +102,7 @@ namespace NailService
                 return false;
             }
 
-            // Проверка, что телефон не занят активным клиентом
+            // Проверка уникальности телефона среди активных клиентов
             if (IsActiveClientExists(phoneDigits))
             {
                 MessageBox.Show("Клиент с таким номером телефона уже существует и активен",
@@ -102,7 +115,11 @@ namespace NailService
             return true;
         }
 
-        // Проверяет, есть ли активный клиент с таким телефоном
+        /// <summary>
+        /// Проверка существования активного клиента с указанным телефоном
+        /// </summary>
+        /// <param name="phoneDigits">Очищенный номер телефона (только цифры)</param>
+        /// <returns>true если активный клиент существует</returns>
         private bool IsActiveClientExists(string phoneDigits)
         {
             try
@@ -122,11 +139,14 @@ namespace NailService
             {
                 MessageBox.Show($"Ошибка проверки телефона: {ex.Message}", "Ошибка",
                               MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return true; // В случае ошибки считаем, что клиент существует
+                return true; // При ошибке блокируем добавление для безопасности
             }
         }
 
-        // Проверяет и восстанавливает неактивного клиента
+        /// <summary>
+        /// Поиск и восстановление неактивного клиента с такими же данными
+        /// </summary>
+        /// <returns>true если клиент восстановлен и форма закрыта</returns>
         private bool CheckAndRestoreInactiveClient()
         {
             try
@@ -135,12 +155,11 @@ namespace NailService
                 string firstName = FirstName.Text.Trim();
                 string phoneDigits = GetPhoneDigits(Phone.Text);
 
-                // Проверяем через базу данных
                 var (exists, isActive, clientId) = CheckClientExists(lastName, firstName, phoneDigits);
 
                 if (exists && !isActive)
                 {
-                    // Нашли неактивного клиента - предлагаем восстановить
+                    // Найден неактивный клиент - предлагаем восстановить
                     var result = MessageBox.Show(
                         $"Найден неактивный клиент с такими данными:\n" +
                         $"ФИО: {lastName} {firstName}\n" +
@@ -152,10 +171,7 @@ namespace NailService
 
                     if (result == DialogResult.Yes)
                     {
-                        // Сохраняем данные из формы
                         SaveClientData();
-
-                        // Восстанавливаем клиента
                         bool restored = RestoreClientInDatabase(clientId, NewClient);
 
                         if (restored)
@@ -172,16 +188,6 @@ namespace NailService
                                           MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
-                    else
-                    {
-                        // Пользователь отказался от восстановления
-                        return false;
-                    }
-                }
-                else if (exists && isActive)
-                {
-                    // Активный клиент уже существует - проверка уже была в ValidateData
-                    return false;
                 }
             }
             catch (Exception ex)
@@ -193,7 +199,10 @@ namespace NailService
             return false;
         }
 
-        // Проверяет существование клиента в базе
+        /// <summary>
+        /// Проверка существования клиента в базе по телефону или ФИО
+        /// </summary>
+        /// <returns>Кортеж (существует, активен, ID клиента)</returns>
         private (bool exists, bool isActive, int clientId) CheckClientExists(string lastName, string firstName, string phone)
         {
             try
@@ -202,7 +211,6 @@ namespace NailService
                 {
                     connection.Open();
 
-                    // Ищем по телефону и ФИО
                     string query = @"SELECT IDClient, IsActive 
                                    FROM Client 
                                    WHERE Phone = @Phone 
@@ -233,7 +241,10 @@ namespace NailService
             }
         }
 
-        // Восстанавливает клиента в базе данных
+        /// <summary>
+        /// Восстановление неактивного клиента (активация и обновление данных)
+        /// </summary>
+        /// <returns>true если восстановление успешно</returns>
         private bool RestoreClientInDatabase(int clientId, ClientModel clientData)
         {
             try
@@ -267,7 +278,10 @@ namespace NailService
             }
         }
 
-        // Создает нового клиента или восстанавливает неактивного
+        /// <summary>
+        /// Добавление нового клиента в базу данных
+        /// </summary>
+        /// <returns>true если добавление успешно</returns>
         private bool AddNewClient()
         {
             try
@@ -279,7 +293,7 @@ namespace NailService
                 {
                     connection.Open();
 
-                    // Сначала проверяем, нет ли неактивного клиента с таким телефоном
+                    // Поиск неактивного клиента по телефону
                     string checkQuery = "SELECT IDClient FROM Client WHERE Phone = @Phone AND IsActive = 0";
                     MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
                     checkCmd.Parameters.AddWithValue("@Phone", phoneDigits);
@@ -288,15 +302,15 @@ namespace NailService
 
                     if (inactiveClientId != null && inactiveClientId != DBNull.Value)
                     {
-                        // Нашли неактивного клиента с таким телефоном - восстанавливаем
+                        // Восстановление неактивного клиента по телефону
                         int clientId = Convert.ToInt32(inactiveClientId);
 
                         string updateQuery = @"UPDATE Client 
-                                            SET LastName = @LastName,
-                                                FirstName = @FirstName,
-                                                MiddleName = @MiddleName,
-                                                IsActive = 1
-                                            WHERE IDClient = @ClientId";
+                                    SET LastName = @LastName,
+                                        FirstName = @FirstName,
+                                        MiddleName = @MiddleName,
+                                        IsActive = 1
+                                    WHERE IDClient = @ClientId";
 
                         MySqlCommand updateCmd = new MySqlCommand(updateQuery, connection);
                         updateCmd.Parameters.AddWithValue("@ClientId", clientId);
@@ -308,6 +322,7 @@ namespace NailService
 
                         if (updatedRows > 0)
                         {
+                            AddedClientId = clientId;
                             MessageBox.Show("Клиент успешно восстановлен", "Успех",
                                           MessageBoxButtons.OK, MessageBoxIcon.Information);
                             return true;
@@ -315,11 +330,11 @@ namespace NailService
                     }
                     else
                     {
-                        // Проверяем по ФИО (может быть другой телефон, но тот же человек)
+                        // Поиск неактивного клиента по ФИО
                         string checkByNameQuery = @"SELECT IDClient FROM Client 
-                                                  WHERE LastName = @LastName 
-                                                    AND FirstName = @FirstName 
-                                                    AND IsActive = 0";
+                                          WHERE LastName = @LastName 
+                                            AND FirstName = @FirstName 
+                                            AND IsActive = 0";
                         MySqlCommand checkByNameCmd = new MySqlCommand(checkByNameQuery, connection);
                         checkByNameCmd.Parameters.AddWithValue("@LastName", NewClient.LastName);
                         checkByNameCmd.Parameters.AddWithValue("@FirstName", NewClient.FirstName);
@@ -328,7 +343,7 @@ namespace NailService
 
                         if (inactiveByNameClientId != null && inactiveByNameClientId != DBNull.Value)
                         {
-                            // Предлагаем восстановить по ФИО
+                            // Предложение восстановить клиента с другим телефоном
                             int clientId = Convert.ToInt32(inactiveByNameClientId);
 
                             var results = MessageBox.Show(
@@ -341,10 +356,10 @@ namespace NailService
                             if (results == DialogResult.Yes)
                             {
                                 string updateQuery = @"UPDATE Client 
-                                                    SET Phone = @Phone,
-                                                        MiddleName = @MiddleName,
-                                                        IsActive = 1
-                                                    WHERE IDClient = @ClientId";
+                                            SET Phone = @Phone,
+                                                MiddleName = @MiddleName,
+                                                IsActive = 1
+                                            WHERE IDClient = @ClientId";
 
                                 MySqlCommand updateCmd = new MySqlCommand(updateQuery, connection);
                                 updateCmd.Parameters.AddWithValue("@ClientId", clientId);
@@ -355,6 +370,7 @@ namespace NailService
 
                                 if (updatedRows > 0)
                                 {
+                                    AddedClientId = clientId;
                                     MessageBox.Show("Клиент успешно восстановлен", "Успех",
                                                   MessageBoxButtons.OK, MessageBoxIcon.Information);
                                     return true;
@@ -362,10 +378,11 @@ namespace NailService
                             }
                         }
 
-                        // Создаем нового клиента
+                        // Создание нового клиента
                         string insertQuery = @"INSERT INTO Client 
-                                            (LastName, FirstName, MiddleName, Phone, IsActive) 
-                                            VALUES (@LastName, @FirstName, @MiddleName, @Phone, 1)";
+                                    (LastName, FirstName, MiddleName, Phone, IsActive) 
+                                    VALUES (@LastName, @FirstName, @MiddleName, @Phone, 1);
+                                    SELECT LAST_INSERT_ID();";
 
                         MySqlCommand insertCmd = new MySqlCommand(insertQuery, connection);
                         insertCmd.Parameters.AddWithValue("@LastName", NewClient.LastName);
@@ -373,11 +390,11 @@ namespace NailService
                         insertCmd.Parameters.AddWithValue("@MiddleName", NewClient.MiddleName ?? "");
                         insertCmd.Parameters.AddWithValue("@Phone", phoneDigits);
 
-                        int result = insertCmd.ExecuteNonQuery();
+                        object result = insertCmd.ExecuteScalar();
 
-                        if (result > 0)
+                        if (result != null && result != DBNull.Value)
                         {
-                            
+                            AddedClientId = Convert.ToInt32(result);
                             return true;
                         }
                     }
@@ -409,11 +426,19 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Извлечение только цифр из строки телефона
+        /// </summary>
+        /// <returns>Строка, содержащая только цифры</returns>
         private string GetPhoneDigits(string phone)
         {
             return new string(phone.Where(char.IsDigit).ToArray());
         }
 
+        /// <summary>
+        /// Форматирование номера телефона для отображения
+        /// </summary>
+        /// <returns>Отформатированный номер в формате +7 (XXX) XXX-XX-XX</returns>
         private string FormatPhoneForDisplay(string phoneDigits)
         {
             if (phoneDigits.Length == 11 && (phoneDigits.StartsWith("7") || phoneDigits.StartsWith("8")))
@@ -428,16 +453,20 @@ namespace NailService
             return phoneDigits;
         }
 
+        /// <summary>
+        /// Сохранение данных из формы в объект NewClient
+        /// </summary>
         private void SaveClientData()
         {
             NewClient.LastName = LastName.Text.Trim();
             NewClient.FirstName = FirstName.Text.Trim();
             NewClient.MiddleName = MiddleName.Text.Trim();
             NewClient.Phone = GetPhoneDigits(Phone.Text);
-            // NewClient.Email = EmailTextBox.Text.Trim(); // если есть поле email
         }
 
-        // Обработчики фильтрации ввода (остаются без изменений)
+        /// <summary>
+        /// Фильтрация ввода в поле фамилии (только русские буквы)
+        /// </summary>
         private void LastName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = LastName.SelectionStart;
@@ -450,6 +479,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Фильтрация ввода в поле имени (только русские буквы)
+        /// </summary>
         private void FirstName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = FirstName.SelectionStart;
@@ -462,6 +494,9 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Фильтрация ввода в поле отчества (только русские буквы)
+        /// </summary>
         private void MiddleName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = MiddleName.SelectionStart;
@@ -474,35 +509,34 @@ namespace NailService
             }
         }
 
+        /// <summary>
+        /// Автоматическое форматирование номера телефона при вводе
+        /// </summary>
         private void Phone_TextChanged(object sender, EventArgs e)
         {
             int originalSelectionStart = Phone.SelectionStart;
             string originalText = Phone.Text;
 
-            // 1. Фильтруем текст
             string filteredText = InputValidator.FilterToPhone(originalText);
-
-            // 2. Форматируем номер
             string formattedText = InputValidator.FormatPhoneNumber(filteredText);
 
-            // Если текст изменился
             if (formattedText != originalText)
             {
-                // Сохраняем текст
                 Phone.Text = formattedText;
-
-                // Корректируем позицию курсора с учетом добавленных символов форматирования
                 int adjustedPosition = GetAdjustedCursorPosition(originalSelectionStart, originalText, formattedText);
                 Phone.SelectionStart = Math.Min(adjustedPosition, formattedText.Length);
             }
 
-            // Проверяем подсказку о неактивном клиенте
+            // Проверка наличия неактивного клиента с таким телефоном
             if (!string.IsNullOrWhiteSpace(Phone.Text))
             {
                 CheckForInactiveClientHint();
             }
         }
 
+        /// <summary>
+        /// Корректировка позиции курсора после форматирования телефона
+        /// </summary>
         private int GetAdjustedCursorPosition(int originalPosition, string oldText, string newText)
         {
             if (originalPosition >= oldText.Length)
@@ -522,7 +556,9 @@ namespace NailService
             return originalPosition + formatCharsBeforeCursor;
         }
 
-        // Проверка подсказки о неактивном клиенте
+        /// <summary>
+        /// Проверка наличия неактивного клиента с введенным номером телефона
+        /// </summary>
         private void CheckForInactiveClientHint()
         {
             try
@@ -546,13 +582,9 @@ namespace NailService
                     {
                         if (reader.Read())
                         {
-                            string lastName = reader["LastName"]?.ToString() ?? "";
-                            string firstName = reader["FirstName"]?.ToString() ?? "";
-                            string middleName = reader["MiddleName"]?.ToString() ?? "";
-
-                            
+                            // Здесь можно добавить визуальную подсказку о найденном неактивном клиенте
+                            // Например, изменить цвет фона или показать иконку
                         }
-                        
                     }
                 }
             }
@@ -562,7 +594,9 @@ namespace NailService
             }
         }
 
-        // Также проверяем при уходе с поля телефона
+        /// <summary>
+        /// Проверка при потере фокуса поля телефона
+        /// </summary>
         private void Phone_Leave(object sender, EventArgs e)
         {
             CheckForInactiveClientHint();

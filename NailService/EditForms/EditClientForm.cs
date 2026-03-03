@@ -11,11 +11,19 @@ using System.Windows.Forms;
 
 namespace NailService
 {
+    /// <summary>
+    /// Форма для редактирования данных существующего клиента
+    /// Позволяет изменять ФИО и номер телефона с валидацией уникальности
+    /// </summary>
     public partial class EditClientForm : Form
     {
         private string _connection;
         public ClientModel Client { get; private set; }
 
+        /// <summary>
+        /// Конструктор формы редактирования клиента
+        /// </summary>
+        /// <param name="client">Объект клиента с текущими данными для редактирования</param>
         public EditClientForm(ClientModel client)
         {
             InitializeComponent();
@@ -23,6 +31,10 @@ namespace NailService
             Client = client;
             LoadClientData();
         }
+
+        /// <summary>
+        /// Загрузка данных клиента в поля формы
+        /// </summary>
         private void LoadClientData()
         {
             LastName.Text = Client.LastName;
@@ -31,95 +43,18 @@ namespace NailService
             Phone.Text = Client.Phone;
         }
 
+        /// <summary>
+        /// Отмена редактирования и закрытие формы
+        /// </summary>
         private void Back_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
             Close();
         }
 
-        private void LastName_TextChanged(object sender, EventArgs e)
-        {
-            int selectionStart = LastName.SelectionStart;
-            string filteredText = InputValidator.FilterToRussianLetters(LastName.Text);
-
-            if (filteredText != LastName.Text)
-            {
-                LastName.Text = filteredText;
-                LastName.SelectionStart = Math.Min(selectionStart, LastName.Text.Length);
-            }
-        }
-
-        private void FirstName_TextChanged(object sender, EventArgs e)
-        {
-            int selectionStart = FirstName.SelectionStart;
-            string filteredText = InputValidator.FilterToRussianLetters(FirstName.Text);
-
-            if (filteredText != FirstName.Text)
-            {
-                FirstName.Text = filteredText;
-                FirstName.SelectionStart = Math.Min(selectionStart, FirstName.Text.Length);
-            }
-        }
-
-        private void MiddleName_TextChanged(object sender, EventArgs e)
-        {
-            int selectionStart = MiddleName.SelectionStart;
-            string filteredText = InputValidator.FilterToRussianLetters(MiddleName.Text);
-
-            if (filteredText != MiddleName.Text)
-            {
-                MiddleName.Text = filteredText;
-                MiddleName.SelectionStart = Math.Min(selectionStart, MiddleName.Text.Length);
-            }
-        }
-
-        private void Phone_TextChanged(object sender, EventArgs e)
-        {
-
-            int originalSelectionStart = Phone.SelectionStart;
-            string originalText = Phone.Text;
-
-            // 1. Фильтруем текст
-            string filteredText = InputValidator.FilterToPhone(originalText);
-
-            // 2. Форматируем номер
-            string formattedText = InputValidator.FormatPhoneNumber(filteredText);
-
-            // Если текст изменился
-            if (formattedText != originalText)
-            {
-                // Сохраняем текст
-                Phone.Text = formattedText;
-
-                // Корректируем позицию курсора с учетом добавленных символов форматирования
-                int adjustedPosition = GetAdjustedCursorPosition(originalSelectionStart, originalText, formattedText);
-                Phone.SelectionStart = Math.Min(adjustedPosition, formattedText.Length);
-            }
-        }
-
-        private int GetAdjustedCursorPosition(int originalPosition, string oldText, string newText)
-        {
-            if (originalPosition >= oldText.Length)
-                return newText.Length;
-
-            // Считаем, сколько форматирующих символов было добавлено ДО позиции курсора
-            int formatCharsBeforeCursor = 0;
-
-            // Форматирующие символы в телефонном номере
-            char[] formatChars = { '(', ')', ' ', '-', '+' };
-
-            for (int i = 0; i < originalPosition && i < newText.Length; i++)
-            {
-                if (formatChars.Contains(newText[i]))
-                {
-                    formatCharsBeforeCursor++;
-                }
-            }
-
-            // Корректируем позицию с учетом форматирующих символов
-            return originalPosition + formatCharsBeforeCursor;
-        }
-
+        /// <summary>
+        /// Сохранение изменений и закрытие формы
+        /// </summary>
         private void EditClient_Click(object sender, EventArgs e)
         {
             if (ValidateData())
@@ -130,9 +65,14 @@ namespace NailService
             }
         }
 
+        #region Валидация данных
+
+        /// <summary>
+        /// Валидация введенных данных перед сохранением
+        /// </summary>
+        /// <returns>true если данные корректны</returns>
         private bool ValidateData()
         {
-            // Проверка фамилии
             if (string.IsNullOrWhiteSpace(LastName.Text))
             {
                 MessageBox.Show("Введите фамилию клиента", "Ошибка",
@@ -141,7 +81,6 @@ namespace NailService
                 return false;
             }
 
-            // Проверка имени
             if (string.IsNullOrWhiteSpace(FirstName.Text))
             {
                 MessageBox.Show("Введите имя клиента", "Ошибка",
@@ -150,7 +89,6 @@ namespace NailService
                 return false;
             }
 
-            // Проверка телефона
             if (string.IsNullOrWhiteSpace(Phone.Text))
             {
                 MessageBox.Show("Введите телефон клиента", "Ошибка",
@@ -159,7 +97,6 @@ namespace NailService
                 return false;
             }
 
-            // Проверка формата телефона (базовая проверка)
             string phoneDigits = new string(Phone.Text.Where(char.IsDigit).ToArray());
             if (phoneDigits.Length < 10)
             {
@@ -169,7 +106,6 @@ namespace NailService
                 return false;
             }
 
-            // Проверка на уникальность телефона
             if (!IsPhoneUnique())
             {
                 MessageBox.Show("Клиент с таким номером телефона уже существует",
@@ -181,6 +117,10 @@ namespace NailService
             return true;
         }
 
+        /// <summary>
+        /// Проверка уникальности номера телефона (исключая текущего клиента)
+        /// </summary>
+        /// <returns>true если номер уникален</returns>
         private bool IsPhoneUnique()
         {
             using (var connection = new MySqlConnection(_connection))
@@ -206,6 +146,101 @@ namespace NailService
             }
         }
 
+        #endregion
+
+        #region Фильтрация и форматирование ввода
+
+        /// <summary>
+        /// Фильтрация ввода в поле фамилии (только русские буквы)
+        /// </summary>
+        private void LastName_TextChanged(object sender, EventArgs e)
+        {
+            int selectionStart = LastName.SelectionStart;
+            string filteredText = InputValidator.FilterToRussianLetters(LastName.Text);
+
+            if (filteredText != LastName.Text)
+            {
+                LastName.Text = filteredText;
+                LastName.SelectionStart = Math.Min(selectionStart, LastName.Text.Length);
+            }
+        }
+
+        /// <summary>
+        /// Фильтрация ввода в поле имени (только русские буквы)
+        /// </summary>
+        private void FirstName_TextChanged(object sender, EventArgs e)
+        {
+            int selectionStart = FirstName.SelectionStart;
+            string filteredText = InputValidator.FilterToRussianLetters(FirstName.Text);
+
+            if (filteredText != FirstName.Text)
+            {
+                FirstName.Text = filteredText;
+                FirstName.SelectionStart = Math.Min(selectionStart, FirstName.Text.Length);
+            }
+        }
+
+        /// <summary>
+        /// Фильтрация ввода в поле отчества (только русские буквы)
+        /// </summary>
+        private void MiddleName_TextChanged(object sender, EventArgs e)
+        {
+            int selectionStart = MiddleName.SelectionStart;
+            string filteredText = InputValidator.FilterToRussianLetters(MiddleName.Text);
+
+            if (filteredText != MiddleName.Text)
+            {
+                FirstName.Text = filteredText;
+                FirstName.SelectionStart = Math.Min(selectionStart, FirstName.Text.Length);
+            }
+        }
+
+        /// <summary>
+        /// Автоматическое форматирование номера телефона при вводе
+        /// </summary>
+        private void Phone_TextChanged(object sender, EventArgs e)
+        {
+            int originalSelectionStart = Phone.SelectionStart;
+            string originalText = Phone.Text;
+
+            string filteredText = InputValidator.FilterToPhone(originalText);
+            string formattedText = InputValidator.FormatPhoneNumber(filteredText);
+
+            if (formattedText != originalText)
+            {
+                Phone.Text = formattedText;
+                int adjustedPosition = GetAdjustedCursorPosition(originalSelectionStart, originalText, formattedText);
+                Phone.SelectionStart = Math.Min(adjustedPosition, formattedText.Length);
+            }
+        }
+
+        /// <summary>
+        /// Корректировка позиции курсора после форматирования телефона
+        /// </summary>
+        private int GetAdjustedCursorPosition(int originalPosition, string oldText, string newText)
+        {
+            if (originalPosition >= oldText.Length)
+                return newText.Length;
+
+            int formatCharsBeforeCursor = 0;
+            char[] formatChars = { '(', ')', ' ', '-', '+' };
+
+            for (int i = 0; i < originalPosition && i < newText.Length; i++)
+            {
+                if (formatChars.Contains(newText[i]))
+                {
+                    formatCharsBeforeCursor++;
+                }
+            }
+
+            return originalPosition + formatCharsBeforeCursor;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Сохранение данных из формы в объект Client
+        /// </summary>
         private void SaveClientData()
         {
             Client.LastName = LastName.Text.Trim();

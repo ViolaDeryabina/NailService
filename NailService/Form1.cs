@@ -17,33 +17,50 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace NailService
 {
+    /// <summary>
+    /// Главная форма авторизации в приложении
+    /// Обрабатывает вход пользователей с проверкой учетных данных и ролей
+    /// </summary>
     public partial class Form1 : Form
     {
         private string _connection;
         private PasswordVisibilityToggle _passwordToggle;
+
+        /// <summary>
+        /// Конструктор формы авторизации
+        /// Инициализирует компоненты и настраивает переключатель видимости пароля
+        /// </summary>
         public Form1()
         {
             InitializeComponent();
             _connection = Connection.ConnectionString;
 
             _passwordToggle = new PasswordVisibilityToggle(
-            Eye,     // PictureBox на форме
-            Password,
-            Resources.eyeOpen,
-            Resources.eyeClose// TextBox с паролем
-        );
+                Eye,                    // PictureBox для переключения
+                Password,               // TextBox с паролем
+                Resources.eyeOpen,      // Иконка открытого глаза
+                Resources.eyeClose      // Иконка закрытого глаза
+            );
         }
 
+        /// <summary>
+        /// Обработчик кнопки авторизации
+        /// Проверяет подключение к БД, валидирует учетные данные и перенаправляет на соответствующую форму
+        /// </summary>
         private void Autorization_Click(object sender, EventArgs e)
         {
+            // Проверка подключения к базе данных
             if (Connection.TestConnection())
             {
+                // Проверка заполнения полей
                 if (Login.Text == "" || Password.Text == "")
                 {
-                    MessageBox.Show("Заполните все поле!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Заполните все поля!", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
+                    // Попытка авторизации
                     using (MySqlConnection con = new MySqlConnection(_connection))
                     {
                         try
@@ -52,7 +69,7 @@ namespace NailService
 
                             string passwordHash = MySQLHelper.GetHash(Password.Text);
 
-                            // Добавляем проверку IsActive = 1
+                            // Проверка наличия активного пользователя с указанными логином и паролем
                             string query = @"SELECT Count(*) FROM users 
                                    WHERE Login = @Login 
                                    AND Password = @Password 
@@ -66,6 +83,7 @@ namespace NailService
 
                             if (count > 0)
                             {
+                                // Получение роли и ФИО пользователя
                                 var role = MySQLHelper.GetRoleName(Login.Text, passwordHash);
                                 string FIO = MySQLHelper.GetLastNameWithInitials(Login.Text, passwordHash);
 
@@ -74,7 +92,7 @@ namespace NailService
                                     int roleId = MySQLHelper.GetRoleId(Login.Text, passwordHash);
                                     int masterID = EditUserClass.GetMasterId(Login.Text, passwordHash);
 
-
+                                    // Перенаправление на соответствующую форму в зависимости от роли
                                     switch (role)
                                     {
                                         case "Директор":
@@ -110,7 +128,7 @@ namespace NailService
                             }
                             else
                             {
-                                // Проверяем, существует ли пользователь, но неактивен
+                                // Проверка на неактивного пользователя
                                 string checkInactiveQuery = @"SELECT Count(*) FROM users 
                                                      WHERE Login = @Login 
                                                      AND Password = @Password 
@@ -131,16 +149,19 @@ namespace NailService
                                 }
                                 else
                                 {
-                                    MessageBox.Show("Неверный логин или пароль", "Ошибка");
+                                    MessageBox.Show("Неверный логин или пароль", "Ошибка",
+                                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 }
 
+                                // Очистка полей ввода
                                 Login.Text = "";
                                 Password.Text = "";
                             }
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show($"Ошибка авторизации: {ex.Message}", "Ошибка");
+                            MessageBox.Show($"Ошибка авторизации: {ex.Message}", "Ошибка",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                         finally
                         {
@@ -151,14 +172,20 @@ namespace NailService
             }
             else
             {
-                MessageBox.Show("Ошибка подключения: Измените настройки подключения", "Ошибка");
+                // Ошибка подключения к базе данных
+                MessageBox.Show("Ошибка подключения к базе данных. Проверьте настройки подключения.",
+                    "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
+                // Открытие формы настроек
                 SettingForm settingForm = new SettingForm();
                 settingForm.Show();
                 this.Hide();
             }
         }
 
+        /// <summary>
+        /// Обработчик кнопки выхода из приложения
+        /// </summary>
         private void Exit_Click(object sender, EventArgs e)
         {
             Application.Exit();
