@@ -230,39 +230,65 @@ namespace NailService
                 {
                     connection.Open();
 
-                    string query = @"UPDATE services 
-                           SET ServiceName = @ServiceName,
-                               Description = @Description,
-                               Price = @Price,
-                               Category = @Category,
-                               Photo = @Photo
-                           WHERE IDServices = @ServiceId";
+                    string query;
+                    MySqlCommand cmd;
 
-                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    if (service.PhotoBytes != null && service.PhotoBytes.Length > 0)
+                    {
+                        query = @"UPDATE services 
+                         SET ServiceName = @ServiceName,
+                             Description = @Description,
+                             Price = @Price,
+                             Category = @Category,
+                             Photo = @Photo
+                         WHERE IDServices = @ServiceId";
+
+                        cmd = new MySqlCommand(query, connection);
+                        cmd.Parameters.AddWithValue("@Photo", service.PhotoBytes);
+                    }
+                    else
+                    {
+                        query = @"UPDATE services 
+                         SET ServiceName = @ServiceName,
+                             Description = @Description,
+                             Price = @Price,
+                             Category = @Category,
+                             Photo = NULL
+                         WHERE IDServices = @ServiceId";
+
+                        cmd = new MySqlCommand(query, connection);
+                    }
+
                     cmd.Parameters.AddWithValue("@ServiceId", service.IDServices);
                     cmd.Parameters.AddWithValue("@ServiceName", service.ServiceName);
                     cmd.Parameters.AddWithValue("@Description", service.Description);
                     cmd.Parameters.AddWithValue("@Price", service.Price);
                     cmd.Parameters.AddWithValue("@Category", service.Category);
 
-                    if (!string.IsNullOrEmpty(service.Photo))
+                    int result = cmd.ExecuteNonQuery();
+
+                    if (result > 0)
                     {
-                        cmd.Parameters.AddWithValue("@Photo", service.Photo);
+                        MessageBox.Show("Услуга успешно обновлена", "Успех",
+                                      MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return true;
                     }
                     else
                     {
-                        cmd.Parameters.AddWithValue("@Photo", DBNull.Value);
+                        MessageBox.Show("Не удалось обновить услугу", "Ошибка",
+                                      MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return false;
                     }
-
-                    int result = cmd.ExecuteNonQuery();
-                    return result > 0;
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception($"Ошибка обновления услуги: {ex.Message}", ex);
+                    MessageBox.Show($"Ошибка при обновлении услуги: {ex.Message}", "Ошибка",
+                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
                 }
             }
         }
+
 
         #endregion
 

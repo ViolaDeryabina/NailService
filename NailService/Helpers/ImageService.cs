@@ -212,6 +212,25 @@ namespace NailService
             return ScaleImage(originalImage, maxWidth, maxHeight);
         }
 
+        public Image CreateDefaultThumbnail(int width, int height)
+        {
+            Bitmap defaultImage = new Bitmap(width, height);
+            using (Graphics g = Graphics.FromImage(defaultImage))
+            {
+                g.Clear(Color.LightGray);
+                using (Font font = new Font("Arial", 10, FontStyle.Bold))
+                using (Brush brush = new SolidBrush(Color.DarkGray))
+                {
+                    string text = "Нет фото";
+                    SizeF textSize = g.MeasureString(text, font);
+                    float x = (width - textSize.Width) / 2;
+                    float y = (height - textSize.Height) / 2;
+                    g.DrawString(text, font, brush, x, y);
+                }
+            }
+            return defaultImage;
+        }
+
         /// <summary>
         /// Масштабирование изображения с сохранением пропорций
         /// </summary>
@@ -219,7 +238,7 @@ namespace NailService
         /// <param name="maxWidth">Максимальная ширина</param>
         /// <param name="maxHeight">Максимальная высота</param>
         /// <returns>Масштабированное изображение</returns>
-        private Image ScaleImage(Image image, int maxWidth, int maxHeight)
+        public Image ScaleImage(Image image, int maxWidth, int maxHeight)
         {
             var ratioX = (double)maxWidth / image.Width;
             var ratioY = (double)maxHeight / image.Height;

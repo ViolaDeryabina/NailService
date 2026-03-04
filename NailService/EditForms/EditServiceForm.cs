@@ -23,8 +23,7 @@ namespace NailService
         public ServiceModel Service { get; private set; }
         private EditUserClass _dataService;
         private Image _selectedImage;
-        private string _servicesImagesPath;
-        private string _defaultImagePath;
+        private byte[] _selectedImageBytes = null;
         private bool _imageChanged = false;
         private ImageService _imageService;
         private const long MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3 МБ
@@ -42,46 +41,12 @@ namespace NailService
             _dataService = new EditUserClass();
             _imageService = imageService ?? new ImageService();
 
-            InitializeImagePaths();
             LoadCategory();
             LoadTextBoxs();
             LoadServiceImage();
         }
 
         #region Инициализация и загрузка данных
-
-        /// <summary>
-        /// Инициализация путей для сохранения изображений услуг
-        /// </summary>
-        private void InitializeImagePaths()
-        {
-            try
-            {
-                string startupPath = Application.StartupPath;
-
-                if (startupPath.Contains(@"\bin\Debug") || startupPath.Contains(@"\bin\Release"))
-                {
-                    string projectRoot = Directory.GetParent(Directory.GetParent(startupPath).FullName).FullName;
-                    _servicesImagesPath = Path.Combine(projectRoot, "Images", "Services");
-                }
-                else
-                {
-                    _servicesImagesPath = Path.Combine(startupPath, "Images", "Services");
-                }
-
-                _defaultImagePath = Path.Combine(_servicesImagesPath, "Default.jpg");
-
-                if (!Directory.Exists(_servicesImagesPath))
-                {
-                    Directory.CreateDirectory(_servicesImagesPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка инициализации путей: {ex.Message}", "Ошибка",
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-        }
 
         /// <summary>
         /// Загрузка изображения услуги или заглушки
@@ -93,23 +58,16 @@ namespace NailService
                 if (Service.ServiceImage != null)
                 {
                     _selectedImage = Service.ServiceImage;
+                    _selectedImageBytes = ImageToBytes(_selectedImage);
                     pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
                 }
-                else if (!string.IsNullOrEmpty(Service.Photo))
+                else if (Service.PhotoBytes != null && Service.PhotoBytes.Length > 0)
                 {
-                    string imagesPath = _imageService.GetServicesImagesPath();
-                    string imagePath = Path.Combine(imagesPath, Service.Photo);
-
-                    if (File.Exists(imagePath))
-                    {
-                        _selectedImage = _imageService.LoadImageFromFile(imagePath);
-                        pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
-                        Service.ServiceImage = _selectedImage;
-                    }
-                    else
-                    {
-                        LoadDefaultImage();
-                    }
+                    // Загружаем из байтов (LONGBLOB)
+                    _selectedImageBytes = Service.PhotoBytes;
+                    _selectedImage = BytesToImage(Service.PhotoBytes);
+                    pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
+                    Service.ServiceImage = _selectedImage;
                 }
                 else
                 {
@@ -130,31 +88,26 @@ namespace NailService
         {
             try
             {
-                string defaultImagePath = _imageService.GetDefaultImagePath();
-                if (File.Exists(defaultImagePath))
+                // Создаем заглушку программно
+                Bitmap defaultImage = new Bitmap(pictureBoxService.Width, pictureBoxService.Height);
+                using (Graphics g = Graphics.FromImage(defaultImage))
                 {
-                    _selectedImage = _imageService.LoadImageFromFile(defaultImagePath);
-                }
-                else
-                {
-                    Bitmap defaultImage = new Bitmap(pictureBoxService.Width, pictureBoxService.Height);
-                    using (Graphics g = Graphics.FromImage(defaultImage))
+                    g.Clear(Color.LightGray);
+                    using (Font font = new Font("Arial", 12, FontStyle.Bold))
+                    using (Brush brush = new SolidBrush(Color.DarkGray))
                     {
-                        g.Clear(Color.LightGray);
-                        using (Font font = new Font("Arial", 12, FontStyle.Bold))
-                        using (Brush brush = new SolidBrush(Color.DarkGray))
-                        {
-                            string text = "Изображение услуги";
-                            SizeF textSize = g.MeasureString(text, font);
-                            float x = (defaultImage.Width - textSize.Width) / 2;
-                            float y = (defaultImage.Height - textSize.Height) / 2;
-                            g.DrawString(text, font, brush, x, y);
-                        }
+                        string text = "Изображение услуги";
+                        SizeF textSize = g.MeasureString(text, font);
+                        float x = (defaultImage.Width - textSize.Width) / 2;
+                        float y = (defaultImage.Height - textSize.Height) / 2;
+                        g.DrawString(text, font, brush, x, y);
                     }
-                    _selectedImage = defaultImage;
                 }
 
+                _selectedImage = defaultImage;
+                _selectedImageBytes = ImageToBytes(defaultImage);
                 pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
+                _imageChanged = false; // Заглушка не считается изменением
             }
             catch (Exception ex)
             {
@@ -167,6 +120,8 @@ namespace NailService
         /// </summary>
         private Image ScaleImage(Image image, int maxWidth, int maxHeight)
         {
+            if (image == null) return null;
+
             var ratioX = (double)maxWidth / image.Width;
             var ratioY = (double)maxHeight / image.Height;
             var ratio = Math.Min(ratioX, ratioY);
@@ -177,9 +132,38 @@ namespace NailService
             var newImage = new Bitmap(newWidth, newHeight);
             using (var graphics = Graphics.FromImage(newImage))
             {
+                graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
                 graphics.DrawImage(image, 0, 0, newWidth, newHeight);
             }
             return newImage;
+        }
+
+        /// <summary>
+        /// Конвертация Image в массив байтов
+        /// </summary>
+        private byte[] ImageToBytes(Image image)
+        {
+            if (image == null) return null;
+
+            using (var ms = new MemoryStream())
+            {
+                // Сохраняем с оптимальным качеством
+                image.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                return ms.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Конвертация массива байтов в Image
+        /// </summary>
+        private Image BytesToImage(byte[] bytes)
+        {
+            if (bytes == null || bytes.Length == 0) return null;
+
+            using (var ms = new MemoryStream(bytes))
+            {
+                return Image.FromStream(ms);
+            }
         }
 
         /// <summary>
@@ -272,23 +256,9 @@ namespace NailService
 
                 if (_imageChanged && _selectedImage != null)
                 {
-                    try
-                    {
-                        string imageFileName = _imageService.SaveServiceImage(
-                            _selectedImage,
-                            Service.ServiceName,
-                            Service.Photo
-                        );
-
-                        if (!string.IsNullOrEmpty(imageFileName))
-                        {
-                            Service.Photo = imageFileName;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Ошибка сохранения изображения: {ex.Message}");
-                    }
+                    // Конвертируем изображение в байты для сохранения в БД
+                    _selectedImageBytes = ImageToBytes(_selectedImage);
+                    Service.PhotoBytes = _selectedImageBytes;
                 }
 
                 if (UpdateServiceInDatabase())
@@ -385,10 +355,60 @@ namespace NailService
         {
             try
             {
-                _dataService.UpdateServiceInDatabase(Service);
-                MessageBox.Show("Услуга успешно обновлена", "Успех",
-                              MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return true;
+                using (var connection = new MySqlConnection(_connection))
+                {
+                    connection.Open();
+
+                    string query;
+                    MySqlCommand cmd;
+
+                    if (_imageChanged && _selectedImageBytes != null)
+                    {
+                        // Обновляем с изображением
+                        query = @"UPDATE services 
+                                 SET ServiceName = @ServiceName,
+                                     Description = @Description,
+                                     Price = @Price,
+                                     Category = @Category,
+                                     Photo = @Photo
+                                 WHERE IDServices = @ServiceId";
+
+                        cmd = new MySqlCommand(query, connection);
+                        cmd.Parameters.AddWithValue("@Photo", _selectedImageBytes);
+                    }
+                    else
+                    {
+                        // Обновляем без изменения изображения
+                        query = @"UPDATE services 
+                                 SET ServiceName = @ServiceName,
+                                     Description = @Description,
+                                     Price = @Price,
+                                     Category = @Category
+                                 WHERE IDServices = @ServiceId";
+
+                        cmd = new MySqlCommand(query, connection);
+                    }
+
+                    cmd.Parameters.AddWithValue("@ServiceId", Service.IDServices);
+                    cmd.Parameters.AddWithValue("@ServiceName", Service.ServiceName);
+                    cmd.Parameters.AddWithValue("@Description", Service.Description);
+                    cmd.Parameters.AddWithValue("@Price", Service.Price);
+                    cmd.Parameters.AddWithValue("@Category", Service.Category);
+
+                    int result = cmd.ExecuteNonQuery();
+
+                    if (result > 0)
+                    {
+                        
+                        return true;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Не удалось обновить услугу", "Ошибка",
+                                      MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return false;
+                    }
+                }
             }
             catch (MySqlException mysqlEx)
             {
@@ -453,23 +473,26 @@ namespace NailService
                             return;
                         }
 
-                        _selectedImage = Image.FromFile(filePath);
-
-                        if (_selectedImage.Width > 4000 || _selectedImage.Height > 4000)
+                        using (var tempImage = Image.FromFile(filePath))
                         {
-                            var result = MessageBox.Show($"Разрешение изображения очень большое ({_selectedImage.Width}x{_selectedImage.Height}).\n" +
-                                                       "Рекомендуется использовать изображения до 2000x2000 пикселей.\n\n" +
-                                                       "Хотите продолжить загрузку? (изображение будет сжато)",
-                                                       "Большое разрешение",
-                                                       MessageBoxButtons.YesNo,
-                                                       MessageBoxIcon.Question);
-
-                            if (result == DialogResult.No)
+                            // Проверка разрешения
+                            if (tempImage.Width > 4000 || tempImage.Height > 4000)
                             {
-                                _selectedImage.Dispose();
-                                _selectedImage = null;
-                                return;
+                                var result = MessageBox.Show($"Разрешение изображения очень большое ({tempImage.Width}x{tempImage.Height}).\n" +
+                                                           "Рекомендуется использовать изображения до 2000x2000 пикселей.\n\n" +
+                                                           "Хотите продолжить загрузку?",
+                                                           "Большое разрешение",
+                                                           MessageBoxButtons.YesNo,
+                                                           MessageBoxIcon.Question);
+
+                                if (result == DialogResult.No)
+                                {
+                                    return;
+                                }
                             }
+
+                            // Создаем копию изображения
+                            _selectedImage = new Bitmap(tempImage);
                         }
 
                         pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
@@ -555,6 +578,7 @@ namespace NailService
         {
             LoadDefaultImage();
             _imageChanged = true;
+            _selectedImageBytes = null; // Сбрасываем байты - будет NULL в БД
         }
 
         /// <summary>
@@ -615,13 +639,13 @@ namespace NailService
                             return;
                         }
 
-                        using (Image tempImage = Image.FromFile(filePath))
+                        using (var tempImage = Image.FromFile(filePath))
                         {
                             if (tempImage.Width > 4000 || tempImage.Height > 4000)
                             {
                                 var result = MessageBox.Show($"Разрешение изображения очень большое ({tempImage.Width}x{tempImage.Height}).\n" +
                                                            "Рекомендуется использовать изображения до 2000x2000 пикселей.\n\n" +
-                                                           "Хотите продолжить загрузку? (изображение будет сжато)",
+                                                           "Хотите продолжить загрузку?",
                                                            "Большое разрешение",
                                                            MessageBoxButtons.YesNo,
                                                            MessageBoxIcon.Question);
@@ -631,9 +655,10 @@ namespace NailService
                                     return;
                                 }
                             }
+
+                            _selectedImage = new Bitmap(tempImage);
                         }
 
-                        _selectedImage = Image.FromFile(filePath);
                         pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
                         _imageChanged = true;
                     }

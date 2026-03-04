@@ -15,9 +15,15 @@ namespace NailService
         public int Price { get; set; }
         public int Category { get; set; }
         public string CategoryName { get; set; }
-        public string Photo { get; set; } 
+        public byte[] PhotoBytes { get; set; } 
         public bool IsActive { get; set; }
-        public Image ServiceImage { get; set; } 
+        public Image ServiceImage { get; set; }
+
+        public string Photo
+        {
+            get { return null; }
+            set { }
+        }
 
         public ServiceModel()
         {

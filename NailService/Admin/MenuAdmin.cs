@@ -13,16 +13,18 @@ namespace NailService
     public partial class MenuAdmin : Form
     {
         private string _fio;
+        private string _login;
 
         /// <summary>
         /// Конструктор формы главного меню администратора
         /// </summary>
         /// <param name="FIO">ФИО текущего пользователя</param>
-        public MenuAdmin(string FIO)
+        public MenuAdmin(string FIO, string login=null)
         {
             InitializeComponent();
             FIOlabel.Text = $"Админ: {FIO}";
             _fio = FIO;
+            _login = login;
         }
 
         /// <summary>
@@ -30,7 +32,7 @@ namespace NailService
         /// </summary>
         private void ListButton_Click(object sender, EventArgs e)
         {
-            Show show = new Show(_fio, 2);
+            Show show = new Show(_fio, 2, _login);
             show.Show();
             this.Hide();
         }

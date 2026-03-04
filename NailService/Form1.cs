@@ -104,7 +104,7 @@ namespace NailService
                                             }
                                         case "Админ":
                                             {
-                                                MenuAdmin menuAdmin = new MenuAdmin(FIO);
+                                                MenuAdmin menuAdmin = new MenuAdmin(FIO, Login.Text);
                                                 menuAdmin.Show();
                                                 this.Hide();
                                                 break;

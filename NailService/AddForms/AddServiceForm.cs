@@ -20,8 +20,8 @@ namespace NailService
         public ServiceModel NewService { get; private set; }
         private Show _showForm;
         private Image _selectedImage;
-        private string _defaultImagePath;
-        private string _servicesImagesPath;
+        private byte[] _selectedImageBytes = null;
+        private bool _imageChanged = false;
 
         /// <summary>
         /// Максимальный размер файла изображения (3 МБ)
@@ -39,54 +39,11 @@ namespace NailService
             _showForm = showForm;
             NewService = new ServiceModel();
             _selectedImage = null;
+            _selectedImageBytes = null;
             lblCharCount.Text = "0/500";
 
-            InitializeImagePaths();
             LoadCategory();
             LoadDefaultImage();
-        }
-
-        /// <summary>
-        /// Инициализация путей для сохранения изображений услуг
-        /// </summary>
-        private void InitializeImagePaths()
-        {
-            try
-            {
-                string projectRoot = GetProjectRootDirectory();
-                _servicesImagesPath = Path.Combine(projectRoot, "Images", "Services");
-                _defaultImagePath = Path.Combine(_servicesImagesPath, "Default.jpg");
-
-                if (!Directory.Exists(_servicesImagesPath))
-                {
-                    Directory.CreateDirectory(_servicesImagesPath);
-                }
-
-                if (!File.Exists(_defaultImagePath))
-                {
-                    CreateDefaultImage();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка инициализации путей: {ex.Message}", "Ошибка",
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-        }
-
-        /// <summary>
-        /// Получение корневой директории проекта (выход из папки bin)
-        /// </summary>
-        private string GetProjectRootDirectory()
-        {
-            string startupPath = Application.StartupPath;
-
-            if (startupPath.Contains(@"\bin\Debug") || startupPath.Contains(@"\bin\Release"))
-            {
-                return Directory.GetParent(Directory.GetParent(startupPath).FullName).FullName;
-            }
-
-            return startupPath;
         }
 
         /// <summary>
@@ -96,30 +53,7 @@ namespace NailService
         {
             try
             {
-                if (File.Exists(_defaultImagePath))
-                {
-                    pictureBoxService.Image = Image.FromFile(_defaultImagePath);
-                    pictureBoxService.SizeMode = PictureBoxSizeMode.Zoom;
-                }
-                else
-                {
-                    CreateDefaultImage();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка загрузки заглушки: {ex.Message}", "Ошибка",
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-        }
-
-        /// <summary>
-        /// Создание изображения-заглушки с текстом
-        /// </summary>
-        private void CreateDefaultImage()
-        {
-            try
-            {
+                // Создаем заглушку программно
                 Bitmap defaultImage = new Bitmap(pictureBoxService.Width, pictureBoxService.Height);
                 using (Graphics g = Graphics.FromImage(defaultImage))
                 {
@@ -135,13 +69,10 @@ namespace NailService
                     }
                 }
 
-                pictureBoxService.Image = defaultImage;
-
-                if (!Directory.Exists(_servicesImagesPath))
-                {
-                    Directory.CreateDirectory(_servicesImagesPath);
-                }
-                defaultImage.Save(_defaultImagePath, System.Drawing.Imaging.ImageFormat.Jpeg);
+                _selectedImage = defaultImage;
+                _selectedImageBytes = null; // Заглушка не сохраняется в БД
+                pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
+                pictureBoxService.SizeMode = PictureBoxSizeMode.Zoom;
             }
             catch (Exception ex)
             {
@@ -187,27 +118,33 @@ namespace NailService
                         return;
                     }
 
-                    _selectedImage = Image.FromFile(filePath);
-
-                    // Проверка разрешения изображения
-                    if (_selectedImage.Width > 4000 || _selectedImage.Height > 4000)
+                    using (var tempImage = Image.FromFile(filePath))
                     {
-                        var result = MessageBox.Show($"Разрешение изображения очень большое ({_selectedImage.Width}x{_selectedImage.Height}).\n" +
-                                                   "Рекомендуется использовать изображения до 2000x2000 пикселей.\n\n" +
-                                                   "Хотите продолжить загрузку? (изображение будет сжато)",
-                                                   "Большое разрешение",
-                                                   MessageBoxButtons.YesNo,
-                                                   MessageBoxIcon.Question);
-
-                        if (result == DialogResult.No)
+                        // Проверка разрешения изображения
+                        if (tempImage.Width > 4000 || tempImage.Height > 4000)
                         {
-                            _selectedImage.Dispose();
-                            _selectedImage = null;
-                            return;
+                            var result = MessageBox.Show($"Разрешение изображения очень большое ({tempImage.Width}x{tempImage.Height}).\n" +
+                                                       "Рекомендуется использовать изображения до 2000x2000 пикселей.\n\n" +
+                                                       "Хотите продолжить загрузку?",
+                                                       "Большое разрешение",
+                                                       MessageBoxButtons.YesNo,
+                                                       MessageBoxIcon.Question);
+
+                            if (result == DialogResult.No)
+                            {
+                                return;
+                            }
                         }
+
+                        // Создаем копию изображения
+                        _selectedImage = new Bitmap(tempImage);
                     }
 
+                    // Конвертируем в байты для сохранения в БД
+                    _selectedImageBytes = ImageToBytes(_selectedImage);
+
                     pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
+                    _imageChanged = true;
                     ShowImageInfo(fileInfo, _selectedImage);
                 }
             }
@@ -222,6 +159,21 @@ namespace NailService
             {
                 MessageBox.Show($"Не удалось загрузить изображение: {ex.Message}", "Ошибка",
                               MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Конвертация Image в массив байтов для хранения в БД
+        /// </summary>
+        private byte[] ImageToBytes(Image image)
+        {
+            if (image == null) return null;
+
+            using (var ms = new MemoryStream())
+            {
+                // Сохраняем с оптимальным качеством
+                image.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                return ms.ToArray();
             }
         }
 
@@ -261,6 +213,8 @@ namespace NailService
         /// </summary>
         private Image ScaleImage(Image image, int maxWidth, int maxHeight)
         {
+            if (image == null) return null;
+
             var ratioX = (double)maxWidth / image.Width;
             var ratioY = (double)maxHeight / image.Height;
             var ratio = Math.Min(ratioX, ratioY);
@@ -271,69 +225,10 @@ namespace NailService
             var newImage = new Bitmap(newWidth, newHeight);
             using (var graphics = Graphics.FromImage(newImage))
             {
+                graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
                 graphics.DrawImage(image, 0, 0, newWidth, newHeight);
             }
             return newImage;
-        }
-
-        /// <summary>
-        /// Сохранение изображения услуги в файл с уникальным именем
-        /// </summary>
-        /// <returns>Имя сохраненного файла или null</returns>
-        private string SaveServiceImage()
-        {
-            try
-            {
-                if (_selectedImage == null || IsDefaultImage())
-                    return null;
-
-                string serviceName = NameService.Text.Trim().ToLower()
-                    .Replace(" ", "_")
-                    .Replace("/", "_")
-                    .Replace("\\", "_")
-                    .Replace(":", "")
-                    .Replace("*", "")
-                    .Replace("?", "")
-                    .Replace("\"", "")
-                    .Replace("<", "")
-                    .Replace(">", "")
-                    .Replace("|", "");
-
-                string fileName = $"service_{serviceName}_{DateTime.Now:yyyyMMddHHmmss}.jpg";
-                string filePath = Path.Combine(_servicesImagesPath, fileName);
-
-                SaveOptimizedImage(_selectedImage, filePath);
-
-                return fileName;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Не удалось сохранить изображение: {ex.Message}", "Ошибка",
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Сохранение изображения с оптимизацией (сжатие JPEG)
-        /// </summary>
-        private void SaveOptimizedImage(Image image, string filePath)
-        {
-            var encoder = System.Drawing.Imaging.ImageCodecInfo.GetImageEncoders()
-                .FirstOrDefault(c => c.FormatID == System.Drawing.Imaging.ImageFormat.Jpeg.Guid);
-
-            if (encoder != null)
-            {
-                var encoderParams = new System.Drawing.Imaging.EncoderParameters(1);
-                encoderParams.Param[0] = new System.Drawing.Imaging.EncoderParameter(
-                    System.Drawing.Imaging.Encoder.Quality, 85L);
-
-                image.Save(filePath, encoder, encoderParams);
-            }
-            else
-            {
-                image.Save(filePath, System.Drawing.Imaging.ImageFormat.Jpeg);
-            }
         }
 
         /// <summary>
@@ -376,9 +271,8 @@ namespace NailService
         {
             try
             {
-                return _selectedImage == null ||
-                       (_defaultImagePath != null &&
-                        pictureBoxService.ImageLocation == _defaultImagePath);
+                // Считаем заглушкой, если нет байтов изображения
+                return _selectedImageBytes == null;
             }
             catch
             {
@@ -394,7 +288,6 @@ namespace NailService
             try
             {
                 SaveServiceData();
-                string serviceName = NameService.Text.Trim();
 
                 using (var connection = new MySqlConnection(_connection))
                 {
@@ -406,7 +299,7 @@ namespace NailService
                                           AND IsActive = 0";
 
                     MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
-                    checkCmd.Parameters.AddWithValue("@ServiceName", serviceName);
+                    checkCmd.Parameters.AddWithValue("@ServiceName", NewService.ServiceName);
 
                     object inactiveServiceId = checkCmd.ExecuteScalar();
 
@@ -415,30 +308,41 @@ namespace NailService
                         // Нашли неактивную услугу - восстанавливаем
                         int serviceId = Convert.ToInt32(inactiveServiceId);
 
-                        string updateQuery = @"UPDATE services 
-                                            SET Description = @Description,
-                                                Price = @Price,
-                                                Category = @Category,
-                                                Photo = @Photo,
-                                                IsActive = 1
-                                            WHERE IDServices = @ServiceId";
+                        string updateQuery;
+                        MySqlCommand updateCmd;
 
-                        MySqlCommand updateCmd = new MySqlCommand(updateQuery, connection);
+                        if (_imageChanged && _selectedImageBytes != null)
+                        {
+                            // Восстанавливаем с новым изображением
+                            updateQuery = @"UPDATE services 
+                                          SET Description = @Description,
+                                              Price = @Price,
+                                              Category = @Category,
+                                              Photo = @Photo,
+                                              IsActive = 1
+                                          WHERE IDServices = @ServiceId";
+
+                            updateCmd = new MySqlCommand(updateQuery, connection);
+                            updateCmd.Parameters.AddWithValue("@Photo", _selectedImageBytes);
+                        }
+                        else
+                        {
+                            // Восстанавливаем без изображения (NULL)
+                            updateQuery = @"UPDATE services 
+                                          SET Description = @Description,
+                                              Price = @Price,
+                                              Category = @Category,
+                                              Photo = NULL,
+                                              IsActive = 1
+                                          WHERE IDServices = @ServiceId";
+
+                            updateCmd = new MySqlCommand(updateQuery, connection);
+                        }
+
                         updateCmd.Parameters.AddWithValue("@ServiceId", serviceId);
                         updateCmd.Parameters.AddWithValue("@Description", NewService.Description);
                         updateCmd.Parameters.AddWithValue("@Price", NewService.Price);
                         updateCmd.Parameters.AddWithValue("@Category", NewService.Category);
-
-                        // Сохраняем изображение
-                        string imageFileName = SaveServiceImage();
-                        if (!string.IsNullOrEmpty(imageFileName))
-                        {
-                            updateCmd.Parameters.AddWithValue("@Photo", imageFileName);
-                        }
-                        else
-                        {
-                            updateCmd.Parameters.AddWithValue("@Photo", DBNull.Value);
-                        }
 
                         int updatedRows = updateCmd.ExecuteNonQuery();
 
@@ -451,26 +355,33 @@ namespace NailService
                     }
 
                     // Создаем новую услугу
-                    string insertQuery = @"INSERT INTO services 
-                                        (ServiceName, Description, Price, Category, Photo, IsActive) 
-                                        VALUES (@ServiceName, @Description, @Price, @Category, @Photo, 1)";
+                    string insertQuery;
+                    MySqlCommand insertCmd;
 
-                    MySqlCommand insertCmd = new MySqlCommand(insertQuery, connection);
+                    if (_imageChanged && _selectedImageBytes != null)
+                    {
+                        // Создаем с изображением
+                        insertQuery = @"INSERT INTO services 
+                                      (ServiceName, Description, Price, Category, Photo, IsActive) 
+                                      VALUES (@ServiceName, @Description, @Price, @Category, @Photo, 1)";
+
+                        insertCmd = new MySqlCommand(insertQuery, connection);
+                        insertCmd.Parameters.AddWithValue("@Photo", _selectedImageBytes);
+                    }
+                    else
+                    {
+                        // Создаем без изображения (NULL)
+                        insertQuery = @"INSERT INTO services 
+                                      (ServiceName, Description, Price, Category, Photo, IsActive) 
+                                      VALUES (@ServiceName, @Description, @Price, @Category, NULL, 1)";
+
+                        insertCmd = new MySqlCommand(insertQuery, connection);
+                    }
+
                     insertCmd.Parameters.AddWithValue("@ServiceName", NewService.ServiceName);
                     insertCmd.Parameters.AddWithValue("@Description", NewService.Description);
                     insertCmd.Parameters.AddWithValue("@Price", NewService.Price);
                     insertCmd.Parameters.AddWithValue("@Category", NewService.Category);
-
-                    // Сохраняем изображение
-                    string imageFileNameForInsert = SaveServiceImage();
-                    if (!string.IsNullOrEmpty(imageFileNameForInsert))
-                    {
-                        insertCmd.Parameters.AddWithValue("@Photo", imageFileNameForInsert);
-                    }
-                    else
-                    {
-                        insertCmd.Parameters.AddWithValue("@Photo", DBNull.Value);
-                    }
 
                     int result = insertCmd.ExecuteNonQuery();
 
@@ -511,7 +422,7 @@ namespace NailService
                                 bool isActive = Convert.ToBoolean(result);
                                 if (!isActive)
                                 {
-                                    errorMessage += " (но неактивна). Попробуйте снова.";
+                                    errorMessage += " (но неактивна). Попробуйте восстановить её через кнопку добавления.";
                                 }
                             }
                         }
@@ -536,7 +447,6 @@ namespace NailService
             }
         }
 
-
         /// <summary>
         /// Сохранение данных из формы в объект NewService
         /// </summary>
@@ -555,6 +465,16 @@ namespace NailService
             }
 
             NewService.Category = (int)Category.SelectedValue;
+
+            // Сохраняем байты изображения
+            if (_imageChanged && _selectedImageBytes != null)
+            {
+                NewService.PhotoBytes = _selectedImageBytes;
+            }
+            else
+            {
+                NewService.PhotoBytes = null;
+            }
         }
 
         /// <summary>
@@ -763,29 +683,41 @@ namespace NailService
                 {
                     connection.Open();
 
-                    string query = @"UPDATE services 
-                                   SET IsActive = 1,
-                                       Description = @Description,
-                                       Price = @Price,
-                                       Category = @Category,
-                                       Photo = @Photo
-                                   WHERE IDServices = @ServiceId";
+                    string query;
+                    MySqlCommand cmd;
 
-                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    if (_imageChanged && _selectedImageBytes != null)
+                    {
+                        // Восстанавливаем с новым изображением
+                        query = @"UPDATE services 
+                                SET IsActive = 1,
+                                    Description = @Description,
+                                    Price = @Price,
+                                    Category = @Category,
+                                    Photo = @Photo
+                                WHERE IDServices = @ServiceId";
+
+                        cmd = new MySqlCommand(query, connection);
+                        cmd.Parameters.AddWithValue("@Photo", _selectedImageBytes);
+                    }
+                    else
+                    {
+                        // Восстанавливаем без изображения (NULL)
+                        query = @"UPDATE services 
+                                SET IsActive = 1,
+                                    Description = @Description,
+                                    Price = @Price,
+                                    Category = @Category,
+                                    Photo = NULL
+                                WHERE IDServices = @ServiceId";
+
+                        cmd = new MySqlCommand(query, connection);
+                    }
+
                     cmd.Parameters.AddWithValue("@ServiceId", serviceId);
                     cmd.Parameters.AddWithValue("@Description", serviceData.Description);
                     cmd.Parameters.AddWithValue("@Price", serviceData.Price);
                     cmd.Parameters.AddWithValue("@Category", serviceData.Category);
-
-                    if (_selectedImage != null && !IsDefaultImage())
-                    {
-                        string imagePath = SaveServiceImage();
-                        cmd.Parameters.AddWithValue("@Photo", imagePath ?? (object)DBNull.Value);
-                    }
-                    else
-                    {
-                        cmd.Parameters.AddWithValue("@Photo", DBNull.Value);
-                    }
 
                     int affectedRows = cmd.ExecuteNonQuery();
                     return affectedRows > 0;
@@ -898,6 +830,13 @@ namespace NailService
                             Price.Text = price.ToString();
                             Description.Text = description;
                             SetCategory(categoryId);
+
+                            // Подсвечиваем поле, чтобы показать, что данные подгружены
+                            NameService.BackColor = Color.LightYellow;
+                        }
+                        else
+                        {
+                            NameService.BackColor = Color.White;
                         }
                     }
                 }
@@ -964,9 +903,11 @@ namespace NailService
             NameService.Text = "";
             Price.Text = "";
             Description.Text = "";
+            NameService.BackColor = Color.White;
 
             LoadDefaultImage();
-            _selectedImage = null;
+            _selectedImageBytes = null;
+            _imageChanged = false;
 
             NameService.Focus();
         }
@@ -985,6 +926,24 @@ namespace NailService
         private void btnLoadImage_Click(object sender, EventArgs e)
         {
             LoadImage();
+        }
+
+        /// <summary>
+        /// Кнопка удаления изображения
+        /// </summary>
+        private void btnRemoveImage_Click(object sender, EventArgs e)
+        {
+            RemoveImage();
+        }
+
+        /// <summary>
+        /// Удаление изображения (установка заглушки)
+        /// </summary>
+        private void RemoveImage()
+        {
+            LoadDefaultImage();
+            _selectedImageBytes = null;
+            _imageChanged = true; // Помечаем как измененное (будет NULL в БД)
         }
 
         /// <summary>

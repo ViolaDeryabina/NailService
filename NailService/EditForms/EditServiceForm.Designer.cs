@@ -44,6 +44,8 @@
             this.lblCharCount = new System.Windows.Forms.Label();
             this.pictureBoxService = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.button1 = new System.Windows.Forms.Button();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxService)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -163,9 +165,9 @@
             // 
             this.btnLoadImage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.btnLoadImage.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnLoadImage.Location = new System.Drawing.Point(519, 300);
+            this.btnLoadImage.Location = new System.Drawing.Point(522, 341);
             this.btnLoadImage.Name = "btnLoadImage";
-            this.btnLoadImage.Size = new System.Drawing.Size(252, 32);
+            this.btnLoadImage.Size = new System.Drawing.Size(230, 32);
             this.btnLoadImage.TabIndex = 12;
             this.btnLoadImage.Text = "Выбрать";
             this.btnLoadImage.UseVisualStyleBackColor = false;
@@ -184,9 +186,9 @@
             // pictureBoxService
             // 
             this.pictureBoxService.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.pictureBoxService.Location = new System.Drawing.Point(519, 75);
+            this.pictureBoxService.Location = new System.Drawing.Point(522, 100);
             this.pictureBoxService.Name = "pictureBoxService";
-            this.pictureBoxService.Size = new System.Drawing.Size(252, 219);
+            this.pictureBoxService.Size = new System.Drawing.Size(230, 230);
             this.pictureBoxService.TabIndex = 11;
             this.pictureBoxService.TabStop = false;
             this.pictureBoxService.Click += new System.EventHandler(this.pictureBoxService_Click);
@@ -203,12 +205,35 @@
             this.pictureBox1.TabIndex = 14;
             this.pictureBox1.TabStop = false;
             // 
+            // button1
+            // 
+            this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button1.Location = new System.Drawing.Point(522, 379);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(230, 32);
+            this.button1.TabIndex = 15;
+            this.button1.Text = "Очистить";
+            this.button1.UseVisualStyleBackColor = false;
+            this.button1.Click += new System.EventHandler(this.btnRemoveImage_Click);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.25F);
+            this.groupBox1.Location = new System.Drawing.Point(510, 66);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(259, 362);
+            this.groupBox1.TabIndex = 16;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Фото";
+            // 
             // EditServiceForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(788, 442);
+            this.ClientSize = new System.Drawing.Size(792, 442);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.lblCharCount);
             this.Controls.Add(this.btnLoadImage);
@@ -224,6 +249,7 @@
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
+            this.Controls.Add(this.groupBox1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -257,5 +283,7 @@
         private System.Windows.Forms.Button btnLoadImage;
         private System.Windows.Forms.Label lblCharCount;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.GroupBox groupBox1;
     }
 }
