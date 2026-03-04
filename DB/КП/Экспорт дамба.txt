@@ -1,2 +1,0 @@
-# Полный экспорт с максимальной совместимостью для BLOB данных
-mysqldump.exe -u root -p --hex-blob --single-transaction --quick --max_allowed_packet=512M --net_buffer_length=16384 --extended-insert --complete-insert --skip-disable-keys --create-options nailservicedb > D:\full_backup.sql
