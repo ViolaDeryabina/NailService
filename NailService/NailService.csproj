@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>nail-art-studio-logo-design-template-vector.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="MySql.Data, Version=9.4.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -283,6 +286,7 @@
   <ItemGroup>
     <None Include="Resources\delete_icon.png" />
     <None Include="Resources\back 1.jpg" />
+    <Content Include="nail-art-studio-logo-design-template-vector.ico" />
     <Content Include="Resources\edit_icon.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
