@@ -146,7 +146,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 29);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(970, 619);
+            this.tabPage2.Size = new System.Drawing.Size(970, 523);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Мастера";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -197,7 +197,7 @@
             this.tabPage4.Location = new System.Drawing.Point(4, 29);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(970, 619);
+            this.tabPage4.Size = new System.Drawing.Size(970, 523);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Услуги";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -248,7 +248,7 @@
             this.tabPage5.Location = new System.Drawing.Point(4, 29);
             this.tabPage5.Name = "tabPage5";
             this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(970, 619);
+            this.tabPage5.Size = new System.Drawing.Size(970, 523);
             this.tabPage5.TabIndex = 4;
             this.tabPage5.Text = "Клиенты";
             this.tabPage5.UseVisualStyleBackColor = true;
@@ -301,7 +301,7 @@
             this.tabPage6.Controls.Add(this.dataGridViewStatuses);
             this.tabPage6.Location = new System.Drawing.Point(4, 29);
             this.tabPage6.Name = "tabPage6";
-            this.tabPage6.Size = new System.Drawing.Size(970, 619);
+            this.tabPage6.Size = new System.Drawing.Size(970, 523);
             this.tabPage6.TabIndex = 5;
             this.tabPage6.Text = "Статусы";
             this.tabPage6.UseVisualStyleBackColor = true;
@@ -420,7 +420,7 @@
             this.MinimizeBox = false;
             this.Name = "Show";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Просмотр пользователей";
+            this.Text = "Справочники";
             this.Load += new System.EventHandler(this.Show_Load);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);

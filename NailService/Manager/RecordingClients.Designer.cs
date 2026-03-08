@@ -48,6 +48,7 @@
             this.lblSelectedTime = new System.Windows.Forms.Label();
             this.btnSearchClient = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.button1 = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -201,9 +202,9 @@
             // 
             this.Save.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.Save.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.Save.Location = new System.Drawing.Point(8, 386);
+            this.Save.Location = new System.Drawing.Point(333, 386);
             this.Save.Name = "Save";
-            this.Save.Size = new System.Drawing.Size(635, 50);
+            this.Save.Size = new System.Drawing.Size(310, 50);
             this.Save.TabIndex = 14;
             this.Save.Text = "Записать";
             this.Save.UseVisualStyleBackColor = false;
@@ -241,12 +242,24 @@
             this.pictureBox1.TabIndex = 17;
             this.pictureBox1.TabStop = false;
             // 
+            // button1
+            // 
+            this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button1.Location = new System.Drawing.Point(10, 386);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(289, 50);
+            this.button1.TabIndex = 18;
+            this.button1.Text = "Отмена";
+            this.button1.UseVisualStyleBackColor = false;
+            // 
             // RecordingClients
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(660, 458);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.btnSearchClient);
             this.Controls.Add(this.lblSelectedTime);
@@ -301,5 +314,6 @@
         private System.Windows.Forms.Label lblSelectedTime;
         private System.Windows.Forms.Button btnSearchClient;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Button button1;
     }
 }

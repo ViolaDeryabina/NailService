@@ -1636,7 +1636,7 @@ namespace NailService
             }
             else if (_roleID == 4)
             {
-                Schedule menuManager = new Schedule(_fio, 4, 0);
+                MenuManager menuManager = new MenuManager(_fio);
                 menuManager.Show();
                 this.Hide();
             }

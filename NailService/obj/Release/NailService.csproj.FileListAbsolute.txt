@@ -34,3 +34,4 @@ C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\
 C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Release\NailServ.8FE58812.Up2Date
 C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Release\NailService.exe
 C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Release\NailService.pdb
+C:\Users\viole\OneDrive\Desktop\Учёба\Курсач\NailService\NailService\obj\Release\NailService.exe.config
