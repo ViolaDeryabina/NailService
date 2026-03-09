@@ -456,5 +456,43 @@ namespace NailService
                 // Игнорируем ошибки при проверке подсказки
             }
         }
+        private void LastName_Validating(object sender, CancelEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(LastName.Text))
+            {
+                string name = LastName.Text.Trim();
+                if (name.Length > 0)
+                {
+                    name = char.ToUpper(name[0]) + name.Substring(1);
+                    LastName.Text = name;
+                }
+            }
+        }
+
+        private void FirstName_Validating(object sender, CancelEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(FirstName.Text))
+            {
+                string name = FirstName.Text.Trim();
+                if (name.Length > 0)
+                {
+                    name = char.ToUpper(name[0]) + name.Substring(1);
+                    FirstName.Text = name;
+                }
+            }
+        }
+
+        private void MiddleName_Validating(object sender, CancelEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(MiddleName.Text))
+            {
+                string name = MiddleName.Text.Trim();
+                if (name.Length > 0)
+                {
+                    name = char.ToUpper(name[0]) + name.Substring(1);
+                    MiddleName.Text = name;
+                }
+            }
+        }
     }
 }

@@ -200,7 +200,7 @@
             // 
             // Save
             // 
-            this.Save.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.Save.BackColor = System.Drawing.Color.HotPink;
             this.Save.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.Save.Location = new System.Drawing.Point(333, 386);
             this.Save.Name = "Save";
@@ -252,6 +252,7 @@
             this.button1.TabIndex = 18;
             this.button1.Text = "Отмена";
             this.button1.UseVisualStyleBackColor = false;
+            this.button1.Click += new System.EventHandler(this.button1_Click_1);
             // 
             // RecordingClients
             // 

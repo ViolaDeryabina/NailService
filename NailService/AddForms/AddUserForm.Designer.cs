@@ -32,14 +32,12 @@
             this.label1 = new System.Windows.Forms.Label();
             this.LastName = new System.Windows.Forms.TextBox();
             this.RoleCb = new System.Windows.Forms.ComboBox();
-            this.LoginGenerate = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
-            this.PasswordGenerate = new System.Windows.Forms.Button();
             this.FirstName = new System.Windows.Forms.TextBox();
             this.MiddleName = new System.Windows.Forms.TextBox();
             this.Login = new System.Windows.Forms.TextBox();
@@ -65,9 +63,10 @@
             this.LastName.Font = new System.Drawing.Font("MS Reference Sans Serif", 15.25F);
             this.LastName.Location = new System.Drawing.Point(126, 71);
             this.LastName.Name = "LastName";
-            this.LastName.Size = new System.Drawing.Size(354, 32);
+            this.LastName.Size = new System.Drawing.Size(463, 32);
             this.LastName.TabIndex = 1;
             this.LastName.TextChanged += new System.EventHandler(this.LastName_TextChanged);
+            this.LastName.Validating += new System.ComponentModel.CancelEventHandler(this.LastName_Validating);
             // 
             // RoleCb
             // 
@@ -75,19 +74,8 @@
             this.RoleCb.FormattingEnabled = true;
             this.RoleCb.Location = new System.Drawing.Point(126, 270);
             this.RoleCb.Name = "RoleCb";
-            this.RoleCb.Size = new System.Drawing.Size(354, 32);
+            this.RoleCb.Size = new System.Drawing.Size(463, 32);
             this.RoleCb.TabIndex = 2;
-            // 
-            // LoginGenerate
-            // 
-            this.LoginGenerate.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
-            this.LoginGenerate.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.LoginGenerate.Location = new System.Drawing.Point(493, 194);
-            this.LoginGenerate.Name = "LoginGenerate";
-            this.LoginGenerate.Size = new System.Drawing.Size(172, 35);
-            this.LoginGenerate.TabIndex = 3;
-            this.LoginGenerate.Text = "Сгенирировать";
-            this.LoginGenerate.UseVisualStyleBackColor = false;
             // 
             // label2
             // 
@@ -143,41 +131,32 @@
             this.label7.TabIndex = 9;
             this.label7.Text = "Роль";
             // 
-            // PasswordGenerate
-            // 
-            this.PasswordGenerate.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
-            this.PasswordGenerate.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.PasswordGenerate.Location = new System.Drawing.Point(493, 234);
-            this.PasswordGenerate.Name = "PasswordGenerate";
-            this.PasswordGenerate.Size = new System.Drawing.Size(172, 35);
-            this.PasswordGenerate.TabIndex = 10;
-            this.PasswordGenerate.Text = "Сгенирировать";
-            this.PasswordGenerate.UseVisualStyleBackColor = false;
-            // 
             // FirstName
             // 
             this.FirstName.Font = new System.Drawing.Font("MS Reference Sans Serif", 15.25F);
             this.FirstName.Location = new System.Drawing.Point(126, 114);
             this.FirstName.Name = "FirstName";
-            this.FirstName.Size = new System.Drawing.Size(354, 32);
+            this.FirstName.Size = new System.Drawing.Size(463, 32);
             this.FirstName.TabIndex = 11;
             this.FirstName.TextChanged += new System.EventHandler(this.FirstName_TextChanged);
+            this.FirstName.Validating += new System.ComponentModel.CancelEventHandler(this.FirstName_Validating);
             // 
             // MiddleName
             // 
             this.MiddleName.Font = new System.Drawing.Font("MS Reference Sans Serif", 15.25F);
             this.MiddleName.Location = new System.Drawing.Point(126, 154);
             this.MiddleName.Name = "MiddleName";
-            this.MiddleName.Size = new System.Drawing.Size(354, 32);
+            this.MiddleName.Size = new System.Drawing.Size(463, 32);
             this.MiddleName.TabIndex = 12;
             this.MiddleName.TextChanged += new System.EventHandler(this.MiddleName_TextChanged);
+            this.MiddleName.Validating += new System.ComponentModel.CancelEventHandler(this.MiddleName_Validating);
             // 
             // Login
             // 
             this.Login.Font = new System.Drawing.Font("MS Reference Sans Serif", 15.25F);
             this.Login.Location = new System.Drawing.Point(126, 197);
             this.Login.Name = "Login";
-            this.Login.Size = new System.Drawing.Size(354, 32);
+            this.Login.Size = new System.Drawing.Size(463, 32);
             this.Login.TabIndex = 13;
             this.Login.TextChanged += new System.EventHandler(this.Login_TextChanged);
             // 
@@ -186,7 +165,7 @@
             this.Password.Font = new System.Drawing.Font("MS Reference Sans Serif", 15.25F);
             this.Password.Location = new System.Drawing.Point(126, 234);
             this.Password.Name = "Password";
-            this.Password.Size = new System.Drawing.Size(354, 32);
+            this.Password.Size = new System.Drawing.Size(463, 32);
             this.Password.TabIndex = 14;
             // 
             // btnCancel
@@ -205,7 +184,7 @@
             // 
             this.button4.BackColor = System.Drawing.Color.HotPink;
             this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button4.Location = new System.Drawing.Point(442, 356);
+            this.button4.Location = new System.Drawing.Point(366, 356);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(223, 47);
             this.button4.TabIndex = 16;
@@ -228,7 +207,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(687, 424);
+            this.ClientSize = new System.Drawing.Size(624, 424);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.btnCancel);
@@ -236,14 +215,12 @@
             this.Controls.Add(this.Login);
             this.Controls.Add(this.MiddleName);
             this.Controls.Add(this.FirstName);
-            this.Controls.Add(this.PasswordGenerate);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.LoginGenerate);
             this.Controls.Add(this.RoleCb);
             this.Controls.Add(this.LastName);
             this.Controls.Add(this.label1);
@@ -251,6 +228,8 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(6);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "AddUserForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Добавление пользователя";
@@ -265,14 +244,12 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox LastName;
         private System.Windows.Forms.ComboBox RoleCb;
-        private System.Windows.Forms.Button LoginGenerate;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Button PasswordGenerate;
         private System.Windows.Forms.TextBox FirstName;
         private System.Windows.Forms.TextBox MiddleName;
         private System.Windows.Forms.TextBox Login;

@@ -795,6 +795,12 @@ namespace NailService
         }
 
         #endregion
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            Close();
+        }
     }
 
     /// <summary>

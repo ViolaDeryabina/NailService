@@ -108,6 +108,7 @@
             this.NameService.TabIndex = 5;
             this.NameService.TextChanged += new System.EventHandler(this.NameService_TextChanged);
             this.NameService.Leave += new System.EventHandler(this.NameService_Leave);
+            this.NameService.Validating += new System.ComponentModel.CancelEventHandler(this.NameService_Validating);
             // 
             // Price
             // 

@@ -1087,5 +1087,18 @@ namespace NailService
                 $"Максимальный размер: {MAX_IMAGE_SIZE / (1024 * 1024)} МБ\n" +
                 "Поддерживаемые форматы: JPG, JPEG, PNG, BMP, GIF");
         }
+
+        private void NameService_Validating(object sender, CancelEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(NameService.Text))
+            {
+                string name = NameService.Text.Trim();
+                if (name.Length > 0)
+                {
+                    name = char.ToUpper(name[0]) + name.Substring(1);
+                    NameService.Text = name;
+                }
+            }
+        }
     }
 }

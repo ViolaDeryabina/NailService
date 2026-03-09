@@ -102,6 +102,7 @@
             this.LastName.Size = new System.Drawing.Size(354, 31);
             this.LastName.TabIndex = 5;
             this.LastName.TextChanged += new System.EventHandler(this.LastName_TextChanged);
+            this.LastName.Validating += new System.ComponentModel.CancelEventHandler(this.LastName_Validating);
             // 
             // FirstName
             // 
@@ -111,6 +112,7 @@
             this.FirstName.Size = new System.Drawing.Size(354, 31);
             this.FirstName.TabIndex = 6;
             this.FirstName.TextChanged += new System.EventHandler(this.FirstName_TextChanged);
+            this.FirstName.Validating += new System.ComponentModel.CancelEventHandler(this.FirstName_Validating);
             // 
             // MiddleName
             // 
@@ -120,6 +122,7 @@
             this.MiddleName.Size = new System.Drawing.Size(354, 31);
             this.MiddleName.TabIndex = 7;
             this.MiddleName.TextChanged += new System.EventHandler(this.MiddleName_TextChanged);
+            this.MiddleName.Validating += new System.ComponentModel.CancelEventHandler(this.MiddleName_Validating);
             // 
             // Phone
             // 
@@ -189,8 +192,9 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "AddClientForm";
+            this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Добавление клиента";
+            this.Text = "Добавление клиента";        
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

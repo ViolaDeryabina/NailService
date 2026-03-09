@@ -1015,7 +1015,7 @@ namespace NailService
                 return;
             }
 
-            AddUserForm addUserForm = new AddUserForm(this);
+            AddUserForm addUserForm = new AddUserForm();
             DialogResult result = addUserForm.ShowDialog();
 
             if (result == DialogResult.OK)
@@ -1145,7 +1145,7 @@ namespace NailService
         /// </summary>
         private void AddClient_Click(object sender, EventArgs e)
         {
-            AddClientForm addClientForm = new AddClientForm(this);
+            AddClientForm addClientForm = new AddClientForm();
             DialogResult result = addClientForm.ShowDialog();
 
             if (result == DialogResult.OK)

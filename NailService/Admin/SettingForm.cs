@@ -83,5 +83,13 @@ namespace NailService
         {
             Application.Restart();
         }
+
+        private void SettingForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true; // Отменяем закрытие
+            }
+        }
     }
 }

@@ -57,8 +57,15 @@ namespace NailService
         /// </summary>
         private void Back_Click(object sender, EventArgs e)
         {
-            DialogResult = DialogResult.Cancel;
-            Close();
+            try
+            {
+                DialogResult = DialogResult.Cancel;
+                Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -594,12 +601,44 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Проверка при потере фокуса поля телефона
-        /// </summary>
-        private void Phone_Leave(object sender, EventArgs e)
+
+        private void LastName_Validating(object sender, CancelEventArgs e)
         {
-            CheckForInactiveClientHint();
+            if (!string.IsNullOrWhiteSpace(LastName.Text))
+            {
+                string name = LastName.Text.Trim();
+                if (name.Length > 0)
+                {
+                    name = char.ToUpper(name[0]) + name.Substring(1);
+                    LastName.Text = name;
+                }
+            }
+        }
+
+        private void FirstName_Validating(object sender, CancelEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(FirstName.Text))
+            {
+                string name = FirstName.Text.Trim();
+                if (name.Length > 0)
+                {
+                    name = char.ToUpper(name[0]) + name.Substring(1);
+                    FirstName.Text = name;
+                }
+            }
+        }
+
+        private void MiddleName_Validating(object sender, CancelEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(MiddleName.Text))
+            {
+                string name = MiddleName.Text.Trim();
+                if (name.Length > 0)
+                {
+                    name = char.ToUpper(name[0]) + name.Substring(1);
+                    MiddleName.Text = name;
+                }
+            }
         }
     }
 }

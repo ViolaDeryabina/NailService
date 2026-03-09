@@ -557,13 +557,5 @@ namespace NailService
                 // Игнорируем ошибки при загрузке данных
             }
         }
-
-        /// <summary>
-        /// Обработчик кнопки "Обновить список" - перезагрузка доступных мастеров
-        /// </summary>
-        private void RefreshButton_Click(object sender, EventArgs e)
-        {
-            LoadAvailableMasters();
-        }
     }
 }
