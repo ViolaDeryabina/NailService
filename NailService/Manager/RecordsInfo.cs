@@ -805,7 +805,7 @@ namespace NailService
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 string fullPath = System.IO.Path.Combine(desktopPath, fileName);
 
-                doc.SaveAs2(fullPath);
+                doc.SaveAs(fullPath);
 
                 MessageBox.Show($"Чек сохранен на рабочий стол:\n{fullPath}", "Успех",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
