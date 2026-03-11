@@ -52,8 +52,8 @@
             this.label7 = new System.Windows.Forms.Label();
             this.cmbMasterFilter = new System.Windows.Forms.ComboBox();
             this.lblTotalRevenue = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.btnNext = new System.Windows.Forms.Button();
+            this.btnPrev = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRecords)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -308,25 +308,25 @@
             this.lblTotalRevenue.TabIndex = 28;
             this.lblTotalRevenue.Text = "руб";
             // 
-            // button1
+            // btnNext
             // 
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button1.Location = new System.Drawing.Point(1106, 599);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(55, 39);
-            this.button1.TabIndex = 29;
-            this.button1.Text = ">";
-            this.button1.UseVisualStyleBackColor = true;
+            this.btnNext.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnNext.Location = new System.Drawing.Point(1111, 599);
+            this.btnNext.Name = "btnNext";
+            this.btnNext.Size = new System.Drawing.Size(50, 39);
+            this.btnNext.TabIndex = 29;
+            this.btnNext.Text = ">";
+            this.btnNext.UseVisualStyleBackColor = true;
             // 
-            // button2
+            // btnPrev
             // 
-            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button2.Location = new System.Drawing.Point(1045, 599);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(55, 39);
-            this.button2.TabIndex = 30;
-            this.button2.Text = "<";
-            this.button2.UseVisualStyleBackColor = true;
+            this.btnPrev.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnPrev.Location = new System.Drawing.Point(1050, 599);
+            this.btnPrev.Name = "btnPrev";
+            this.btnPrev.Size = new System.Drawing.Size(50, 39);
+            this.btnPrev.TabIndex = 30;
+            this.btnPrev.Text = "<";
+            this.btnPrev.UseVisualStyleBackColor = true;
             // 
             // ShowReports
             // 
@@ -334,8 +334,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(1173, 716);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btnPrev);
+            this.Controls.Add(this.btnNext);
             this.Controls.Add(this.lblTotalRevenue);
             this.Controls.Add(this.btnClearFilters);
             this.Controls.Add(this.label6);
@@ -399,7 +399,7 @@
         private System.Windows.Forms.ComboBox cmbStatusFilter;
         private System.Windows.Forms.Label lblTotalRevenue;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button btnNext;
+        private System.Windows.Forms.Button btnPrev;
     }
 }

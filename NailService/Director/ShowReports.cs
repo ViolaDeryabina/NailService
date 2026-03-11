@@ -26,6 +26,9 @@ namespace NailService
         private List<StatusItem> _statusItems;
         private bool _isErrorMessageShown = false;
 
+        private int currentPage = 1;
+        private int pageSize = 20;
+
         /// <summary>
         /// Конструктор формы отчетов
         /// </summary>
@@ -280,6 +283,22 @@ namespace NailService
                     return;
                 }
 
+                var allFilteredRecords = _filterManager.GetFilteredRecords(searchText, masterFilter, statusFilter,
+                                    fromDate, toDate, sortBy, ascending);
+
+                // 2. Считаем общую выручку по ВСЕМ найденным записям (до пагинации)
+                //decimal totalRevenue = CalculateTotalRevenue(allFilteredRecords);
+                //lblTotalRevenue.Text = $"Общая выручка: {totalRevenue:N0} руб.";
+
+                // 3. Вычисляем данные для текущей страницы
+                var pagedRecords = allFilteredRecords
+                    .Skip((currentPage - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                // 4. Очистка и заполнение Grid (используем pagedRecords вместо records)
+                dataGridViewRecords.Rows.Clear();
+
                 foreach (var record in records)
                 {
                     int rowIndex = dataGridViewRecords.Rows.Add(
@@ -298,7 +317,12 @@ namespace NailService
                         dataGridViewRecords.Rows[rowIndex].Cells[statusColumnIndex].Tag = record.StatusID;
                     }
                 }
+                int totalPages = (int)Math.Ceiling((double)allFilteredRecords.Count / pageSize);
+                lblRecordCount.Text = $"Страница {currentPage} из {totalPages} (Всего: {allFilteredRecords.Count})";
 
+                // Блокируем кнопки навигации, если страниц нет или мы на краях
+                btnPrev.Enabled = currentPage > 1;
+                btnNext.Enabled = currentPage < totalPages;
                 lblRecordCount.Text = $"Найдено записей: {records.Count}";
             }
             catch (Exception ex)
