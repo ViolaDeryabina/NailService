@@ -71,6 +71,12 @@
     <Compile Include="AddForms\AddServiceForm.Designer.cs">
       <DependentUpon>AddServiceForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Captcha.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Captcha.Designer.cs">
+      <DependentUpon>Captcha.cs</DependentUpon>
+    </Compile>
     <Compile Include="Manager\RecordsInfo.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -205,6 +211,9 @@
     <EmbeddedResource Include="AddForms\AddServiceForm.resx">
       <DependentUpon>AddServiceForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Captcha.resx">
+      <DependentUpon>Captcha.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="EditForms\EditClientForm.resx">
       <DependentUpon>EditClientForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -293,6 +302,7 @@
     <None Include="Resources\eyeOpen.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\images %281%29.png" />
     <None Include="Resources\delete_icon.png" />
     <None Include="Resources\back 1.jpg" />
     <Content Include="nail-art-studio-logo-design-template-vector.ico" />

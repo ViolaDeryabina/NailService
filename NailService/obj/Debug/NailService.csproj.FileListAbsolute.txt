@@ -33,3 +33,39 @@ D:\Дерябина\ПП NailService\Дерябина В.Н\src\NailService\Nail
 D:\Дерябина\ПП NailService\Дерябина В.Н\src\NailService\NailService\obj\Debug\NailService.exe
 D:\Дерябина\ПП NailService\Дерябина В.Н\src\NailService\NailService\obj\Debug\NailService.pdb
 D:\Дерябина\ПП NailService\Дерябина В.Н\src\NailService\NailService\obj\Debug\NailService.SysAdmin.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\bin\Debug\Resources\edit_icon.png
+C:\Users\student250\Desktop\ddd\NailService\NailService\bin\Debug\NailService.exe.config
+C:\Users\student250\Desktop\ddd\NailService\NailService\bin\Debug\NailService.exe
+C:\Users\student250\Desktop\ddd\NailService\NailService\bin\Debug\NailService.pdb
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.csproj.AssemblyReference.cache
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\Interop.Microsoft.Office.Core.dll
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\Interop.Microsoft.Office.Interop.Excel.dll
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\Interop.Microsoft.Office.Interop.Word.dll
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.csproj.ResolveComReference.cache
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.AddClientForm.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.AddMasterForm.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.AddServiceForm.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.EditClientForm.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.AddUserForm.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.EditUserForm.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.EditMasterForm.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.EditServiceForm.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.Form1.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.MenuAdmin.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.MenuManager.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.MenuDirector.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.RecordsInfo.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.MenuMaster.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.Properties.Resources.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.SettingForm.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.Show.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.ShowReports.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.RecordingClients.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.Schedule.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.SearchClient.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.SysAdmin.resources
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.csproj.GenerateResource.cache
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.csproj.CoreCompileInputs.cache
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.exe
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.pdb
+C:\Users\student250\Desktop\ddd\NailService\NailService\obj\Debug\NailService.Captcha.resources

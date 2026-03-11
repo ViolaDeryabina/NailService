@@ -154,6 +154,9 @@ namespace NailService
                                 }
                                 else
                                 {
+                                    Captcha captcha = new Captcha();
+                                    captcha.Show();
+                                    this.Hide();
                                     MessageBox.Show("Неверный логин или пароль", "Ошибка",
                                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 }
