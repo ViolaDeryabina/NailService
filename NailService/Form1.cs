@@ -59,8 +59,8 @@ namespace NailService
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }else if (Login.Text == "SysAdmin" || Password.Text == "SysAdmin")
                 {
-                    SysAdminForm menuDirector = new SysAdminForm();
-                    menuDirector.Show();
+                    SysAdmin sysAdmin = new SysAdmin();
+                    sysAdmin.Show();
                     this.Hide();
                 }
                 else

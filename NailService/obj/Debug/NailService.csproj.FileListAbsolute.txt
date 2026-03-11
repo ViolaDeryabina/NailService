@@ -32,4 +32,4 @@ D:\Дерябина\ПП NailService\Дерябина В.Н\src\NailService\Nail
 D:\Дерябина\ПП NailService\Дерябина В.Н\src\NailService\NailService\obj\Debug\NailService.csproj.CoreCompileInputs.cache
 D:\Дерябина\ПП NailService\Дерябина В.Н\src\NailService\NailService\obj\Debug\NailService.exe
 D:\Дерябина\ПП NailService\Дерябина В.Н\src\NailService\NailService\obj\Debug\NailService.pdb
-D:\Дерябина\ПП NailService\Дерябина В.Н\src\NailService\NailService\obj\Debug\NailService.SysAdminForm.resources
+D:\Дерябина\ПП NailService\Дерябина В.Н\src\NailService\NailService\obj\Debug\NailService.SysAdmin.resources
