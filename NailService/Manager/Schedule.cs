@@ -744,6 +744,7 @@ namespace NailService
         /// </summary>
         private void GenerateMonthlyReport()
         {
+            
             Microsoft.Office.Interop.Excel.Application excelApp = null;
             Microsoft.Office.Interop.Excel.Workbook workbook = null;
             Microsoft.Office.Interop.Excel.Worksheet worksheet = null;

@@ -421,6 +421,7 @@
             this.Name = "Show";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Справочники";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Show_FormClosing);
             this.Load += new System.EventHandler(this.Show_Load);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);

@@ -69,7 +69,7 @@
             this.label1.Font = new System.Drawing.Font("MS Reference Sans Serif", 26.25F);
             this.label1.Location = new System.Drawing.Point(350, 17);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(320, 44);
+            this.label1.Size = new System.Drawing.Size(321, 44);
             this.label1.TabIndex = 0;
             this.label1.Text = "Ногтевой сервис";
             // 
@@ -152,6 +152,7 @@
             this.Name = "MenuDirector";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Меню директора";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MenuDirector_FormClosing);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);

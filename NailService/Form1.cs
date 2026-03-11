@@ -57,6 +57,11 @@ namespace NailService
                 {
                     MessageBox.Show("Заполните все поля!", "Ошибка",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }else if (Login.Text == "SysAdmin" || Password.Text == "SysAdmin")
+                {
+                    SysAdminForm menuDirector = new SysAdminForm();
+                    menuDirector.Show();
+                    this.Hide();
                 }
                 else
                 {

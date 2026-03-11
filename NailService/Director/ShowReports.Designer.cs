@@ -338,6 +338,7 @@
             this.Name = "ShowReports";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Отчёты";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ShowReports_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRecords)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();

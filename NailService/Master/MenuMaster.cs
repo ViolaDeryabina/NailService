@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
+
 namespace NailService
 {
     /// <summary>
@@ -544,14 +545,9 @@ namespace NailService
 
         private void Exit_Click(object sender, EventArgs e)
         {
-            Form1 form = new Form1();
-            form.Show();
-            this.Close();
-        }
-
-        private void btnRefresh_Click(object sender, EventArgs e)
-        {
-            FillScheduleWithData();
+            Form1 show = new Form1();
+            show.Show();
+            this.Hide();
         }
 
         #endregion
@@ -593,6 +589,8 @@ namespace NailService
 
                 if (saveDialog.ShowDialog() != DialogResult.OK)
                     return;
+
+                string filePath = saveDialog.FileName;
 
                 Microsoft.Office.Interop.Excel.Application excelApp = new Microsoft.Office.Interop.Excel.Application();
                 excelApp.Visible = false;
@@ -648,7 +646,7 @@ namespace NailService
                             if (decimal.TryParse(dataRow[col].ToString(), out decimal price))
                             {
                                 worksheet.Cells[row, col + 1] = price;
-                                worksheet.Cells[row, col + 1].NumberFormat = "#,##0.00";
+                                //worksheet.Cells[row, col + 1].NumberFormat = "#,##0.00";
                                 worksheet.Cells[row, col + 1].HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignRight;
                                 if (col == 6) totalSum += price;
                             }
@@ -682,17 +680,23 @@ namespace NailService
 
                 worksheet.Cells[row, 7] = totalSum;
                 worksheet.Cells[row, 7].Font.Bold = true;
-                worksheet.Cells[row, 7].NumberFormat = "#,##0.00";
+                //
+                //worksheet.Cells[row, 7].NumberFormat = "#,##0.00";
                 worksheet.Cells[row, 7].HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignRight;
                 worksheet.Cells[row, 7].Interior.Color = Color.FromArgb(255, 203, 219);
 
                 worksheet.Columns.AutoFit();
-                workbook.SaveAs(saveDialog.FileName);
+                workbook.SaveAs(filePath);
                 workbook.Close();
                 excelApp.Quit();
 
-                MessageBox.Show($"Отчет успешно сохранен!\n\n{saveDialog.FileName}", "Успех",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Отчет успешно сохранен!\n\n{filePath}", "Успех",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information); 
+                if (MessageBox.Show("Открыть отчет?", "Вопрос",
+                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    System.Diagnostics.Process.Start(filePath);
+                }
             }
             catch (Exception ex)
             {
@@ -824,6 +828,14 @@ namespace NailService
         }
 
         #endregion
+
+        private void MenuMaster_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true; // Отменяем закрытие
+            }
+        }
     }
 
     /// <summary>

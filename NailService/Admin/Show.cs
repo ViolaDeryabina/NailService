@@ -2033,5 +2033,13 @@ namespace NailService
         }
 
         #endregion
+
+        private void Show_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true; // Отменяем закрытие
+            }
+        }
     }
 }

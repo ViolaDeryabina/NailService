@@ -66,5 +66,13 @@ namespace NailService
             form1.Show();
             this.Hide();
         }
+
+        private void MenuAdmin_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true; // Отменяем закрытие
+            }
+        }
     }
 }

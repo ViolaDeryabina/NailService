@@ -59,7 +59,7 @@ namespace NailService
             LoadData();
 
             FIOlabel.Text = RoleID == 1 ? $"Директор: {_fio}" :
-                           RoleID == 2 ? $"Администратор: {_fio}" : "";
+                           RoleID == 2 ? $"Админ: {_fio}" : "";
         }
 
         /// <summary>
@@ -957,6 +957,14 @@ namespace NailService
                 excelApp = null;
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
+            }
+        }
+
+        private void ShowReports_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true; // Отменяем закрытие
             }
         }
     }

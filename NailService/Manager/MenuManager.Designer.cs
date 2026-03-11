@@ -152,6 +152,7 @@
             this.Name = "MenuManager";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Меню менеджера";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MenuManager_FormClosing);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
