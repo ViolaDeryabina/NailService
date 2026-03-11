@@ -25,6 +25,7 @@ namespace NailService
     {
         private string _connection;
         private PasswordVisibilityToggle _passwordToggle;
+        private InactivityController _inactivityController;
 
         /// <summary>
         /// Конструктор формы авторизации
@@ -41,7 +42,30 @@ namespace NailService
                 Resources.eyeOpen,      // Иконка открытого глаза
                 Resources.eyeClose      // Иконка закрытого глаза
             );
+            // Инициализируем контроллер и передаем действие при блокировке
+            _inactivityController = new InactivityController(LockSystem);
+
+            // Регистрируем фильтр сообщений в приложении
+            Application.AddMessageFilter(_inactivityController);
+        
+    }
+        private void LockSystem()
+        {
+            // Очищаем поля
+            Login.Text = "";
+            Password.Text = "";
+
+            // Скрываем все открытые рабочие формы
+            foreach (Form f in Application.OpenForms.Cast<Form>().ToList())
+            {
+                if (f.Name != "Form1") // Закрываем всё, кроме формы входа
+                    f.Close();
+            }
+
+            this.Show(); // Показываем саму форму авторизации
+            MessageBox.Show("Сессия завершена из-за отсутствия активности.");
         }
+
 
         /// <summary>
         /// Обработчик кнопки авторизации
