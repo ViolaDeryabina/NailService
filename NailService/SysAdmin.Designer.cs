@@ -1,7 +1,7 @@
 ﻿
 namespace NailService
 {
-    partial class SysAdminForm
+    partial class SysAdmin
     {
         /// <summary>
         /// Required designer variable.
@@ -29,20 +29,10 @@ namespace NailService
         /// </summary>
         private void InitializeComponent()
         {
-            this.SuspendLayout();
-            // 
-            // SysAdminForm
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
+            this.components = new System.ComponentModel.Container();
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(403, 320);
-            this.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
-            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
-            this.Name = "SysAdminForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "SysAdminForm";
-            this.ResumeLayout(false);
-
+            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Text = "SysAdmin";
         }
 
         #endregion

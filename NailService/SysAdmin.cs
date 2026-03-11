@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace NailService
 {
-    public partial class SysAdminForm : Form
+    public partial class SysAdmin : Form
     {
-        public SysAdminForm()
+        public SysAdmin()
         {
             InitializeComponent();
         }
