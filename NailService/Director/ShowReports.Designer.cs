@@ -52,6 +52,8 @@
             this.label7 = new System.Windows.Forms.Label();
             this.cmbMasterFilter = new System.Windows.Forms.ComboBox();
             this.lblTotalRevenue = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRecords)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -82,7 +84,7 @@
             // 
             this.InMenu.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.InMenu.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.InMenu.Location = new System.Drawing.Point(12, 639);
+            this.InMenu.Location = new System.Drawing.Point(12, 659);
             this.InMenu.Name = "InMenu";
             this.InMenu.Size = new System.Drawing.Size(263, 45);
             this.InMenu.TabIndex = 13;
@@ -94,7 +96,7 @@
             // 
             this.ReportsButton.BackColor = System.Drawing.Color.HotPink;
             this.ReportsButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.ReportsButton.Location = new System.Drawing.Point(898, 639);
+            this.ReportsButton.Location = new System.Drawing.Point(898, 659);
             this.ReportsButton.Name = "ReportsButton";
             this.ReportsButton.Size = new System.Drawing.Size(263, 45);
             this.ReportsButton.TabIndex = 12;
@@ -185,7 +187,7 @@
             // 
             this.lblRecordCount.AutoSize = true;
             this.lblRecordCount.Font = new System.Drawing.Font("MS Reference Sans Serif", 12.25F);
-            this.lblRecordCount.Location = new System.Drawing.Point(12, 612);
+            this.lblRecordCount.Location = new System.Drawing.Point(12, 596);
             this.lblRecordCount.Name = "lblRecordCount";
             this.lblRecordCount.Size = new System.Drawing.Size(96, 22);
             this.lblRecordCount.TabIndex = 21;
@@ -300,18 +302,40 @@
             // 
             this.lblTotalRevenue.AutoSize = true;
             this.lblTotalRevenue.Font = new System.Drawing.Font("MS Reference Sans Serif", 12.25F);
-            this.lblTotalRevenue.Location = new System.Drawing.Point(899, 596);
+            this.lblTotalRevenue.Location = new System.Drawing.Point(12, 626);
             this.lblTotalRevenue.Name = "lblTotalRevenue";
             this.lblTotalRevenue.Size = new System.Drawing.Size(41, 22);
             this.lblTotalRevenue.TabIndex = 28;
             this.lblTotalRevenue.Text = "руб";
+            // 
+            // button1
+            // 
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button1.Location = new System.Drawing.Point(1106, 599);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(55, 39);
+            this.button1.TabIndex = 29;
+            this.button1.Text = ">";
+            this.button1.UseVisualStyleBackColor = true;
+            // 
+            // button2
+            // 
+            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button2.Location = new System.Drawing.Point(1045, 599);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(55, 39);
+            this.button2.TabIndex = 30;
+            this.button2.Text = "<";
+            this.button2.UseVisualStyleBackColor = true;
             // 
             // ShowReports
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(1173, 696);
+            this.ClientSize = new System.Drawing.Size(1173, 716);
+            this.Controls.Add(this.button2);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.lblTotalRevenue);
             this.Controls.Add(this.btnClearFilters);
             this.Controls.Add(this.label6);
@@ -375,5 +399,7 @@
         private System.Windows.Forms.ComboBox cmbStatusFilter;
         private System.Windows.Forms.Label lblTotalRevenue;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button2;
     }
 }
