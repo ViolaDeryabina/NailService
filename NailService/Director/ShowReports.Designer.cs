@@ -40,7 +40,6 @@
             this.label4 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.lblRecordCount = new System.Windows.Forms.Label();
             this.dtpFromDate = new System.Windows.Forms.DateTimePicker();
             this.dtpToDate = new System.Windows.Forms.DateTimePicker();
             this.label5 = new System.Windows.Forms.Label();
@@ -54,6 +53,10 @@
             this.lblTotalRevenue = new System.Windows.Forms.Label();
             this.btnNext = new System.Windows.Forms.Button();
             this.btnPrev = new System.Windows.Forms.Button();
+            this.btnFirst = new System.Windows.Forms.Button();
+            this.btnLast = new System.Windows.Forms.Button();
+            this.txtPageNumber = new System.Windows.Forms.Label();
+            this.lblPaginationInfo = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRecords)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -84,7 +87,7 @@
             // 
             this.InMenu.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.InMenu.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.InMenu.Location = new System.Drawing.Point(12, 659);
+            this.InMenu.Location = new System.Drawing.Point(12, 739);
             this.InMenu.Name = "InMenu";
             this.InMenu.Size = new System.Drawing.Size(263, 45);
             this.InMenu.TabIndex = 13;
@@ -96,7 +99,7 @@
             // 
             this.ReportsButton.BackColor = System.Drawing.Color.HotPink;
             this.ReportsButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.ReportsButton.Location = new System.Drawing.Point(898, 659);
+            this.ReportsButton.Location = new System.Drawing.Point(898, 739);
             this.ReportsButton.Name = "ReportsButton";
             this.ReportsButton.Size = new System.Drawing.Size(263, 45);
             this.ReportsButton.TabIndex = 12;
@@ -114,7 +117,7 @@
             this.dataGridViewRecords.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridViewRecords.Location = new System.Drawing.Point(12, 195);
             this.dataGridViewRecords.Name = "dataGridViewRecords";
-            this.dataGridViewRecords.Size = new System.Drawing.Size(1149, 398);
+            this.dataGridViewRecords.Size = new System.Drawing.Size(1149, 458);
             this.dataGridViewRecords.TabIndex = 11;
             this.dataGridViewRecords.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.DataGridViewRecords_CellBeginEdit);
             this.dataGridViewRecords.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridViewRecords_CellEndEdit);
@@ -182,16 +185,6 @@
             this.pictureBox1.Size = new System.Drawing.Size(100, 57);
             this.pictureBox1.TabIndex = 15;
             this.pictureBox1.TabStop = false;
-            // 
-            // lblRecordCount
-            // 
-            this.lblRecordCount.AutoSize = true;
-            this.lblRecordCount.Font = new System.Drawing.Font("MS Reference Sans Serif", 12.25F);
-            this.lblRecordCount.Location = new System.Drawing.Point(12, 596);
-            this.lblRecordCount.Name = "lblRecordCount";
-            this.lblRecordCount.Size = new System.Drawing.Size(96, 22);
-            this.lblRecordCount.TabIndex = 21;
-            this.lblRecordCount.Text = "Записей: ";
             // 
             // dtpFromDate
             // 
@@ -302,7 +295,7 @@
             // 
             this.lblTotalRevenue.AutoSize = true;
             this.lblTotalRevenue.Font = new System.Drawing.Font("MS Reference Sans Serif", 12.25F);
-            this.lblTotalRevenue.Location = new System.Drawing.Point(12, 626);
+            this.lblTotalRevenue.Location = new System.Drawing.Point(12, 706);
             this.lblTotalRevenue.Name = "lblTotalRevenue";
             this.lblTotalRevenue.Size = new System.Drawing.Size(41, 22);
             this.lblTotalRevenue.TabIndex = 28;
@@ -311,7 +304,7 @@
             // btnNext
             // 
             this.btnNext.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnNext.Location = new System.Drawing.Point(1111, 599);
+            this.btnNext.Location = new System.Drawing.Point(1055, 679);
             this.btnNext.Name = "btnNext";
             this.btnNext.Size = new System.Drawing.Size(50, 39);
             this.btnNext.TabIndex = 29;
@@ -321,19 +314,63 @@
             // btnPrev
             // 
             this.btnPrev.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnPrev.Location = new System.Drawing.Point(1050, 599);
+            this.btnPrev.Location = new System.Drawing.Point(999, 679);
             this.btnPrev.Name = "btnPrev";
             this.btnPrev.Size = new System.Drawing.Size(50, 39);
             this.btnPrev.TabIndex = 30;
             this.btnPrev.Text = "<";
             this.btnPrev.UseVisualStyleBackColor = true;
             // 
+            // btnFirst
+            // 
+            this.btnFirst.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnFirst.Location = new System.Drawing.Point(943, 679);
+            this.btnFirst.Name = "btnFirst";
+            this.btnFirst.Size = new System.Drawing.Size(50, 39);
+            this.btnFirst.TabIndex = 31;
+            this.btnFirst.Text = "<<";
+            this.btnFirst.UseVisualStyleBackColor = true;
+            // 
+            // btnLast
+            // 
+            this.btnLast.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnLast.Location = new System.Drawing.Point(1111, 679);
+            this.btnLast.Name = "btnLast";
+            this.btnLast.Size = new System.Drawing.Size(50, 39);
+            this.btnLast.TabIndex = 32;
+            this.btnLast.Text = ">>";
+            this.btnLast.UseVisualStyleBackColor = true;
+            // 
+            // txtPageNumber
+            // 
+            this.txtPageNumber.AutoSize = true;
+            this.txtPageNumber.Font = new System.Drawing.Font("MS Reference Sans Serif", 12.25F);
+            this.txtPageNumber.Location = new System.Drawing.Point(12, 676);
+            this.txtPageNumber.Name = "txtPageNumber";
+            this.txtPageNumber.Size = new System.Drawing.Size(115, 22);
+            this.txtPageNumber.TabIndex = 33;
+            this.txtPageNumber.Text = "Страница - ";
+            // 
+            // lblPaginationInfo
+            // 
+            this.lblPaginationInfo.AutoSize = true;
+            this.lblPaginationInfo.Font = new System.Drawing.Font("MS Reference Sans Serif", 12.25F);
+            this.lblPaginationInfo.Location = new System.Drawing.Point(327, 676);
+            this.lblPaginationInfo.Name = "lblPaginationInfo";
+            this.lblPaginationInfo.Size = new System.Drawing.Size(96, 22);
+            this.lblPaginationInfo.TabIndex = 34;
+            this.lblPaginationInfo.Text = "Записей: ";
+            // 
             // ShowReports
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(1173, 716);
+            this.ClientSize = new System.Drawing.Size(1173, 800);
+            this.Controls.Add(this.lblPaginationInfo);
+            this.Controls.Add(this.txtPageNumber);
+            this.Controls.Add(this.btnLast);
+            this.Controls.Add(this.btnFirst);
             this.Controls.Add(this.btnPrev);
             this.Controls.Add(this.btnNext);
             this.Controls.Add(this.lblTotalRevenue);
@@ -342,7 +379,6 @@
             this.Controls.Add(this.label5);
             this.Controls.Add(this.dtpToDate);
             this.Controls.Add(this.dtpFromDate);
-            this.Controls.Add(this.lblRecordCount);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -386,7 +422,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.Label lblRecordCount;
         private System.Windows.Forms.DateTimePicker dtpFromDate;
         private System.Windows.Forms.DateTimePicker dtpToDate;
         private System.Windows.Forms.Label label5;
@@ -401,5 +436,9 @@
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Button btnNext;
         private System.Windows.Forms.Button btnPrev;
+        private System.Windows.Forms.Button btnFirst;
+        private System.Windows.Forms.Button btnLast;
+        private System.Windows.Forms.Label txtPageNumber;
+        private System.Windows.Forms.Label lblPaginationInfo;
     }
 }

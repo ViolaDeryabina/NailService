@@ -37,7 +37,14 @@
             this.Autorization = new System.Windows.Forms.Button();
             this.Exit = new System.Windows.Forms.Button();
             this.Eye = new System.Windows.Forms.PictureBox();
+            this.labelCaptcha = new System.Windows.Forms.Label();
+            this.pictureBoxCaptcha = new System.Windows.Forms.PictureBox();
+            this.textBoxCaptcha = new System.Windows.Forms.TextBox();
+            this.buttonRefreshCaptcha = new System.Windows.Forms.Button();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
             ((System.ComponentModel.ISupportInitialize)(this.Eye)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxCaptcha)).BeginInit();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -116,12 +123,61 @@
             this.Eye.TabIndex = 7;
             this.Eye.TabStop = false;
             // 
+            // labelCaptcha
+            // 
+            this.labelCaptcha.AutoSize = true;
+            this.labelCaptcha.Font = new System.Drawing.Font("MS Reference Sans Serif", 12.25F);
+            this.labelCaptcha.Location = new System.Drawing.Point(18, 212);
+            this.labelCaptcha.Name = "labelCaptcha";
+            this.labelCaptcha.Size = new System.Drawing.Size(62, 22);
+            this.labelCaptcha.TabIndex = 8;
+            this.labelCaptcha.Text = "label4";
+            // 
+            // pictureBoxCaptcha
+            // 
+            this.pictureBoxCaptcha.Location = new System.Drawing.Point(22, 30);
+            this.pictureBoxCaptcha.Name = "pictureBoxCaptcha";
+            this.pictureBoxCaptcha.Size = new System.Drawing.Size(266, 170);
+            this.pictureBoxCaptcha.TabIndex = 9;
+            this.pictureBoxCaptcha.TabStop = false;
+            // 
+            // textBoxCaptcha
+            // 
+            this.textBoxCaptcha.Location = new System.Drawing.Point(22, 269);
+            this.textBoxCaptcha.Name = "textBoxCaptcha";
+            this.textBoxCaptcha.Size = new System.Drawing.Size(266, 31);
+            this.textBoxCaptcha.TabIndex = 10;
+            // 
+            // buttonRefreshCaptcha
+            // 
+            this.buttonRefreshCaptcha.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonRefreshCaptcha.Location = new System.Drawing.Point(416, 318);
+            this.buttonRefreshCaptcha.Name = "buttonRefreshCaptcha";
+            this.buttonRefreshCaptcha.Size = new System.Drawing.Size(266, 43);
+            this.buttonRefreshCaptcha.TabIndex = 11;
+            this.buttonRefreshCaptcha.Text = "Обновить";
+            this.buttonRefreshCaptcha.UseVisualStyleBackColor = true;
+            this.buttonRefreshCaptcha.Click += new System.EventHandler(this.ButtonRefreshCaptcha_Click);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.pictureBoxCaptcha);
+            this.groupBox1.Controls.Add(this.labelCaptcha);
+            this.groupBox1.Controls.Add(this.textBoxCaptcha);
+            this.groupBox1.Location = new System.Drawing.Point(394, 12);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(317, 370);
+            this.groupBox1.TabIndex = 12;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Каптча";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(383, 394);
+            this.ClientSize = new System.Drawing.Size(732, 394);
+            this.Controls.Add(this.buttonRefreshCaptcha);
             this.Controls.Add(this.Eye);
             this.Controls.Add(this.Exit);
             this.Controls.Add(this.Autorization);
@@ -130,6 +186,7 @@
             this.Controls.Add(this.Login);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
+            this.Controls.Add(this.groupBox1);
             this.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -141,6 +198,9 @@
             this.Text = "Авторизация";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.Eye)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxCaptcha)).EndInit();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -156,6 +216,11 @@
         private System.Windows.Forms.Button Autorization;
         private System.Windows.Forms.Button Exit;
         private System.Windows.Forms.PictureBox Eye;
+        private System.Windows.Forms.Label labelCaptcha;
+        private System.Windows.Forms.PictureBox pictureBoxCaptcha;
+        private System.Windows.Forms.TextBox textBoxCaptcha;
+        private System.Windows.Forms.Button buttonRefreshCaptcha;
+        private System.Windows.Forms.GroupBox groupBox1;
     }
 }
 

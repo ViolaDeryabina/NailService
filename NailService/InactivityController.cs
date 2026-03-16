@@ -7,7 +7,7 @@ namespace NailService
     public class InactivityController : IMessageFilter
     {
         // Объявляем константу (в секундах)
-        private const int InactivityTimeoutSeconds = 5;
+        private const int InactivityTimeoutSeconds = 30;
 
         private Timer _timer;
         private Action _onLock;

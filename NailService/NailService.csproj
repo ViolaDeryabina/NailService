@@ -71,11 +71,11 @@
     <Compile Include="AddForms\AddServiceForm.Designer.cs">
       <DependentUpon>AddServiceForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Captcha.cs">
+    <Compile Include="ImportData.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Captcha.Designer.cs">
-      <DependentUpon>Captcha.cs</DependentUpon>
+    <Compile Include="ImportData.Designer.cs">
+      <DependentUpon>ImportData.cs</DependentUpon>
     </Compile>
     <Compile Include="InactivityController.cs" />
     <Compile Include="Manager\RecordsInfo.cs">
@@ -212,9 +212,6 @@
     <EmbeddedResource Include="AddForms\AddServiceForm.resx">
       <DependentUpon>AddServiceForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Captcha.resx">
-      <DependentUpon>Captcha.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="EditForms\EditClientForm.resx">
       <DependentUpon>EditClientForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -235,6 +232,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Admin\MenuAdmin.resx">
       <DependentUpon>MenuAdmin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ImportData.resx">
+      <DependentUpon>ImportData.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Manager\MenuManager.resx">
       <DependentUpon>MenuManager.cs</DependentUpon>

@@ -33,3 +33,45 @@ D:\Дерябина\ПП NailService\Дерябина В.Н\src\NailService\Nail
 D:\Дерябина\ПП NailService\Дерябина В.Н\src\NailService\NailService\obj\Release\NailService.pdb
 D:\Дерябина\ПП NailService\Дерябина В.Н\src\NailService\NailService\obj\Release\NailService.csproj.AssemblyReference.cache
 D:\Дерябина\ПП NailService\Дерябина В.Н\src\NailService\NailService\obj\Release\NailService.SysAdminForm.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\bin\Release\Resources\edit_icon.png
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\bin\Release\NailService.exe.config
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\bin\Release\NailService.exe
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\bin\Release\NailService.pdb
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\bin\Release\MySql.Data.dll
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\bin\Release\System.Memory.dll
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\bin\Release\System.Numerics.Vectors.dll
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\bin\Release\MySql.Data.xml
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.csproj.AssemblyReference.cache
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.exe.config
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\Interop.Microsoft.Office.Core.dll
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\Interop.Microsoft.Office.Interop.Excel.dll
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\Interop.Microsoft.Office.Interop.Word.dll
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.csproj.ResolveComReference.cache
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.AddClientForm.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.AddMasterForm.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.AddServiceForm.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.Captcha.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.EditClientForm.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.AddUserForm.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.EditUserForm.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.EditMasterForm.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.EditServiceForm.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.Form1.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.MenuAdmin.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.MenuManager.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.MenuDirector.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.RecordsInfo.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.MenuMaster.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.Properties.Resources.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.SettingForm.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.Show.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.ShowReports.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.RecordingClients.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.Schedule.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.SearchClient.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.SysAdmin.resources
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.csproj.GenerateResource.cache
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.csproj.CoreCompileInputs.cache
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailServ.8FE58812.Up2Date
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.exe
+C:\Users\viole\OneDrive\Desktop\Учёба\NailService\NailService\obj\Release\NailService.pdb
