@@ -13,12 +13,15 @@ namespace NailService
 {
     public partial class SettingForm : Form
     {
+        private InactivityController _inactivityController;
+
         /// <summary>
         /// Конструктор формы настроек подключения к базе данных
         /// </summary>
-        public SettingForm()
+        public SettingForm(InactivityController inactivityController = null)
         {
             InitializeComponent();
+            _inactivityController = inactivityController;
             LoadCurrentSettings();
         }
 
@@ -33,6 +36,7 @@ namespace NailService
                 NameUser.Text = Properties.Settings.Default.uid;
                 Password.Text = Properties.Settings.Default.pwd;
                 DB.Text = Properties.Settings.Default.database;
+                numericTimeout.Value = Properties.Settings.Default.inactivityTimeout;
             }
             catch (Exception ex)
             {
@@ -51,6 +55,13 @@ namespace NailService
                 Properties.Settings.Default["uid"] = NameUser.Text;
                 Properties.Settings.Default["pwd"] = Password.Text;
                 Properties.Settings.Default["database"] = DB.Text;
+
+                int newTimeout = (int)numericTimeout.Value;
+                Properties.Settings.Default["inactivityTimeout"] = newTimeout;
+                if (_inactivityController != null)
+                {
+                    _inactivityController.UpdateTimeout(newTimeout);
+                }
 
                 Properties.Settings.Default.Save();
 
@@ -74,6 +85,7 @@ namespace NailService
             NameUser.Text = "";
             Password.Text = "";
             DB.Text = "";
+            numericTimeout.Value = 30;
         }
 
         /// <summary>

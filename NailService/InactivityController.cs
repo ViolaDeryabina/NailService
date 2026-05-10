@@ -6,21 +6,19 @@ namespace NailService
 {
     public class InactivityController : IMessageFilter
     {
-        // Объявляем константу (в секундах)
-        private const int InactivityTimeoutSeconds = 30;
-
         private Timer _timer;
         private Action _onLock;
         private int _elapsedSeconds = 0;
+        private int _timeoutSeconds; // Теперь не константа
 
-        public InactivityController(Action onLockAction)
+        public InactivityController(Action onLockAction, int timeoutSeconds = 30)
         {
             _onLock = onLockAction;
+            _timeoutSeconds = timeoutSeconds;
 
             _timer = new Timer();
-            _timer.Interval = 1000; // Тик каждую секунду
+            _timer.Interval = 1000;
             _timer.Tick += Timer_Tick;
-
             _timer.Start();
         }
 
@@ -28,8 +26,7 @@ namespace NailService
         {
             _elapsedSeconds++;
 
-            // Используем константу для проверки
-            if (_elapsedSeconds >= InactivityTimeoutSeconds)
+            if (_elapsedSeconds >= _timeoutSeconds)
             {
                 _timer.Stop();
                 _onLock?.Invoke();
@@ -47,9 +44,15 @@ namespace NailService
             _timer.Start();
         }
 
+        // Добавьте метод для обновления таймаута
+        public void UpdateTimeout(int newTimeoutSeconds)
+        {
+            _timeoutSeconds = newTimeoutSeconds;
+            ResetTimer();
+        }
+
         public bool PreFilterMessage(ref Message m)
         {
-            // Коды событий мыши и клавиатуры
             const int WM_MOUSEMOVE = 0x0200;
             const int WM_LBUTTONDOWN = 0x0201;
             const int WM_RBUTTONDOWN = 0x0204;
@@ -64,5 +67,4 @@ namespace NailService
             return false;
         }
     }
-
 }

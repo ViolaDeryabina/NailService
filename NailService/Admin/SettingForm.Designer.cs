@@ -40,6 +40,9 @@
             this.label5 = new System.Windows.Forms.Label();
             this.Connection = new System.Windows.Forms.Button();
             this.Exit = new System.Windows.Forms.Button();
+            this.numericTimeout = new System.Windows.Forms.NumericUpDown();
+            this.label6 = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)(this.numericTimeout)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -124,7 +127,7 @@
             // 
             this.Connection.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.Connection.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.Connection.Location = new System.Drawing.Point(23, 341);
+            this.Connection.Location = new System.Drawing.Point(23, 443);
             this.Connection.Name = "Connection";
             this.Connection.Size = new System.Drawing.Size(297, 49);
             this.Connection.TabIndex = 9;
@@ -136,7 +139,7 @@
             // 
             this.Exit.BackColor = System.Drawing.Color.HotPink;
             this.Exit.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.Exit.Location = new System.Drawing.Point(23, 396);
+            this.Exit.Location = new System.Drawing.Point(23, 498);
             this.Exit.Name = "Exit";
             this.Exit.Size = new System.Drawing.Size(297, 49);
             this.Exit.TabIndex = 10;
@@ -144,12 +147,31 @@
             this.Exit.UseVisualStyleBackColor = false;
             this.Exit.Click += new System.EventHandler(this.Exit_Click);
             // 
+            // numericTimeout
+            // 
+            this.numericTimeout.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.25F);
+            this.numericTimeout.Location = new System.Drawing.Point(23, 360);
+            this.numericTimeout.Name = "numericTimeout";
+            this.numericTimeout.Size = new System.Drawing.Size(297, 32);
+            this.numericTimeout.TabIndex = 11;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(19, 331);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(190, 24);
+            this.label6.TabIndex = 12;
+            this.label6.Text = "Время бездействия";
+            // 
             // SettingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(341, 458);
+            this.ClientSize = new System.Drawing.Size(336, 558);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.numericTimeout);
             this.Controls.Add(this.Exit);
             this.Controls.Add(this.Connection);
             this.Controls.Add(this.Password);
@@ -171,6 +193,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Настройки";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SettingForm_FormClosing);
+            ((System.ComponentModel.ISupportInitialize)(this.numericTimeout)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -189,5 +212,7 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Button Connection;
         private System.Windows.Forms.Button Exit;
+        private System.Windows.Forms.NumericUpDown numericTimeout;
+        private System.Windows.Forms.Label label6;
     }
 }

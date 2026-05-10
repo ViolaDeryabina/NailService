@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
 
@@ -55,6 +52,8 @@ namespace NailService
                     if (cmbTables != null)
                     {
                         cmbTables.Items.Clear();
+                        cmbTables.Items.Add("-- Весь дамп (полный импорт) --");
+
                         foreach (DataRow row in databaseTables.Rows)
                         {
                             string tableName = row["TABLE_NAME"].ToString();
@@ -95,7 +94,7 @@ namespace NailService
 
             if (txtFilePath == null || string.IsNullOrEmpty(txtFilePath.Text))
             {
-                MessageBox.Show("Выберите CSV файл!");
+                MessageBox.Show("Выберите файл для импорта!");
                 return;
             }
 
@@ -105,37 +104,203 @@ namespace NailService
                 return;
             }
 
-            string tableName = cmbTables.SelectedItem.ToString();
+            string selectedItem = cmbTables.SelectedItem.ToString();
+            string filePath = txtFilePath.Text;
+            string extension = Path.GetExtension(filePath).ToLower();
 
-            // Вызываем соответствующий метод в зависимости от выбранной таблицы
+            // Проверяем, выбран ли полный дамп
+            if (selectedItem == "-- Весь дамп (полный импорт) --")
+            {
+                if (extension == ".sql")
+                {
+                    ImportFullDump(filePath);
+                }
+                else
+                {
+                    MessageBox.Show("Для полного импорта выберите SQL файл дампа!");
+                }
+                return;
+            }
+
+            // Импорт отдельных таблиц
+            if (extension == ".csv")
+            {
+                string tableName = selectedItem;
+                ImportTableFromCSV(tableName, filePath);
+            }
+            else
+            {
+                MessageBox.Show("Для импорта отдельных таблиц выберите CSV файл!");
+            }
+        }
+
+        /// <summary>
+        /// Импорт полного дампа базы данных из SQL файла
+        /// </summary>
+        private void ImportFullDump(string filePath)
+        {
+            try
+            {
+                string sqlContent = File.ReadAllText(filePath, Encoding.UTF8);
+                string[] queries = SplitSqlQueries(sqlContent);
+
+                using (MySqlConnection con = new MySqlConnection(_connection))
+                {
+                    con.Open();
+                    int successCount = 0;
+                    int errorCount = 0;
+
+                    foreach (string query in queries)
+                    {
+                        // Дополнительная проверка перед выполнением
+                        if (string.IsNullOrWhiteSpace(query))
+                            continue;
+
+                        if (query.Trim().Length < 3)
+                            continue;
+
+                        // Проверка на осмысленный SQL запрос
+                        string upperQuery = query.Trim().ToUpper();
+                        if (!upperQuery.StartsWith("CREATE") &&
+                            !upperQuery.StartsWith("DROP") &&
+                            !upperQuery.StartsWith("LOCK") &&
+                            !upperQuery.StartsWith("UNLOCK") &&
+                            !upperQuery.StartsWith("INSERT") &&
+                            !upperQuery.StartsWith("ALTER") &&
+                            !upperQuery.StartsWith("SET"))
+                            continue;
+
+                        try
+                        {
+                            using (MySqlCommand cmd = new MySqlCommand(query, con))
+                            {
+                                cmd.ExecuteNonQuery();
+                                successCount++;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            errorCount++;
+                            System.Diagnostics.Debug.WriteLine($"Ошибка: {ex.Message}\nЗапрос: {query.Substring(0, Math.Min(200, query.Length))}");
+                        }
+                    }
+
+                    MessageBox.Show($"Импорт дампа завершен!\n\n" +
+                        $"Успешно выполнено: {successCount} запросов\n" +
+                        $"Пропущено/ошибок: {errorCount}",
+                        "Импорт завершен",
+                        MessageBoxButtons.OK,
+                        errorCount > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка импорта дампа:\n{ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Разделение SQL скрипта на отдельные запросы
+        /// </summary>
+        private string[] SplitSqlQueries(string sql)
+        {
+            // Убираем комментарии
+            sql = RemoveComments(sql);
+
+            // Разделяем по точке с запятой, но учитываем строки и процедуры
+            List<string> queries = new List<string>();
+            StringBuilder currentQuery = new StringBuilder();
+            bool inString = false;
+            char stringChar = '\'';
+
+            for (int i = 0; i < sql.Length; i++)
+            {
+                char c = sql[i];
+
+                // Обработка строк
+                if ((c == '\'' || c == '"') && (i == 0 || sql[i - 1] != '\\'))
+                {
+                    if (!inString)
+                    {
+                        inString = true;
+                        stringChar = c;
+                    }
+                    else if (c == stringChar)
+                    {
+                        inString = false;
+                    }
+                }
+
+                currentQuery.Append(c);
+
+                // Если не в строке и встретили точку с запятой
+                if (!inString && c == ';')
+                {
+                    string query = currentQuery.ToString().Trim();
+                    if (!string.IsNullOrWhiteSpace(query))
+                    {
+                        queries.Add(query);
+                    }
+                    currentQuery.Clear();
+                }
+            }
+
+            // Добавляем последний запрос если есть
+            string lastQuery = currentQuery.ToString().Trim();
+            if (!string.IsNullOrWhiteSpace(lastQuery))
+            {
+                queries.Add(lastQuery);
+            }
+
+            return queries.ToArray();
+        }
+
+        /// <summary>
+        /// Удаление комментариев из SQL
+        /// </summary>
+        private string RemoveComments(string sql)
+        {
+            // Удаляем однострочные комментарии --
+            sql = Regex.Replace(sql, @"--[^\r\n]*", "");
+            // Удаляем многострочные комментарии /* */
+            sql = Regex.Replace(sql, @"/\*.*?\*/", "", RegexOptions.Singleline);
+            return sql;
+        }
+
+        /// <summary>
+        /// Импорт таблицы из CSV файла
+        /// </summary>
+        private void ImportTableFromCSV(string tableName, string filePath)
+        {
             switch (tableName)
             {
                 case "category":
-                    ImportCategory(txtFilePath.Text);
+                    ImportCategory(filePath);
                     break;
                 case "client":
-                    ImportClient(txtFilePath.Text);
+                    ImportClient(filePath);
                     break;
                 case "masters":
-                    ImportMasters(txtFilePath.Text);
+                    ImportMasters(filePath);
                     break;
                 case "record":
-                    ImportRecord(txtFilePath.Text);
+                    ImportRecord(filePath);
                     break;
                 case "role":
-                    ImportRole(txtFilePath.Text);
+                    ImportRole(filePath);
                     break;
                 case "services":
-                    ImportServices(txtFilePath.Text);
+                    ImportServices(filePath);
                     break;
                 case "status":
-                    ImportStatus(txtFilePath.Text);
+                    ImportStatus(filePath);
                     break;
                 case "users":
-                    ImportUsers(txtFilePath.Text);
+                    ImportUsers(filePath);
                     break;
                 default:
-                    MessageBox.Show("Неизвестная таблица!");
+                    MessageBox.Show($"Импорт для таблицы '{tableName}' не реализован!");
                     break;
             }
         }
@@ -169,7 +334,6 @@ namespace NailService
                             values[j] = values[j].Trim().Trim('"', '\'');
                         }
 
-                        // Ожидаемый порядок колонок в CSV: CategoryName, IsActive
                         string query = @"INSERT INTO category (CategoryName, IsActive) 
                                 VALUES (@CategoryName, @IsActive)";
 
@@ -220,7 +384,6 @@ namespace NailService
                             values[j] = values[j].Trim().Trim('"', '\'');
                         }
 
-                        // Ожидаемый порядок: LastName, FirstName, MiddleName, Phone, IsActive
                         string query = @"INSERT INTO client (LastName, FirstName, MiddleName, Phone, IsActive) 
                                 VALUES (@LastName, @FirstName, @MiddleName, @Phone, @IsActive)";
 
@@ -274,7 +437,6 @@ namespace NailService
                             values[j] = values[j].Trim().Trim('"', '\'');
                         }
 
-                        // Ожидаемый порядок: User, Description, Phone, IsActive
                         string query = @"INSERT INTO masters (User, Description, Phone, IsActive) 
                                 VALUES (@User, @Description, @Phone, @IsActive)";
 
@@ -327,7 +489,6 @@ namespace NailService
                             values[j] = values[j].Trim().Trim('"', '\'');
                         }
 
-                        // Ожидаемый порядок: Master, Client, Date, Status, Service, User, discount
                         string query = @"INSERT INTO record (Master, Client, Date, Status, Service, User, discount) 
                                 VALUES (@Master, @Client, @Date, @Status, @Service, @User, @discount)";
 
@@ -383,7 +544,6 @@ namespace NailService
                             values[j] = values[j].Trim().Trim('"', '\'');
                         }
 
-                        // Ожидаемый порядок: RoleName
                         string query = @"INSERT INTO role (RoleName) VALUES (@RoleName)";
 
                         using (MySqlCommand cmd = new MySqlCommand(query, con))
@@ -431,7 +591,6 @@ namespace NailService
                             values[j] = values[j].Trim().Trim('"', '\'');
                         }
 
-                        // Ожидаемый порядок: ServiceName, Description, Price, Category, IsActive
                         string query = @"INSERT INTO services (ServiceName, Description, Price, Category, IsActive) 
                                 VALUES (@ServiceName, @Description, @Price, @Category, @IsActive)";
 
@@ -485,7 +644,6 @@ namespace NailService
                             values[j] = values[j].Trim().Trim('"', '\'');
                         }
 
-                        // Ожидаемый порядок: StatusName
                         string query = @"INSERT INTO status (StatusName) VALUES (@StatusName)";
 
                         using (MySqlCommand cmd = new MySqlCommand(query, con))
@@ -533,7 +691,6 @@ namespace NailService
                             values[j] = values[j].Trim().Trim('"', '\'');
                         }
 
-                        // Ожидаемый порядок: LastName, FirstName, MiddleName, Login, Password, Role, IsActive
                         string query = @"INSERT INTO users (LastName, FirstName, MiddleName, Login, Password, Role, IsActive) 
                                 VALUES (@LastName, @FirstName, @MiddleName, @Login, @Password, @Role, @IsActive)";
 

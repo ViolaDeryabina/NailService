@@ -2,8 +2,10 @@
 using NailService.Properties;
 using System;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using System.Threading.Tasks;
 
 namespace NailService
 {
@@ -35,8 +37,9 @@ namespace NailService
                 Resources.eyeOpen,
                 Resources.eyeClose
             );
+            int timeout = Properties.Settings.Default.inactivityTimeout;
 
-            _inactivityController = new InactivityController(LockSystem);
+            _inactivityController = new InactivityController(LockSystem, timeout);
             Application.AddMessageFilter(_inactivityController);
 
             // Инициализация таймера для разблокировки
@@ -460,8 +463,19 @@ namespace NailService
             }
         }
 
-        private void Exit_Click(object sender, EventArgs e)
+        private async void Exit_ClickAsync(object sender, EventArgs e)
         {
+            // Показать форму прогресса
+            try
+            {
+                string backupPath = await Task.Run(() => DatabaseBackup.CreateBackup());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
             Application.Exit();
         }
 
@@ -474,7 +488,8 @@ namespace NailService
             foreach (Form f in Application.OpenForms.Cast<Form>().ToList())
             {
                 if (f.Name != "Form1")
-                    f.Close();
+                    f.Hide();
+                else f.Close();
             }
 
             this.Show();
