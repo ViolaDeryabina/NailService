@@ -1640,12 +1640,6 @@ namespace NailService
                 menuManager.Show();
                 this.Hide();
             }
-            else if (_roleID == 1)
-            {
-                MenuDirector menuManager = new MenuDirector(_fio);
-                menuManager.Show();
-                this.Hide();
-            }
         }
 
         #region ============ СТАТУСЫ ============

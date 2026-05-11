@@ -71,7 +71,10 @@
     <Compile Include="AddForms\AddServiceForm.Designer.cs">
       <DependentUpon>AddServiceForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="CaptchaGenerator.cs" />
+    <Compile Include="CaptchaManager.cs" />
     <Compile Include="DatabaseBackup.cs" />
+    <Compile Include="FormSizeManager.cs" />
     <Compile Include="ImportData.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -100,8 +103,8 @@
       <DependentUpon>AddUserForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Autorization\Connection.cs" />
-    <Compile Include="Director\ShowReportsHelper\DataManager.cs" />
-    <Compile Include="Director\ShowReportsHelper\FilterManager.cs" />
+    <Compile Include="Admin\ShowReportsHelper\DataManager.cs" />
+    <Compile Include="Admin\ShowReportsHelper\FilterManager.cs" />
     <Compile Include="EditForms\EditUserForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -140,12 +143,6 @@
     <Compile Include="Manager\MenuManager.Designer.cs">
       <DependentUpon>MenuManager.cs</DependentUpon>
     </Compile>
-    <Compile Include="Director\MenuDirector.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Director\MenuDirector.Designer.cs">
-      <DependentUpon>MenuDirector.cs</DependentUpon>
-    </Compile>
     <Compile Include="Models\MasterModel.cs" />
     <Compile Include="Master\MenuMaster.cs">
       <SubType>Form</SubType>
@@ -176,10 +173,10 @@
     <Compile Include="Admin\Show.Designer.cs">
       <DependentUpon>Show.cs</DependentUpon>
     </Compile>
-    <Compile Include="Director\ShowReports.cs">
+    <Compile Include="Admin\ShowReports.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Director\ShowReports.Designer.cs">
+    <Compile Include="Admin\ShowReports.Designer.cs">
       <DependentUpon>ShowReports.cs</DependentUpon>
     </Compile>
     <Compile Include="Manager\RecordingClients.cs">
@@ -194,7 +191,7 @@
     <Compile Include="Manager\Schedule.Designer.cs">
       <DependentUpon>Schedule.cs</DependentUpon>
     </Compile>
-    <Compile Include="Director\ShowReportsHelper\StyleManager.cs" />
+    <Compile Include="Admin\ShowReportsHelper\StyleManager.cs" />
     <Compile Include="Models\UserModel.cs" />
     <Compile Include="Helpers\Validation.cs" />
     <Compile Include="Manager\SearchClient.cs">
@@ -246,9 +243,6 @@
     <EmbeddedResource Include="Manager\MenuManager.resx">
       <DependentUpon>MenuManager.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Director\MenuDirector.resx">
-      <DependentUpon>MenuDirector.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Manager\RecordsInfo.resx">
       <DependentUpon>RecordsInfo.cs</DependentUpon>
     </EmbeddedResource>
@@ -274,7 +268,7 @@
     <EmbeddedResource Include="Admin\Show.resx">
       <DependentUpon>Show.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Director\ShowReports.resx">
+    <EmbeddedResource Include="Admin\ShowReports.resx">
       <DependentUpon>ShowReports.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Manager\RecordingClients.resx">
@@ -322,6 +316,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Captha\" />
     <Folder Include="Images\" />
   </ItemGroup>
   <ItemGroup>

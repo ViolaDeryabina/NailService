@@ -2,7 +2,6 @@
 using NailService.Properties;
 using System;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Threading.Tasks;
@@ -19,277 +18,89 @@ namespace NailService
         private PasswordVisibilityToggle _passwordToggle;
         private InactivityController _inactivityController;
 
-        // Переменные для CAPTCHA
-        private int _failedAttempts = 0; // Счетчик неудачных попыток (без учета капчи)
-        private string _currentCaptchaCode; // Текущий сгенерированный код капчи
-        private Timer _blockTimer; // Таймер для разблокировки после 10 секунд
-        private bool _isBlocked = false; // Флаг блокировки формы
-        private int _remainingSeconds = 10; // Оставшиеся секунды блокировки
+        private CaptchaManager _captchaManager;
+        private FormSizeManager _sizeManager;
+
+        // Размеры формы
+        private readonly Size _smallFormSize = new Size(400, 433);
+        private readonly Size _largeFormSize = new Size(748, 433);
 
         public Form1()
         {
             InitializeComponent();
             _connection = Connection.ConnectionString;
 
-            _passwordToggle = new PasswordVisibilityToggle(
-                Eye,
-                Password,
-                Resources.eyeOpen,
-                Resources.eyeClose
-            );
-            int timeout = Properties.Settings.Default.inactivityTimeout;
+            InitializeManagers();
+            InitializeComponents();
+        }
 
+        private void InitializeManagers()
+        {
+            _passwordToggle = new PasswordVisibilityToggle(
+                Eye, Password, Resources.eyeOpen, Resources.eyeClose);
+
+            _sizeManager = new FormSizeManager(this, _smallFormSize, _largeFormSize);
+
+            _captchaManager = new CaptchaManager(
+                pictureBoxCaptcha, textBoxCaptcha, buttonRefreshCaptcha,
+                labelCaptcha, groupBox1);
+
+            _captchaManager.OnBlockStarted += OnCaptchaBlockStarted;
+            _captchaManager.OnBlockEnded += OnCaptchaBlockEnded;
+
+            int timeout = Properties.Settings.Default.inactivityTimeout;
             _inactivityController = new InactivityController(LockSystem, timeout);
             Application.AddMessageFilter(_inactivityController);
-
-            // Инициализация таймера для разблокировки
-            _blockTimer = new Timer();
-            _blockTimer.Interval = 1000; // 1 секунда для обновления счетчика
-            _blockTimer.Tick += BlockTimer_Tick;
-
-            // Изначально скрываем элементы CAPTCHA
-            HideCaptchaElements();
-            labelCaptcha.Text = ""; // Очищаем текст подписи
         }
 
-        // --- Методы для работы с CAPTCHA ---
-
-        /// <summary>
-        /// Показывает элементы CAPTCHA на форме
-        /// </summary>
-        private void ShowCaptchaElements()
+        private void InitializeComponents()
         {
-            labelCaptcha.Visible = true;
-            pictureBoxCaptcha.Visible = true;
-            textBoxCaptcha.Visible = true;
-            buttonRefreshCaptcha.Visible = true;
-            labelCaptcha.Text = "Введите код с картинки:"; // Восстанавливаем обычный текст
+            _sizeManager.SetSmallSize();
+            _captchaManager.Hide();
         }
 
-        /// <summary>
-        /// Скрывает элементы CAPTCHA
-        /// </summary>
-        private void HideCaptchaElements()
+        private void OnCaptchaBlockStarted()
         {
-            labelCaptcha.Visible = false;
-            pictureBoxCaptcha.Visible = false;
-            textBoxCaptcha.Visible = false;
-            buttonRefreshCaptcha.Visible = false;
-            textBoxCaptcha.Clear();
-            labelCaptcha.Text = ""; // Очищаем текст
-        }
-
-        /// <summary>
-        /// Генерирует новый код CAPTCHA (4 символа: цифры или латинские буквы)
-        /// </summary>
-        private string GenerateCaptchaCode()
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            Random random = new Random();
-            return new string(Enumerable.Repeat(chars, 4)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
-        }
-
-        /// <summary>
-        /// Создает искаженное изображение CAPTCHA с наложением символов и шумом
-        /// </summary>
-        private Bitmap CreateDistortedCaptchaImage(string code)
-        {
-            int width = 200;
-            int height = 70;
-            Bitmap bitmap = new Bitmap(width, height);
-            Graphics graphics = Graphics.FromImage(bitmap);
-            graphics.Clear(Color.White);
-            Random random = new Random();
-
-            // Рисуем фон с легким шумом
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    if (random.Next(100) < 5) // 5% шума
-                        bitmap.SetPixel(x, y, Color.LightGray);
-                }
-            }
-
-            // Рисуем символы с наложением и искажением
-            Font font = new Font("Arial", 24, FontStyle.Bold | FontStyle.Italic);
-            float xPos = 10;
-
-            for (int i = 0; i < code.Length; i++)
-            {
-                // Случайный поворот символа
-                float angle = random.Next(-15, 16);
-                string symbol = code[i].ToString();
-
-                // Создаем временный bitmap для поворота символа
-                Bitmap charBitmap = new Bitmap(40, 50);//266; 170
-                Graphics charGraphics = Graphics.FromImage(charBitmap);
-                charGraphics.Clear(Color.White);
-                charGraphics.DrawString(symbol, font, Brushes.Black, 0, 0);
-
-                // Поворачиваем символ
-                charBitmap = RotateImage(charBitmap, angle);
-
-                // Случайное смещение по Y для эффекта "не в одной линии"
-                int yOffset = random.Next(10, 30);
-
-                // Рисуем символ с возможным наложением (xPos может перекрываться)
-                graphics.DrawImage(charBitmap, xPos, yOffset, 35, 40);
-
-                // Добавляем перечеркивание (линию через символ)
-                Pen pen = new Pen(Color.DarkRed, 2);
-                graphics.DrawLine(pen, xPos, yOffset + 20, xPos + 30, yOffset + 20);
-
-                // Смещение для следующего символа с возможным наложением
-                xPos += random.Next(20, 35); // Интервал меньше ширины символа для наложения
-            }
-
-            // Добавляем дополнительные линии шума
-            Pen noisePen = new Pen(Color.LightBlue);
-            for (int i = 0; i < 15; i++)
-            {
-                int x1 = random.Next(width);
-                int y1 = random.Next(height);
-                int x2 = random.Next(width);
-                int y2 = random.Next(height);
-                graphics.DrawLine(noisePen, x1, y1, x2, y2);
-            }
-
-            return bitmap;
-        }
-
-        /// <summary>
-        /// Вспомогательный метод для поворота изображения
-        /// </summary>
-        private Bitmap RotateImage(Bitmap bmp, float angle)
-        {
-            Bitmap rotated = new Bitmap(bmp.Width, bmp.Height);
-            using (Graphics g = Graphics.FromImage(rotated))
-            {
-                g.TranslateTransform(bmp.Width / 2, bmp.Height / 2);
-                g.RotateTransform(angle);
-                g.TranslateTransform(-bmp.Width / 2, -bmp.Height / 2);
-                g.DrawImage(bmp, new Point(0, 0));
-            }
-            return rotated;
-        }
-
-        /// <summary>
-        /// Обновляет изображение CAPTCHA
-        /// </summary>
-        private void RefreshCaptcha()
-        {
-            if (!_isBlocked)
-            {
-                _currentCaptchaCode = GenerateCaptchaCode();
-                pictureBoxCaptcha.Image = CreateDistortedCaptchaImage(_currentCaptchaCode);
-                textBoxCaptcha.Clear();
-            }
-        }
-
-        /// <summary>
-        /// Блокирует элементы формы на 10 секунд
-        /// </summary>
-        private void BlockFormFor10Seconds()
-        {
-            _isBlocked = true;
-            _remainingSeconds = 10;
-
-            // Блокируем все интерактивные элементы
+            // Блокируем основные элементы управления
             Autorization.Enabled = false;
-            buttonRefreshCaptcha.Enabled = false;
             Login.Enabled = false;
             Password.Enabled = false;
-            textBoxCaptcha.Enabled = false;
             Eye.Enabled = false;
-
-            // Показываем сообщение о блокировке в labelCaptcha
-            labelCaptcha.Visible = true;
-            labelCaptcha.Text = $"Доступ заблокирован!\nОсталось: {_remainingSeconds} сек.";
-            labelCaptcha.ForeColor = Color.Red; // Делаем текст красным для акцента
-
-            // Картинку капчи тоже можно оставить видимой или скрыть - оставим видимой
-            pictureBoxCaptcha.Visible = true;
-            textBoxCaptcha.Visible = true;
-            buttonRefreshCaptcha.Visible = true;
-
-            _blockTimer.Start();
         }
 
-        /// <summary>
-        /// Разблокирует форму после таймера
-        /// </summary>
-        private void UnblockForm()
+        private void OnCaptchaBlockEnded()
         {
-            _isBlocked = false;
-
-            // Разблокируем все элементы
+            // Разблокируем основные элементы управления
             Autorization.Enabled = true;
-            buttonRefreshCaptcha.Enabled = true;
             Login.Enabled = true;
             Password.Enabled = true;
-            textBoxCaptcha.Enabled = true;
             Eye.Enabled = true;
-
-            // Восстанавливаем обычный текст labelCaptcha
-            labelCaptcha.Text = "Введите код с картинки:";
-            labelCaptcha.ForeColor = SystemColors.ControlText; // Возвращаем обычный цвет
-
-            // Генерируем новую капчу после разблокировки
-            RefreshCaptcha();
         }
-
-        private void BlockTimer_Tick(object sender, EventArgs e)
-        {
-            _remainingSeconds--;
-
-            if (_remainingSeconds > 0)
-            {
-                // Обновляем текст с оставшимся временем
-                labelCaptcha.Text = $"Доступ заблокирован!\nОсталось: {_remainingSeconds} сек.";
-            }
-            else
-            {
-                // Время вышло - останавливаем таймер и разблокируем форму
-                _blockTimer.Stop();
-                UnblockForm();
-            }
-        }
-
-        // --- Основная логика авторизации ---
 
         private void Autorization_Click(object sender, EventArgs e)
         {
-            // Если форма заблокирована, ничего не делаем
-            if (_isBlocked)
+            if (_captchaManager.IsBlocked)
             {
-                MessageBox.Show($"Подождите {_remainingSeconds} секунд перед следующей попыткой.", "Блокировка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"Подождите {_captchaManager.RemainingSeconds} секунд перед следующей попыткой.",
+                    "Блокировка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            // Особая проверка для SysAdmin
+
+            // Проверка SysAdmin
             if (Login.Text == "SysAdmin" && Password.Text == "SysAdmin")
             {
-                SysAdmin sysAdmin = new SysAdmin();
-                sysAdmin.Show();
-                this.Hide();
+                OpenSysAdminForm();
                 return;
             }
 
-            // Проверка подключения к базе данных
+            // Проверка подключения к БД
             if (!Connection.TestConnection())
             {
-                MessageBox.Show("Ошибка подключения к базе данных. Проверьте настройки подключения.",
-                    "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-                SettingForm settingForm = new SettingForm();
-                settingForm.Show();
-                this.Hide();
+                HandleConnectionError();
                 return;
             }
 
-            // Проверка заполнения обязательных полей
+            // Проверка заполнения полей
             if (string.IsNullOrWhiteSpace(Login.Text) || string.IsNullOrWhiteSpace(Password.Text))
             {
                 MessageBox.Show("Заполните логин и пароль!", "Ошибка",
@@ -297,40 +108,49 @@ namespace NailService
                 return;
             }
 
-            
-
-            // Проверка CAPTCHA, если она активна
-            if (_failedAttempts > 0)
+            // Проверка CAPTCHA
+            if (_captchaManager.FailedAttempts > 0 && !ValidateCaptcha())
             {
-                if (string.IsNullOrWhiteSpace(textBoxCaptcha.Text))
-                {
-                    MessageBox.Show("Введите код с картинки!", "Ошибка",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                if (textBoxCaptcha.Text != _currentCaptchaCode)
-                {
-                    // Неверная капча
-                    _failedAttempts++;
-
-                    if (_failedAttempts >= 3) // После двух неудач с капчей (всего 3 неудачи)
-                    {
-                        MessageBox.Show("Превышено количество попыток. Доступ заблокирован на 10 секунд.",
-                            "Блокировка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        BlockFormFor10Seconds();
-                    }
-                    else
-                    {
-                        MessageBox.Show($"Неверный код CAPTCHA. Попытка {_failedAttempts} из 3",
-                            "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        RefreshCaptcha(); // Обновляем капчу
-                    }
-                    return;
-                }
+                return;
             }
 
-            // Основная проверка логина и пароля в БД
+            // Авторизация в БД
+            AuthorizeUser();
+        }
+
+        private bool ValidateCaptcha()
+        {
+            if (string.IsNullOrWhiteSpace(textBoxCaptcha.Text))
+            {
+                MessageBox.Show("Введите код с картинки!", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            if (!_captchaManager.Validate(textBoxCaptcha.Text))
+            {
+                _captchaManager.IncrementFailedAttempts();
+
+                if (_captchaManager.FailedAttempts >= 3)
+                {
+                    MessageBox.Show("Превышено количество попыток. Доступ заблокирован на 10 секунд.",
+                        "Блокировка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    _captchaManager.Block(10);
+                }
+                else
+                {
+                    MessageBox.Show($"Неверный код CAPTCHA. Попытка {_captchaManager.FailedAttempts} из 3",
+                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    _captchaManager.Refresh();
+                }
+                return false;
+            }
+
+            return true;
+        }
+
+        private void AuthorizeUser()
+        {
             using (MySqlConnection con = new MySqlConnection(_connection))
             {
                 try
@@ -338,105 +158,13 @@ namespace NailService
                     con.Open();
                     string passwordHash = MySQLHelper.GetHash(Password.Text);
 
-                    // Проверка активного пользователя
-                    string query = @"SELECT Count(*) FROM users 
-                           WHERE Login = @Login 
-                           AND Password = @Password 
-                           AND IsActive = 1";
-
-                    MySqlCommand cmd = new MySqlCommand(query, con);
-                    cmd.Parameters.AddWithValue("@Login", Login.Text);
-                    cmd.Parameters.AddWithValue("@Password", passwordHash);
-
-                    int count = Convert.ToInt32(cmd.ExecuteScalar());
-
-                    if (count > 0)
+                    if (IsActiveUser(con, passwordHash))
                     {
-                        // Успешная авторизация - сбрасываем счетчик попыток и скрываем капчу
-                        _failedAttempts = 0;
-                        HideCaptchaElements();
-
-                        // Получение роли и ФИО пользователя
-                        var role = MySQLHelper.GetRoleName(Login.Text, passwordHash);
-                        string FIO = MySQLHelper.GetLastNameWithInitials(Login.Text, passwordHash);
-
-                        if (role != null && FIO != null)
-                        {
-                            int masterID = EditUserClass.GetMasterId(Login.Text, passwordHash);
-
-                            // Перенаправление на соответствующую форму
-                            switch (role)
-                            {
-                                case "Директор":
-                                    {
-                                        MenuDirector menuDirector = new MenuDirector(FIO);
-                                        menuDirector.Show();
-                                        this.Hide();
-                                        break;
-                                    }
-                                case "Админ":
-                                    {
-                                        MenuAdmin menuAdmin = new MenuAdmin(FIO, Login.Text);
-                                        menuAdmin.Show();
-                                        this.Hide();
-                                        break;
-                                    }
-                                case "Мастер":
-                                    {
-                                        MenuMaster menuMaster = new MenuMaster(FIO, masterID);
-                                        menuMaster.Show();
-                                        this.Hide();
-                                        break;
-                                    }
-                                case "Менеджер":
-                                    {
-                                        MenuManager menuManager = new MenuManager(FIO);
-                                        menuManager.Show();
-                                        this.Hide();
-                                        break;
-                                    }
-                            }
-                        }
+                        HandleSuccessfulLogin(passwordHash);
                     }
                     else
                     {
-                        // Проверка на неактивного пользователя
-                        string checkInactiveQuery = @"SELECT Count(*) FROM users 
-                                             WHERE Login = @Login 
-                                             AND Password = @Password 
-                                             AND IsActive = 0";
-
-                        MySqlCommand checkCmd = new MySqlCommand(checkInactiveQuery, con);
-                        checkCmd.Parameters.AddWithValue("@Login", Login.Text);
-                        checkCmd.Parameters.AddWithValue("@Password", passwordHash);
-
-                        int inactiveCount = Convert.ToInt32(checkCmd.ExecuteScalar());
-
-                        if (inactiveCount > 0)
-                        {
-                            MessageBox.Show("Ваша учетная запись отключена. Обратитесь к администратору.",
-                                          "Доступ запрещен",
-                                          MessageBoxButtons.OK,
-                                          MessageBoxIcon.Warning);
-                        }
-                        else
-                        {
-                            // Неудачная попытка входа - увеличиваем счетчик
-                            _failedAttempts++;
-                            MessageBox.Show("Неверный логин или пароль", "Ошибка",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-                            // После первой неудачной попытки показываем CAPTCHA
-                            if (_failedAttempts >= 1)
-                            {
-                                ShowCaptchaElements();
-                                RefreshCaptcha();
-                            }
-                        }
-
-                        // Очистка полей ввода
-                        Password.Clear();
-                        textBoxCaptcha.Clear();
+                        HandleFailedLogin(con, passwordHash);
                     }
                 }
                 catch (Exception ex)
@@ -447,35 +175,127 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Обработчик кнопки обновления CAPTCHA
-        /// </summary>
-        private void ButtonRefreshCaptcha_Click(object sender, EventArgs e)
+        private bool IsActiveUser(MySqlConnection con, string passwordHash)
         {
-            if (!_isBlocked)
+            string query = @"SELECT Count(*) FROM users 
+                   WHERE Login = @Login AND Password = @Password AND IsActive = 1";
+
+            MySqlCommand cmd = new MySqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@Login", Login.Text);
+            cmd.Parameters.AddWithValue("@Password", passwordHash);
+
+            return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+        }
+
+        private void HandleSuccessfulLogin(string passwordHash)
+        {
+            _captchaManager.ResetFailedAttempts();
+            _captchaManager.Hide();
+            _sizeManager.SetSmallSize();
+
+            var role = MySQLHelper.GetRoleName(Login.Text, passwordHash);
+            string FIO = MySQLHelper.GetLastNameWithInitials(Login.Text, passwordHash);
+
+            if (role != null && FIO != null)
             {
-                RefreshCaptcha();
+                int masterID = EditUserClass.GetMasterId(Login.Text, passwordHash);
+                OpenRoleForm(role, FIO, masterID);
+            }
+        }
+
+        private void HandleFailedLogin(MySqlConnection con, string passwordHash)
+        {
+            if (IsInactiveUser(con, passwordHash))
+            {
+                MessageBox.Show("Ваша учетная запись отключена. Обратитесь к администратору.",
+                    "Доступ запрещен", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             else
             {
-                MessageBox.Show($"Нельзя обновить капчу во время блокировки. Осталось {_remainingSeconds} сек.",
+                _captchaManager.IncrementFailedAttempts();
+                MessageBox.Show("Неверный логин или пароль", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                if (_captchaManager.FailedAttempts >= 1)
+                {
+                    _captchaManager.Show();
+                    _sizeManager.SetLargeSize();
+                    _captchaManager.Refresh();
+                }
+            }
+
+            Password.Clear();
+            _captchaManager.ClearInput();
+        }
+
+        private bool IsInactiveUser(MySqlConnection con, string passwordHash)
+        {
+            string query = @"SELECT Count(*) FROM users 
+                   WHERE Login = @Login AND Password = @Password AND IsActive = 0";
+
+            MySqlCommand cmd = new MySqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@Login", Login.Text);
+            cmd.Parameters.AddWithValue("@Password", passwordHash);
+
+            return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+        }
+
+        private void OpenRoleForm(string role, string fio, int masterID)
+        {
+            switch (role)
+            {
+                case "Админ":
+                    new MenuAdmin(fio, Login.Text).Show();
+                    break;
+                case "Мастер":
+                    new MenuMaster(fio, masterID).Show();
+                    break;
+                case "Менеджер":
+                    new MenuManager(fio).Show();
+                    break;
+            }
+            this.Hide();
+        }
+
+        private void OpenSysAdminForm()
+        {
+            new SysAdmin().Show();
+            this.Hide();
+        }
+
+        private void HandleConnectionError()
+        {
+            MessageBox.Show("Ошибка подключения к базе данных. Проверьте настройки подключения.",
+                "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            new SettingForm().Show();
+            this.Hide();
+        }
+
+        private void ButtonRefreshCaptcha_Click(object sender, EventArgs e)
+        {
+            if (!_captchaManager.IsBlocked)
+            {
+                _captchaManager.Refresh();
+            }
+            else
+            {
+                MessageBox.Show($"Нельзя обновить капчу во время блокировки. Осталось {_captchaManager.RemainingSeconds} сек.",
                     "Блокировка", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
         private async void Exit_ClickAsync(object sender, EventArgs e)
         {
-            // Показать форму прогресса
             try
             {
-                string backupPath = await Task.Run(() => DatabaseBackup.CreateBackup());
+                await Task.Run(() => DatabaseBackup.CreateBackup());
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
             Application.Exit();
         }
 
@@ -483,21 +303,22 @@ namespace NailService
         {
             Login.Clear();
             Password.Clear();
-            textBoxCaptcha.Clear();
+            _captchaManager.ClearInput();
 
             foreach (Form f in Application.OpenForms.Cast<Form>().ToList())
             {
                 if (f.Name != "Form1")
                     f.Hide();
-                else f.Close();
+                else
+                    f.Close();
             }
+
+            _sizeManager.Reset();
+            _captchaManager.Hide();
+            _captchaManager.ResetFailedAttempts();
 
             this.Show();
             MessageBox.Show("Сессия завершена из-за отсутствия активности.");
-
-            // Сбрасываем состояние CAPTCHA при блокировке неактивности
-            _failedAttempts = 0;
-            HideCaptchaElements();
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)

@@ -3,6 +3,58 @@
   "WorkspaceRootPath": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\formsizemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\formsizemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\captchamanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\captchamanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\captchagenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\captchagenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\admin\\showreports.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\admin\\showreports.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\admin\\show.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\admin\\show.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\admin\\settingform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\admin\\settingform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\admin\\menuadmin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\admin\\menuadmin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\admin\\showreports.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\admin\\showreports.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\editforms\\editmasterform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\editforms\\editmasterform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\admin\\show.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\admin\\show.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\editforms\\editclientform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\editforms\\editclientform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\manager\\schedule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\manager\\schedule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -35,16 +87,8 @@
       "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\sysadmin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\autorization\\connection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\autorization\\connection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\databasebackup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -57,14 +101,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\progressform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\progressform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\admin\\show.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\admin\\show.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\admin\\settingform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|solutionrelative:nailservice\\admin\\settingform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6BE4C906-3038-493D-B21B-613569B54BB8}|NailService\\NailService.csproj|c:\\users\\viole\\onedrive\\desktop\\nailservice\\nailservice\\properties\\settings.settings||{6D2695F9-5365-4A78-89ED-F205C045BFE6}",
@@ -102,7 +138,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Bookmark",
@@ -110,32 +146,108 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Schedule.cs",
-              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Manager\\Schedule.cs",
-              "RelativeDocumentMoniker": "NailService\\Manager\\Schedule.cs",
-              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Manager\\Schedule.cs*",
-              "RelativeToolTip": "NailService\\Manager\\Schedule.cs*",
-              "ViewState": "AgIAAAUAAAAAAAAAAAAYwBIAAAAcAAAAAAAAAA==",
+              "DocumentIndex": 2,
+              "Title": "FormSizeManager.cs",
+              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\FormSizeManager.cs",
+              "RelativeDocumentMoniker": "NailService\\FormSizeManager.cs",
+              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\FormSizeManager.cs*",
+              "RelativeToolTip": "NailService\\FormSizeManager.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFYAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-10T12:18:41.096Z",
+              "WhenOpened": "2026-05-11T09:47:28.288Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "CaptchaManager.cs",
+              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\CaptchaManager.cs",
+              "RelativeDocumentMoniker": "NailService\\CaptchaManager.cs",
+              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\CaptchaManager.cs*",
+              "RelativeToolTip": "NailService\\CaptchaManager.cs*",
+              "ViewState": "AgIAAIcAAAAAAAAAAAAuwMQAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-11T09:47:11.71Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "CaptchaGenerator.cs",
+              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\CaptchaGenerator.cs",
+              "RelativeDocumentMoniker": "NailService\\CaptchaGenerator.cs",
+              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\CaptchaGenerator.cs*",
+              "RelativeToolTip": "NailService\\CaptchaGenerator.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-11T09:46:53.588Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "Schedule.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Manager\\Schedule.cs",
-              "RelativeDocumentMoniker": "NailService\\Manager\\Schedule.cs",
-              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Manager\\Schedule.cs [Design]*",
-              "RelativeToolTip": "NailService\\Manager\\Schedule.cs [Design]*",
+              "Title": "Form1.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Form1.cs",
+              "RelativeDocumentMoniker": "NailService\\Form1.cs",
+              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Form1.cs [Design]",
+              "RelativeToolTip": "NailService\\Form1.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-10T12:16:31.336Z",
+              "WhenOpened": "2026-05-10T09:40:52.68Z",
               "EditorCaption": " [Design]"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
+              "Title": "Form1.cs",
+              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Form1.cs",
+              "RelativeDocumentMoniker": "NailService\\Form1.cs",
+              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Form1.cs",
+              "RelativeToolTip": "NailService\\Form1.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEsBAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-10T09:54:40.022Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ShowReports.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\ShowReports.cs",
+              "RelativeDocumentMoniker": "NailService\\Admin\\ShowReports.cs",
+              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\ShowReports.cs [Design]",
+              "RelativeToolTip": "NailService\\Admin\\ShowReports.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-11T09:34:43.682Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "ShowReports.cs",
+              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\ShowReports.cs",
+              "RelativeDocumentMoniker": "NailService\\Admin\\ShowReports.cs",
+              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\ShowReports.cs",
+              "RelativeToolTip": "NailService\\Admin\\ShowReports.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIDAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-11T09:37:03.717Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "MenuAdmin.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\MenuAdmin.cs",
+              "RelativeDocumentMoniker": "NailService\\Admin\\MenuAdmin.cs",
+              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\MenuAdmin.cs [Design]",
+              "RelativeToolTip": "NailService\\Admin\\MenuAdmin.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-11T09:38:33.109Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
               "Title": "MenuManager.cs [Design]",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Manager\\MenuManager.cs",
               "RelativeDocumentMoniker": "NailService\\Manager\\MenuManager.cs",
@@ -147,7 +259,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 16,
               "Title": "RecordingClients.cs [Design]",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Manager\\RecordingClients.cs",
               "RelativeDocumentMoniker": "NailService\\Manager\\RecordingClients.cs",
@@ -159,7 +271,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 17,
               "Title": "ImportData.cs",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\ImportData.cs",
               "RelativeDocumentMoniker": "NailService\\ImportData.cs",
@@ -172,7 +284,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 22,
               "Title": "DatabaseBackup.cs",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\DatabaseBackup.cs",
               "RelativeDocumentMoniker": "NailService\\DatabaseBackup.cs",
@@ -185,32 +297,93 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "Form1.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Form1.cs",
-              "RelativeDocumentMoniker": "NailService\\Form1.cs",
-              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Form1.cs [Design]",
-              "RelativeToolTip": "NailService\\Form1.cs [Design]",
+              "DocumentIndex": 7,
+              "Title": "SettingForm.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\SettingForm.cs",
+              "RelativeDocumentMoniker": "NailService\\Admin\\SettingForm.cs",
+              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\SettingForm.cs [Design]",
+              "RelativeToolTip": "NailService\\Admin\\SettingForm.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-10T09:40:52.68Z",
+              "WhenOpened": "2026-05-10T09:43:24.153Z",
               "EditorCaption": " [Design]"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "Form1.cs",
-              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Form1.cs",
-              "RelativeDocumentMoniker": "NailService\\Form1.cs",
-              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Form1.cs",
-              "RelativeToolTip": "NailService\\Form1.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAANsBAABAAAAAAAAAAA==",
+              "DocumentIndex": 6,
+              "Title": "Show.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\Show.cs",
+              "RelativeDocumentMoniker": "NailService\\Admin\\Show.cs",
+              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\Show.cs [Design]",
+              "RelativeToolTip": "NailService\\Admin\\Show.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-10T09:54:40.022Z",
+              "WhenOpened": "2026-05-10T10:06:43.699Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "Schedule.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Manager\\Schedule.cs",
+              "RelativeDocumentMoniker": "NailService\\Manager\\Schedule.cs",
+              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Manager\\Schedule.cs [Design]",
+              "RelativeToolTip": "NailService\\Manager\\Schedule.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-10T12:16:31.336Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "Schedule.cs",
+              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Manager\\Schedule.cs",
+              "RelativeDocumentMoniker": "NailService\\Manager\\Schedule.cs",
+              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Manager\\Schedule.cs",
+              "RelativeToolTip": "NailService\\Manager\\Schedule.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAAEICAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-10T12:18:41.096Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 12,
+              "Title": "EditClientForm.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\EditForms\\EditClientForm.cs",
+              "RelativeDocumentMoniker": "NailService\\EditForms\\EditClientForm.cs",
+              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\EditForms\\EditClientForm.cs [Design]",
+              "RelativeToolTip": "NailService\\EditForms\\EditClientForm.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-11T09:36:15.491Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Show.cs",
+              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\Show.cs",
+              "RelativeDocumentMoniker": "NailService\\Admin\\Show.cs",
+              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\Show.cs",
+              "RelativeToolTip": "NailService\\Admin\\Show.cs",
+              "ViewState": "AgIAAPAAAAAAAAAAAAAcwGkGAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-11T09:36:29.554Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "EditMasterForm.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\EditForms\\EditMasterForm.cs",
+              "RelativeDocumentMoniker": "NailService\\EditForms\\EditMasterForm.cs",
+              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\EditForms\\EditMasterForm.cs [Design]",
+              "RelativeToolTip": "NailService\\EditForms\\EditMasterForm.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-11T09:36:58.569Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
               "Title": "ImportData.cs [Design]",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\ImportData.cs",
               "RelativeDocumentMoniker": "NailService\\ImportData.cs",
@@ -222,7 +395,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 21,
               "Title": "Connection.cs",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Autorization\\Connection.cs",
               "RelativeDocumentMoniker": "NailService\\Autorization\\Connection.cs",
@@ -235,7 +408,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 19,
               "Title": "SysAdmin.cs [Design]",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\SysAdmin.cs",
               "RelativeDocumentMoniker": "NailService\\SysAdmin.cs",
@@ -247,7 +420,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 20,
               "Title": "SysAdmin.cs",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\SysAdmin.cs",
               "RelativeDocumentMoniker": "NailService\\SysAdmin.cs",
@@ -260,19 +433,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
-              "Title": "Show.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\Show.cs",
-              "RelativeDocumentMoniker": "NailService\\Admin\\Show.cs",
-              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\Show.cs [Design]",
-              "RelativeToolTip": "NailService\\Admin\\Show.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-10T10:06:43.699Z",
-              "EditorCaption": " [Design]"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 23,
               "Title": "ProgressForm.cs [Design]",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\ProgressForm.cs",
               "RelativeDocumentMoniker": "NailService\\ProgressForm.cs",
@@ -284,7 +445,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 24,
               "Title": "ProgressForm.cs",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\ProgressForm.cs",
               "RelativeDocumentMoniker": "NailService\\ProgressForm.cs",
@@ -297,7 +458,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 25,
               "Title": "Settings.settings",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Properties\\Settings.settings",
               "RelativeDocumentMoniker": "NailService\\Properties\\Settings.settings",
@@ -309,19 +470,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
-              "Title": "SettingForm.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\SettingForm.cs",
-              "RelativeDocumentMoniker": "NailService\\Admin\\SettingForm.cs",
-              "ToolTip": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\SettingForm.cs [Design]",
-              "RelativeToolTip": "NailService\\Admin\\SettingForm.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-10T09:43:24.153Z",
-              "EditorCaption": " [Design]"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 27,
               "Title": "SettingForm.cs",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Admin\\SettingForm.cs",
               "RelativeDocumentMoniker": "NailService\\Admin\\SettingForm.cs",
@@ -334,7 +483,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 26,
               "Title": "InactivityController.cs",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\InactivityController.cs",
               "RelativeDocumentMoniker": "NailService\\InactivityController.cs",
@@ -347,7 +496,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 28,
               "Title": "Settings.Designer.cs",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Properties\\Settings.Designer.cs",
               "RelativeDocumentMoniker": "NailService\\Properties\\Settings.Designer.cs",
@@ -360,7 +509,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 29,
               "Title": "Resources.resx",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Properties\\Resources.resx",
               "RelativeDocumentMoniker": "NailService\\Properties\\Resources.resx",
@@ -372,7 +521,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 30,
               "Title": "RecordsInfo.cs",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Manager\\RecordsInfo.cs",
               "RelativeDocumentMoniker": "NailService\\Manager\\RecordsInfo.cs",
@@ -385,7 +534,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 31,
               "Title": "RecordingClients.cs",
               "DocumentMoniker": "C:\\Users\\viole\\OneDrive\\Desktop\\NailService\\NailService\\Manager\\RecordingClients.cs",
               "RelativeDocumentMoniker": "NailService\\Manager\\RecordingClients.cs",

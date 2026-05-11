@@ -591,12 +591,7 @@ namespace NailService
 
         private void InMenu_Click(object sender, EventArgs e)
         {
-            if (_roleID == 1)
-            {
-                MenuDirector menuDirector = new MenuDirector(_userFIO);
-                menuDirector.Show();
-            }
-            else if (_roleID == 2)
+            if (_roleID == 2)
             {
                 MenuAdmin menuAdmin = new MenuAdmin(_userFIO);
                 menuAdmin.Show();

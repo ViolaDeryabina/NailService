@@ -136,7 +136,6 @@ C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.Fo
 C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.MenuAdmin.resources
 C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.ImportData.resources
 C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.MenuManager.resources
-C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.MenuDirector.resources
 C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.RecordsInfo.resources
 C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.MenuMaster.resources
 C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.Properties.Resources.resources
