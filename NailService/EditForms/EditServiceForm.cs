@@ -5,11 +5,15 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using Encoder = System.Drawing.Imaging.Encoder;
+
 
 namespace NailService
 {
@@ -21,25 +25,19 @@ namespace NailService
     {
         private string _connection;
         public ServiceModel Service { get; private set; }
-        private EditUserClass _dataService;
         private Image _selectedImage;
         private byte[] _selectedImageBytes = null;
         private bool _imageChanged = false;
-        private ImageService _imageService;
-        private const long MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3 МБ
+        private const long MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 МБ
 
         /// <summary>
         /// Конструктор формы редактирования услуги
         /// </summary>
-        /// <param name="service">Объект услуги с текущими данными</param>
-        /// <param name="imageService">Сервис для работы с изображениями</param>
-        public EditServiceForm(ServiceModel service, ImageService imageService = null)
+        public EditServiceForm(ServiceModel service)
         {
             InitializeComponent();
             _connection = Connection.ConnectionString;
             Service = service;
-            _dataService = new EditUserClass();
-            _imageService = imageService ?? new ImageService();
 
             LoadCategory();
             LoadTextBoxs();
@@ -55,15 +53,8 @@ namespace NailService
         {
             try
             {
-                if (Service.ServiceImage != null)
+                if (Service.PhotoBytes != null && Service.PhotoBytes.Length > 0)
                 {
-                    _selectedImage = Service.ServiceImage;
-                    _selectedImageBytes = ImageToBytes(_selectedImage);
-                    pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
-                }
-                else if (Service.PhotoBytes != null && Service.PhotoBytes.Length > 0)
-                {
-                    // Загружаем из байтов (LONGBLOB)
                     _selectedImageBytes = Service.PhotoBytes;
                     _selectedImage = BytesToImage(Service.PhotoBytes);
                     pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
@@ -88,7 +79,6 @@ namespace NailService
         {
             try
             {
-                // Создаем заглушку программно
                 Bitmap defaultImage = new Bitmap(pictureBoxService.Width, pictureBoxService.Height);
                 using (Graphics g = Graphics.FromImage(defaultImage))
                 {
@@ -105,9 +95,9 @@ namespace NailService
                 }
 
                 _selectedImage = defaultImage;
-                _selectedImageBytes = ImageToBytes(defaultImage);
+                _selectedImageBytes = null;
                 pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
-                _imageChanged = false; // Заглушка не считается изменением
+                _imageChanged = false;
             }
             catch (Exception ex)
             {
@@ -116,7 +106,7 @@ namespace NailService
         }
 
         /// <summary>
-        /// Масштабирование изображения с сохранением пропорций
+        /// Масштабирование изображения
         /// </summary>
         private Image ScaleImage(Image image, int maxWidth, int maxHeight)
         {
@@ -128,6 +118,9 @@ namespace NailService
 
             var newWidth = (int)(image.Width * ratio);
             var newHeight = (int)(image.Height * ratio);
+
+            if (newWidth < 1) newWidth = 1;
+            if (newHeight < 1) newHeight = 1;
 
             var newImage = new Bitmap(newWidth, newHeight);
             using (var graphics = Graphics.FromImage(newImage))
@@ -147,8 +140,7 @@ namespace NailService
 
             using (var ms = new MemoryStream())
             {
-                // Сохраняем с оптимальным качеством
-                image.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                image.Save(ms, ImageFormat.Jpeg);
                 return ms.ToArray();
             }
         }
@@ -167,7 +159,7 @@ namespace NailService
         }
 
         /// <summary>
-        /// Загрузка текстовых данных услуги в поля формы
+        /// Загрузка текстовых данных услуги
         /// </summary>
         private void LoadTextBoxs()
         {
@@ -178,7 +170,7 @@ namespace NailService
         }
 
         /// <summary>
-        /// Загрузка категорий из базы данных
+        /// Загрузка категорий
         /// </summary>
         private void LoadCategory()
         {
@@ -219,7 +211,7 @@ namespace NailService
         }
 
         /// <summary>
-        /// Обновление счетчика символов в описании
+        /// Обновление счетчика символов
         /// </summary>
         private void UpdateCharCount()
         {
@@ -245,9 +237,6 @@ namespace NailService
 
         #region Сохранение данных
 
-        /// <summary>
-        /// Сохранение изменений и закрытие формы
-        /// </summary>
         private void EditService_Click(object sender, EventArgs e)
         {
             if (ValidateData())
@@ -256,7 +245,6 @@ namespace NailService
 
                 if (_imageChanged && _selectedImage != null)
                 {
-                    // Конвертируем изображение в байты для сохранения в БД
                     _selectedImageBytes = ImageToBytes(_selectedImage);
                     Service.PhotoBytes = _selectedImageBytes;
                 }
@@ -269,18 +257,12 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Отмена редактирования и закрытие формы
-        /// </summary>
         private void Back_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
             Close();
         }
 
-        /// <summary>
-        /// Валидация введенных данных перед сохранением
-        /// </summary>
         private bool ValidateData()
         {
             if (string.IsNullOrWhiteSpace(NameService.Text))
@@ -327,30 +309,15 @@ namespace NailService
             return true;
         }
 
-        /// <summary>
-        /// Сохранение данных из формы в объект Service
-        /// </summary>
         private void SaveServiceData()
         {
             Service.ServiceName = NameService.Text.Trim();
-
-            if (decimal.TryParse(Price.Text.Trim(), out decimal priceValue))
-            {
-                Service.Price = Convert.ToInt32(priceValue);
-            }
-            else
-            {
-                Service.Price = 0;
-            }
-
+            Service.Price = decimal.TryParse(Price.Text.Trim(), out decimal priceValue) ? Convert.ToInt32(priceValue) : 0;
             Service.Description = Description.Text.Trim();
             Service.Category = (int)CategoryCb.SelectedValue;
             Service.ServiceImage = _selectedImage;
         }
 
-        /// <summary>
-        /// Обновление данных услуги в базе данных
-        /// </summary>
         private bool UpdateServiceInDatabase()
         {
             try
@@ -364,7 +331,6 @@ namespace NailService
 
                     if (_imageChanged && _selectedImageBytes != null)
                     {
-                        // Обновляем с изображением
                         query = @"UPDATE services 
                                  SET ServiceName = @ServiceName,
                                      Description = @Description,
@@ -378,7 +344,6 @@ namespace NailService
                     }
                     else
                     {
-                        // Обновляем без изменения изображения
                         query = @"UPDATE services 
                                  SET ServiceName = @ServiceName,
                                      Description = @Description,
@@ -399,7 +364,6 @@ namespace NailService
 
                     if (result > 0)
                     {
-                        
                         return true;
                     }
                     else
@@ -410,16 +374,10 @@ namespace NailService
                     }
                 }
             }
-            catch (MySqlException mysqlEx)
-            {
-                MessageBox.Show($"Ошибка MySQL при обновлении услуги:\nКод: {mysqlEx.Number}\nСообщение: {mysqlEx.Message}",
-                              "Ошибка базы данных", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при обновлении услуги: {ex.Message}\n\nДетали: {ex.InnerException?.Message}",
-                              "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Ошибка при обновлении услуги: {ex.Message}", "Ошибка",
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
         }
@@ -429,7 +387,7 @@ namespace NailService
         #region Управление изображением
 
         /// <summary>
-        /// Загрузка изображения из файла
+        /// Загрузка изображения из файла с автоматическим сжатием
         /// </summary>
         private void LoadImageFromFile()
         {
@@ -437,243 +395,191 @@ namespace NailService
             {
                 openFileDialog.Filter = "Изображения (*.jpg;*.jpeg;*.png;*.bmp;*.gif)|*.jpg;*.jpeg;*.png;*.bmp;*.gif";
                 openFileDialog.FilterIndex = 1;
-                openFileDialog.Title = $"Выберите изображение услуги (макс. {MAX_IMAGE_SIZE / (1024 * 1024)} МБ)";
+                openFileDialog.Title = "Выберите изображение услуги";
                 openFileDialog.RestoreDirectory = true;
-
-                openFileDialog.FileOk += OpenFileDialog_FileOk;
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    try
+                    LoadImageFromFile(openFileDialog.FileName);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Загрузка изображения из файла с автоматическим сжатием
+        /// </summary>
+        private void LoadImageFromFile(string filePath)
+        {
+            try
+            {
+                if (!File.Exists(filePath)) return;
+
+                string extension = Path.GetExtension(filePath).ToLower();
+                string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
+
+                if (!allowedExtensions.Contains(extension))
+                {
+                    MessageBox.Show("Выберите файл с поддерживаемым форматом:\nJPG, JPEG, PNG, BMP или GIF",
+                                   "Неверный формат файла",
+                                   MessageBoxButtons.OK,
+                                   MessageBoxIcon.Warning);
+                    return;
+                }
+
+                byte[] imageBytes = File.ReadAllBytes(filePath);
+                FileInfo fileInfo = new FileInfo(filePath);
+
+                // Если файл слишком большой - сжимаем
+                if (imageBytes.Length > MAX_IMAGE_SIZE)
+                {
+                    Cursor = Cursors.WaitCursor;
+                    imageBytes = CompressImageBytes(imageBytes);
+                    Cursor = Cursors.Default;
+                }
+
+                // Загружаем изображение
+                using (MemoryStream ms = new MemoryStream(imageBytes))
+                {
+                    _selectedImage = new Bitmap(Image.FromStream(ms));
+                    _selectedImageBytes = imageBytes;
+                    pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
+                    pictureBoxService.SizeMode = PictureBoxSizeMode.Zoom;
+                    _imageChanged = true;
+
+                    // Показываем информацию
+                    string info = $"Файл: {fileInfo.Name}\n" +
+                                 $"Размер: {FormatFileSize(imageBytes.Length)}\n" +
+                                 $"Разрешение: {_selectedImage.Width}x{_selectedImage.Height}";
+                    toolTip1.SetToolTip(pictureBoxService, info);
+                }
+            }
+            catch (OutOfMemoryException)
+            {
+                MessageBox.Show("Файл поврежден или не является корректным изображением.",
+                              "Ошибка загрузки",
+                              MessageBoxButtons.OK,
+                              MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не удалось загрузить изображение: {ex.Message}", "Ошибка",
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Сжатие изображения
+        /// </summary>
+        private byte[] CompressImageBytes(byte[] imageBytes)
+        {
+            try
+            {
+                using (MemoryStream inputMs = new MemoryStream(imageBytes))
+                using (Image originalImage = Image.FromStream(inputMs))
+                {
+                    int targetWidth = originalImage.Width;
+                    int targetHeight = originalImage.Height;
+                    int maxDimension = 1200;
+
+                    if (targetWidth > maxDimension || targetHeight > maxDimension)
                     {
-                        string filePath = openFileDialog.FileName;
+                        float ratio = Math.Min((float)maxDimension / targetWidth, (float)maxDimension / targetHeight);
+                        targetWidth = (int)(targetWidth * ratio);
+                        targetHeight = (int)(targetHeight * ratio);
+                        if (targetWidth < 1) targetWidth = 1;
+                        if (targetHeight < 1) targetHeight = 1;
+                    }
 
-                        FileInfo fileInfo = new FileInfo(filePath);
-                        if (fileInfo.Length > MAX_IMAGE_SIZE)
+                    // Создаем уменьшенное изображение
+                    using (Bitmap resizedImage = new Bitmap(targetWidth, targetHeight))
+                    {
+                        using (Graphics g = Graphics.FromImage(resizedImage))
                         {
-                            MessageBox.Show($"Размер файла слишком большой ({fileInfo.Length / (1024 * 1024)} МБ).\n" +
-                                           $"Максимальный разрешенный размер: {MAX_IMAGE_SIZE / (1024 * 1024)} МБ.\n\n" +
-                                           "Пожалуйста, выберите файл меньшего размера или сожмите изображение.",
-                                           "Ошибка размера файла",
-                                           MessageBoxButtons.OK,
-                                           MessageBoxIcon.Warning);
-                            return;
+                            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                            g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+                            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                            g.DrawImage(originalImage, 0, 0, targetWidth, targetHeight);
                         }
 
-                        string extension = Path.GetExtension(filePath).ToLower();
-                        string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
-
-                        if (!allowedExtensions.Contains(extension))
+                        // Сохраняем с качеством 80%
+                        using (MemoryStream outputMs = new MemoryStream())
                         {
-                            MessageBox.Show("Выберите файл с поддерживаемым форматом:\n" +
-                                           "JPG, JPEG, PNG, BMP или GIF",
-                                           "Неверный формат файла",
-                                           MessageBoxButtons.OK,
-                                           MessageBoxIcon.Warning);
-                            return;
-                        }
+                            var jpegCodec = ImageCodecInfo.GetImageEncoders()
+                                .FirstOrDefault(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
 
-                        using (var tempImage = Image.FromFile(filePath))
-                        {
-                            // Проверка разрешения
-                            if (tempImage.Width > 4000 || tempImage.Height > 4000)
+                            if (jpegCodec != null)
                             {
-                                var result = MessageBox.Show($"Разрешение изображения очень большое ({tempImage.Width}x{tempImage.Height}).\n" +
-                                                           "Рекомендуется использовать изображения до 2000x2000 пикселей.\n\n" +
-                                                           "Хотите продолжить загрузку?",
-                                                           "Большое разрешение",
-                                                           MessageBoxButtons.YesNo,
-                                                           MessageBoxIcon.Question);
-
-                                if (result == DialogResult.No)
-                                {
-                                    return;
-                                }
+                                var encoderParams = new EncoderParameters(1);
+                                encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, 80L);
+                                resizedImage.Save(outputMs, jpegCodec, encoderParams);
+                            }
+                            else
+                            {
+                                resizedImage.Save(outputMs, ImageFormat.Jpeg);
                             }
 
-                            // Создаем копию изображения
-                            _selectedImage = new Bitmap(tempImage);
+                            return outputMs.ToArray();
                         }
-
-                        pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
-                        _imageChanged = true;
-                    }
-                    catch (OutOfMemoryException)
-                    {
-                        MessageBox.Show("Файл поврежден или не является корректным изображением.",
-                                      "Ошибка загрузки",
-                                      MessageBoxButtons.OK,
-                                      MessageBoxIcon.Error);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Не удалось загрузить изображение: {ex.Message}", "Ошибка",
-                                      MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
-
-                openFileDialog.FileOk -= OpenFileDialog_FileOk;
             }
-        }
-
-        /// <summary>
-        /// Проверка файла перед загрузкой (размер, формат)
-        /// </summary>
-        private void OpenFileDialog_FileOk(object sender, CancelEventArgs e)
-        {
-            var openFileDialog = sender as OpenFileDialog;
-            if (openFileDialog != null)
+            catch
             {
-                try
-                {
-                    FileInfo fileInfo = new FileInfo(openFileDialog.FileName);
-
-                    if (fileInfo.Length > MAX_IMAGE_SIZE)
-                    {
-                        MessageBox.Show($"Размер файла слишком большой ({fileInfo.Length / (1024 * 1024)} МБ).\n" +
-                                       $"Максимальный разрешенный размер: {MAX_IMAGE_SIZE / (1024 * 1024)} МБ.",
-                                       "Ошибка размера файла",
-                                       MessageBoxButtons.OK,
-                                       MessageBoxIcon.Warning);
-                        e.Cancel = true;
-                        return;
-                    }
-
-                    string extension = Path.GetExtension(openFileDialog.FileName).ToLower();
-                    string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
-
-                    if (!allowedExtensions.Contains(extension))
-                    {
-                        MessageBox.Show("Выберите файл с поддерживаемым форматом:\n" +
-                                       "JPG, JPEG, PNG, BMP или GIF",
-                                       "Неверный формат файла",
-                                       MessageBoxButtons.OK,
-                                       MessageBoxIcon.Warning);
-                        e.Cancel = true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Ошибка проверки файла: {ex.Message}",
-                                  "Ошибка",
-                                  MessageBoxButtons.OK,
-                                  MessageBoxIcon.Error);
-                    e.Cancel = true;
-                }
+                return imageBytes;
             }
         }
 
         /// <summary>
-        /// Удаление текущего изображения (замена на заглушку)
+        /// Форматирование размера файла
         /// </summary>
-        private void btnRemoveImage_Click(object sender, EventArgs e)
+        private string FormatFileSize(long bytes)
         {
-            RemoveImage();
+            string[] sizes = { "Б", "КБ", "МБ", "ГБ" };
+            double len = bytes;
+            int order = 0;
+
+            while (len >= 1024 && order < sizes.Length - 1)
+            {
+                order++;
+                len = len / 1024;
+            }
+
+            return $"{len:0.##} {sizes[order]}";
         }
 
         /// <summary>
-        /// Удаление текущего изображения (замена на заглушку)
+        /// Удаление изображения
         /// </summary>
         private void RemoveImage()
         {
             LoadDefaultImage();
+            _selectedImageBytes = null;
             _imageChanged = true;
-            _selectedImageBytes = null; // Сбрасываем байты - будет NULL в БД
         }
 
-        /// <summary>
-        /// Загрузка изображения при клике на PictureBox
-        /// </summary>
-        private void pictureBoxService_Click(object sender, EventArgs e)
-        {
-            LoadImageFromFile();
-        }
+        private void pictureBoxService_Click(object sender, EventArgs e) => LoadImageFromFile();
+        private void btnLoadImage_Click(object sender, EventArgs e) => LoadImageFromFile();
+        private void btnRemoveImage_Click(object sender, EventArgs e) => RemoveImage();
 
-        /// <summary>
-        /// Загрузка изображения через кнопку
-        /// </summary>
-        private void btnLoadImage_Click(object sender, EventArgs e)
-        {
-            LoadImageFromFile();
-        }
-
-        /// <summary>
-        /// Обработка перетаскивания файла на PictureBox
-        /// </summary>
         private void pictureBoxService_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
                 e.Effect = DragDropEffects.Copy;
-            }
             else
-            {
                 e.Effect = DragDropEffects.None;
-            }
         }
 
-        /// <summary>
-        /// Обработка сброса файла на PictureBox
-        /// </summary>
         private void pictureBoxService_DragDrop(object sender, DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (files.Length > 0)
             {
-                string filePath = files[0];
-                string extension = Path.GetExtension(filePath).ToLower();
+                string extension = Path.GetExtension(files[0]).ToLower();
                 string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
 
                 if (allowedExtensions.Contains(extension))
                 {
-                    try
-                    {
-                        FileInfo fileInfo = new FileInfo(filePath);
-                        if (fileInfo.Length > MAX_IMAGE_SIZE)
-                        {
-                            MessageBox.Show($"Размер файла слишком большой ({fileInfo.Length / (1024 * 1024)} МБ).\n" +
-                                           $"Максимальный разрешенный размер: {MAX_IMAGE_SIZE / (1024 * 1024)} МБ.",
-                                           "Ошибка размера файла",
-                                           MessageBoxButtons.OK,
-                                           MessageBoxIcon.Warning);
-                            return;
-                        }
-
-                        using (var tempImage = Image.FromFile(filePath))
-                        {
-                            if (tempImage.Width > 4000 || tempImage.Height > 4000)
-                            {
-                                var result = MessageBox.Show($"Разрешение изображения очень большое ({tempImage.Width}x{tempImage.Height}).\n" +
-                                                           "Рекомендуется использовать изображения до 2000x2000 пикселей.\n\n" +
-                                                           "Хотите продолжить загрузку?",
-                                                           "Большое разрешение",
-                                                           MessageBoxButtons.YesNo,
-                                                           MessageBoxIcon.Question);
-
-                                if (result == DialogResult.No)
-                                {
-                                    return;
-                                }
-                            }
-
-                            _selectedImage = new Bitmap(tempImage);
-                        }
-
-                        pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
-                        _imageChanged = true;
-                    }
-                    catch (OutOfMemoryException)
-                    {
-                        MessageBox.Show("Файл поврежден или не является корректным изображением.",
-                                      "Ошибка загрузки",
-                                      MessageBoxButtons.OK,
-                                      MessageBoxIcon.Error);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Не удалось загрузить изображение: {ex.Message}", "Ошибка",
-                                      MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+                    LoadImageFromFile(files[0]);
                 }
                 else
                 {
@@ -687,54 +593,44 @@ namespace NailService
 
         #region Фильтрация ввода
 
-        /// <summary>
-        /// Фильтрация ввода в поле названия услуги (только русские буквы)
-        /// </summary>
         private void NameService_TextChanged(object sender, EventArgs e)
         {
-            int selectionStart = NameService.SelectionStart;
-            string filteredText = InputValidator.FilterToRussianLetters(NameService.Text, true);
-
-            if (filteredText != NameService.Text)
+            if (!string.IsNullOrWhiteSpace(NameService.Text))
             {
-                NameService.Text = filteredText;
-                NameService.SelectionStart = Math.Min(selectionStart, NameService.Text.Length);
+                string name = NameService.Text.Trim();
+                if (name.Length > 0)
+                {
+                    name = char.ToUpper(name[0]) + (name.Length > 1 ? name.Substring(1) : "");
+                    if (NameService.Text != name)
+                        NameService.Text = name;
+                }
             }
         }
 
-        /// <summary>
-        /// Фильтрация ввода в поле цены (только цифры и точка)
-        /// </summary>
         private void Price_TextChanged(object sender, EventArgs e)
         {
-            int selectionStart = Price.SelectionStart;
-            bool allowDecimal = true;
-            string filteredText = InputValidator.FilterToDigitsOnly(Price.Text, allowDecimal);
-
-            if (filteredText != Price.Text)
+            if (!string.IsNullOrWhiteSpace(Price.Text))
             {
-                Price.Text = filteredText;
-                Price.SelectionStart = Math.Min(selectionStart, Price.Text.Length);
+                string filtered = new string(Price.Text.Where(c => char.IsDigit(c) || c == '.').ToArray());
+                if (filtered != Price.Text)
+                {
+                    int selectionStart = Price.SelectionStart;
+                    Price.Text = filtered;
+                    Price.SelectionStart = Math.Min(selectionStart, Price.Text.Length);
+                }
             }
         }
 
-        /// <summary>
-        /// Фильтрация ввода в поле описания и счетчик символов
-        /// </summary>
-        private void Description_TextChanged(object sender, EventArgs e)
-        {
-            int selectionStart = Description.SelectionStart;
-            string filteredText = InputValidator.FilterToRussianLetters(Description.Text, true);
-
-            if (filteredText != Description.Text)
-            {
-                Description.Text = filteredText;
-                Description.SelectionStart = Math.Min(selectionStart, Description.Text.Length);
-            }
-
-            UpdateCharCount();
-        }
+        private void Description_TextChanged(object sender, EventArgs e) => UpdateCharCount();
 
         #endregion
+
+        private void EditServiceForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+            }
+        }
     }
 }

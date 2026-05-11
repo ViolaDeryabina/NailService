@@ -20,6 +20,7 @@ namespace NailService
         private int _userId;
         private int _masterId;
         private DateTime currentWeekStart;
+        private bool _isCentered = false;
 
         /// <summary>
         /// Конструктор формы меню мастера
@@ -29,6 +30,11 @@ namespace NailService
         public MenuMaster(string FIO, int userId)
         {
             InitializeComponent();
+            // Настройки формы для масштабирования
+            this.FormBorderStyle = FormBorderStyle.Sizable;
+            this.WindowState = FormWindowState.Maximized;
+            this.MinimumSize = new Size(800, 600);
+
             _fio = FIO;
             _userId = userId;
             _masterId = userId;
@@ -38,6 +44,98 @@ namespace NailService
             currentWeekStart = GetMonday(DateTime.Today);
             ApplyCustomStyles();
             FillScheduleWithData();
+            RecalculateLayout();
+        }
+
+        /// <summary>
+        /// Пересчет расположения элементов при изменении размера формы
+        /// </summary>
+        private void RecalculateLayout()
+        {
+            int w = this.ClientSize.Width;
+            int h = this.ClientSize.Height;
+
+            // Если форма еще не инициализирована или ширина слишком маленькая
+            if (w <= 0 || h <= 0) return;
+
+            // Группа с логотипом - на всю ширину
+            groupBox1.Width = w - 40;
+            groupBox1.Location = new Point(20, 10);
+            groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+
+            // Центрируем заголовок
+            label1.Location = new Point((groupBox1.Width - label1.Width) / 2, 20);
+            FIOlabel.Location = new Point(groupBox1.Width - FIOlabel.Width - 20, 20);
+            pictureBox1.Location = new Point(20, 15);
+
+            // DataGridView - растягиваем на всю ширину и высоту
+            dataGridViewSchedule.Width = w - 40;
+            dataGridViewSchedule.Height = h - 200;
+            dataGridViewSchedule.Location = new Point(20, 130);
+            dataGridViewSchedule.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+
+            // Надпись с неделей
+            lblWeek.Location = new Point(w - 330, 110);
+            lblWeek.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
+            // Кнопки навигации внизу
+            int bottomY = h - 65;
+            button1.Location = new Point(w - 350, bottomY);
+            button2.Location = new Point(w - 280, bottomY);
+            button3.Location = new Point(w - 200, bottomY);
+            Exit.Location = new Point(20, bottomY);
+            Exit.Size = new Size(223, 55);
+
+            button1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            button2.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            button3.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            Exit.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+
+            // Перестраиваем колонки DataGridView на полную ширину
+            if (dataGridViewSchedule.Columns.Count > 0 && dataGridViewSchedule.Width > 0)
+            {
+                // Фиксированная ширина для колонки "Время" (80px)
+                int timeColumnWidth = 80;
+                dataGridViewSchedule.Columns[0].Width = timeColumnWidth;
+
+                // Оставшееся пространство делим на 5 дней
+                int availableWidth = dataGridViewSchedule.Width - timeColumnWidth - 60;
+                int dayColumnWidth = availableWidth / 5;
+
+                if (dayColumnWidth > 80)
+                {
+                    for (int i = 1; i <= 5 && i < dataGridViewSchedule.Columns.Count; i++)
+                    {
+                        dataGridViewSchedule.Columns[i].Width = dayColumnWidth;
+                    }
+                }
+            }
+
+            // Принудительное обновление таблицы
+            dataGridViewSchedule.Refresh();
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+
+            if (this.WindowState == FormWindowState.Normal && !_isCentered)
+            {
+                this.CenterToScreen();
+                _isCentered = true;
+            }
+            else if (this.WindowState == FormWindowState.Maximized)
+            {
+                _isCentered = false;
+            }
+
+            RecalculateLayout();
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            RecalculateLayout();
         }
 
         /// <summary>
@@ -83,7 +181,9 @@ namespace NailService
             dataGridViewSchedule.DefaultCellStyle.SelectionBackColor = Color.FromArgb(220, 235, 252);
             dataGridViewSchedule.DefaultCellStyle.SelectionForeColor = Color.Black;
 
-            dataGridViewSchedule.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            // Изменено с Fill на None
+            dataGridViewSchedule.RowHeadersVisible = false;
+            dataGridViewSchedule.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
             dataGridViewSchedule.ReadOnly = true;
 
             dataGridViewSchedule.RowHeadersVisible = true;
@@ -173,6 +273,7 @@ namespace NailService
                 CreateColumns(weekDates);
                 AddTimeRows();
                 LoadScheduleData(weekDates);
+                RecalculateLayout();
             }
             catch (Exception ex)
             {
@@ -193,7 +294,7 @@ namespace NailService
                 Name = "Time",
                 HeaderText = "Время",
                 ReadOnly = true,
-                Width = 80,
+                // Не задаем Width - будет установлено в RecalculateLayout
                 DefaultCellStyle = new DataGridViewCellStyle
                 {
                     BackColor = accentColor,
@@ -221,7 +322,7 @@ namespace NailService
                     Name = headerText,
                     HeaderText = headerText,
                     ReadOnly = true,
-                    Width = 150,
+                    // Убираем фиксированную ширину 150
                     HeaderCell = new DataGridViewColumnHeaderCell
                     {
                         Style = new DataGridViewCellStyle
@@ -449,8 +550,7 @@ namespace NailService
                     DayOfWeek day = weekDates[dayIndex].DayOfWeek;
                     if ((day == DayOfWeek.Saturday || day == DayOfWeek.Sunday) && e.Value == null)
                     {
-                        // Можно раскомментировать для подсветки выходных
-                        // e.CellStyle.BackColor = Color.FromArgb(255, 240, 245);
+                        e.CellStyle.BackColor = Color.FromArgb(255, 240, 245);
                     }
                 }
             }
@@ -468,7 +568,7 @@ namespace NailService
             string startStr = $"{currentWeekStart.Day} {months[currentWeekStart.Month - 1]}";
             string endStr = $"{weekEnd.Day} {months[weekEnd.Month - 1]} {weekEnd.Year}";
 
-            lblWeek.Text = $"📅 {startStr} — {endStr}";
+            lblWeek.Text = $"{startStr} — {endStr}";
             lblWeek.ForeColor = Color.HotPink;
             lblWeek.Font = new Font("MS Reference Sans Serif", 10, FontStyle.Bold);
         }

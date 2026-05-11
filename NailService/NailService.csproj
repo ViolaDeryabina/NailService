@@ -36,6 +36,12 @@
     <ApplicationIcon>nail-art-studio-logo-design-template-vector.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BouncyCastle.Cryptography, Version=2.0.0.0, Culture=neutral, PublicKeyToken=072edcf4a5328938, processorArchitecture=MSIL">
+      <HintPath>..\packages\BouncyCastle.Cryptography.2.6.2\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
+    </Reference>
+    <Reference Include="itextsharp, Version=5.5.13.5, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <HintPath>..\packages\iTextSharp.5.5.13.5\lib\net461\itextsharp.dll</HintPath>
+    </Reference>
     <Reference Include="MySql.Data, Version=9.4.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\MySQL\MySQL Connector NET 9.4\MySql.Data.dll</HintPath>
@@ -71,17 +77,20 @@
     <Compile Include="AddForms\AddServiceForm.Designer.cs">
       <DependentUpon>AddServiceForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="CaptchaGenerator.cs" />
-    <Compile Include="CaptchaManager.cs" />
-    <Compile Include="DatabaseBackup.cs" />
-    <Compile Include="FormSizeManager.cs" />
-    <Compile Include="ImportData.cs">
+    <Compile Include="Captha\CaptchaGenerator.cs" />
+    <Compile Include="Captha\CaptchaManager.cs" />
+    <Compile Include="Report\ExcelReportGenerator.cs" />
+    <Compile Include="Report\PdfReportGenerator.cs" />
+    <Compile Include="Report\ReportHelper.cs" />
+    <Compile Include="SysAdmin\DatabaseBackup.cs" />
+    <Compile Include="Captha\FormSizeManager.cs" />
+    <Compile Include="SysAdmin\ImportData.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ImportData.Designer.cs">
+    <Compile Include="SysAdmin\ImportData.Designer.cs">
       <DependentUpon>ImportData.cs</DependentUpon>
     </Compile>
-    <Compile Include="InactivityController.cs" />
+    <Compile Include="SysAdmin\InactivityController.cs" />
     <Compile Include="Manager\RecordsInfo.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -154,12 +163,6 @@
     <Compile Include="Autorization\PasswordVisibilityToggle.cs" />
     <Compile Include="Helpers\NameFormatter.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="ProgressForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ProgressForm.Designer.cs">
-      <DependentUpon>ProgressForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Admin\SettingForm.cs">
       <SubType>Form</SubType>
@@ -201,10 +204,10 @@
       <DependentUpon>SearchClient.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\ServiceModel.cs" />
-    <Compile Include="SysAdmin.cs">
+    <Compile Include="SysAdmin\SysAdmin.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SysAdmin.Designer.cs">
+    <Compile Include="SysAdmin\SysAdmin.Designer.cs">
       <DependentUpon>SysAdmin.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Include="AddForms\AddClientForm.resx">
@@ -237,7 +240,7 @@
     <EmbeddedResource Include="Admin\MenuAdmin.resx">
       <DependentUpon>MenuAdmin.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ImportData.resx">
+    <EmbeddedResource Include="SysAdmin\ImportData.resx">
       <DependentUpon>ImportData.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Manager\MenuManager.resx">
@@ -248,9 +251,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Master\MenuMaster.resx">
       <DependentUpon>MenuMaster.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ProgressForm.resx">
-      <DependentUpon>ProgressForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -280,7 +280,7 @@
     <EmbeddedResource Include="Manager\SearchClient.resx">
       <DependentUpon>SearchClient.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SysAdmin.resx">
+    <EmbeddedResource Include="SysAdmin\SysAdmin.resx">
       <DependentUpon>SysAdmin.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
@@ -316,7 +316,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Captha\" />
     <Folder Include="Images\" />
   </ItemGroup>
   <ItemGroup>

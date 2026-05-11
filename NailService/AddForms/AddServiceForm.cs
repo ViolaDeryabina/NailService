@@ -3,14 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace NailService
 {
@@ -24,14 +21,13 @@ namespace NailService
         private bool _imageChanged = false;
 
         /// <summary>
-        /// Максимальный размер файла изображения (3 МБ)
+        /// Максимальный размер файла изображения (5 МБ)
         /// </summary>
-        private const long MAX_IMAGE_SIZE = 3 * 1024 * 1024;
+        private const long MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
         /// <summary>
         /// Конструктор формы добавления услуги
         /// </summary>
-        /// <param name="showForm">Ссылка на главную форму для обновления данных</param>
         public AddServiceForm(Show showForm = null)
         {
             InitializeComponent();
@@ -53,7 +49,6 @@ namespace NailService
         {
             try
             {
-                // Создаем заглушку программно
                 Bitmap defaultImage = new Bitmap(pictureBoxService.Width, pictureBoxService.Height);
                 using (Graphics g = Graphics.FromImage(defaultImage))
                 {
@@ -70,7 +65,7 @@ namespace NailService
                 }
 
                 _selectedImage = defaultImage;
-                _selectedImageBytes = null; // Заглушка не сохраняется в БД
+                _selectedImageBytes = null;
                 pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
                 pictureBoxService.SizeMode = PictureBoxSizeMode.Zoom;
             }
@@ -82,76 +77,60 @@ namespace NailService
         }
 
         /// <summary>
-        /// Загрузка изображения из файла с проверкой размера и формата
+        /// Загрузка изображения из файла с автоматическим сжатием
         /// </summary>
         private void LoadImageFromFile(string filePath)
         {
             try
             {
-                if (File.Exists(filePath))
+                if (!File.Exists(filePath)) return;
+
+                string extension = Path.GetExtension(filePath).ToLower();
+                string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
+
+                if (!allowedExtensions.Contains(extension))
                 {
-                    FileInfo fileInfo = new FileInfo(filePath);
+                    MessageBox.Show("Выберите файл с поддерживаемым форматом:\nJPG, JPEG, PNG, BMP или GIF",
+                                   "Неверный формат файла",
+                                   MessageBoxButtons.OK,
+                                   MessageBoxIcon.Warning);
+                    return;
+                }
 
-                    // Проверка размера файла
-                    if (fileInfo.Length > MAX_IMAGE_SIZE)
-                    {
-                        MessageBox.Show($"Размер файла слишком большой ({fileInfo.Length / (1024 * 1024)} МБ).\n" +
-                                       $"Максимальный разрешенный размер: {MAX_IMAGE_SIZE / (1024 * 1024)} МБ.\n\n" +
-                                       "Пожалуйста, выберите файл меньшего размера или сожмите изображение.",
-                                       "Ошибка размера файла",
-                                       MessageBoxButtons.OK,
-                                       MessageBoxIcon.Warning);
-                        return;
-                    }
+                byte[] imageBytes = File.ReadAllBytes(filePath);
 
-                    // Проверка формата файла
-                    string extension = Path.GetExtension(filePath).ToLower();
-                    string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
+                // Проверка размера файла
+                if (imageBytes.Length > MAX_IMAGE_SIZE)
+                {
+                    // Сжимаем изображение
+                    Cursor = Cursors.WaitCursor;
+                    imageBytes = CompressImageBytes(imageBytes);
+                    Cursor = Cursors.Default;
+                }
 
-                    if (!allowedExtensions.Contains(extension))
-                    {
-                        MessageBox.Show("Выберите файл с поддерживаемым форматом:\n" +
-                                       "JPG, JPEG, PNG, BMP или GIF",
-                                       "Неверный формат файла",
-                                       MessageBoxButtons.OK,
-                                       MessageBoxIcon.Warning);
-                        return;
-                    }
-
-                    using (var tempImage = Image.FromFile(filePath))
-                    {
-                        // Проверка разрешения изображения
-                        if (tempImage.Width > 4000 || tempImage.Height > 4000)
-                        {
-                            var result = MessageBox.Show($"Разрешение изображения очень большое ({tempImage.Width}x{tempImage.Height}).\n" +
-                                                       "Рекомендуется использовать изображения до 2000x2000 пикселей.\n\n" +
-                                                       "Хотите продолжить загрузку?",
-                                                       "Большое разрешение",
-                                                       MessageBoxButtons.YesNo,
-                                                       MessageBoxIcon.Question);
-
-                            if (result == DialogResult.No)
-                            {
-                                return;
-                            }
-                        }
-
-                        // Создаем копию изображения
-                        _selectedImage = new Bitmap(tempImage);
-                    }
-
-                    // Конвертируем в байты для сохранения в БД
-                    _selectedImageBytes = ImageToBytes(_selectedImage);
-
+                // Загружаем изображение из байтов
+                using (MemoryStream ms = new MemoryStream(imageBytes))
+                {
+                    _selectedImage = Image.FromStream(ms);
+                    _selectedImageBytes = imageBytes;
                     pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
                     _imageChanged = true;
-                    ShowImageInfo(fileInfo, _selectedImage);
+
+                    FileInfo fileInfo = new FileInfo(filePath);
+                    ShowImageInfo(fileInfo.Name, fileInfo.Length, imageBytes.Length, _selectedImage.Width, _selectedImage.Height);
                 }
             }
             catch (OutOfMemoryException)
             {
                 MessageBox.Show("Файл поврежден или не является корректным изображением.",
                               "Ошибка загрузки",
+                              MessageBoxButtons.OK,
+                              MessageBoxIcon.Error);
+            }
+            catch (ArgumentException ex)
+            {
+                MessageBox.Show($"Не удалось загрузить изображение: неверный формат файла.\n{ex.Message}",
+                              "Ошибка",
                               MessageBoxButtons.OK,
                               MessageBoxIcon.Error);
             }
@@ -163,7 +142,136 @@ namespace NailService
         }
 
         /// <summary>
-        /// Конвертация Image в массив байтов для хранения в БД
+        /// Сжатие изображения из байтов
+        /// </summary>
+        private byte[] CompressImageBytes(byte[] imageBytes)
+        {
+            try
+            {
+                using (MemoryStream inputMs = new MemoryStream(imageBytes))
+                using (Image originalImage = Image.FromStream(inputMs))
+                {
+                    // Вычисляем новые размеры
+                    int targetWidth = originalImage.Width;
+                    int targetHeight = originalImage.Height;
+                    int maxDimension = 1200; // Уменьшил до 1200 для лучшей производительности
+
+                    if (targetWidth > maxDimension || targetHeight > maxDimension)
+                    {
+                        float ratio = Math.Min((float)maxDimension / targetWidth, (float)maxDimension / targetHeight);
+                        targetWidth = (int)(targetWidth * ratio);
+                        targetHeight = (int)(targetHeight * ratio);
+                        if (targetWidth < 1) targetWidth = 1;
+                        if (targetHeight < 1) targetHeight = 1;
+                    }
+
+                    // Создаем уменьшенное изображение
+                    using (Bitmap resizedImage = new Bitmap(targetWidth, targetHeight))
+                    {
+                        using (Graphics g = Graphics.FromImage(resizedImage))
+                        {
+                            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                            g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+                            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                            g.DrawImage(originalImage, 0, 0, targetWidth, targetHeight);
+                        }
+
+                        // Сохраняем с качеством 80%
+                        using (MemoryStream outputMs = new MemoryStream())
+                        {
+                            var jpegCodec = ImageCodecInfo.GetImageEncoders()
+                                .FirstOrDefault(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
+
+                            if (jpegCodec != null)
+                            {
+                                var encoderParams = new EncoderParameters(1);
+                                encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, 80L);
+                                resizedImage.Save(outputMs, jpegCodec, encoderParams);
+                            }
+                            else
+                            {
+                                resizedImage.Save(outputMs, ImageFormat.Jpeg);
+                            }
+
+                            return outputMs.ToArray();
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Если сжатие не удалось, возвращаем исходные байты
+                return imageBytes;
+            }
+        }
+
+        /// <summary>
+        /// Сжатие изображения до допустимых размеров
+        /// </summary>
+        private Image CompressImage(Image originalImage)
+        {
+            int targetWidth = originalImage.Width;
+            int targetHeight = originalImage.Height;
+            int maxDimension = 1600;
+
+            if (targetWidth > maxDimension || targetHeight > maxDimension)
+            {
+                float ratio = Math.Min((float)maxDimension / targetWidth, (float)maxDimension / targetHeight);
+                targetWidth = (int)(targetWidth * ratio);
+                targetHeight = (int)(targetHeight * ratio);
+            }
+
+            Bitmap resizedImage = new Bitmap(targetWidth, targetHeight);
+            using (Graphics g = Graphics.FromImage(resizedImage))
+            {
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                g.DrawImage(originalImage, 0, 0, targetWidth, targetHeight);
+            }
+
+            int quality = 85;
+            byte[] imageBytes = ImageToBytesWithQuality(resizedImage, quality);
+            long currentSize = imageBytes.Length;
+
+            while (currentSize > MAX_IMAGE_SIZE && quality > 30)
+            {
+                quality -= 10;
+                imageBytes = ImageToBytesWithQuality(resizedImage, quality);
+                currentSize = imageBytes.Length;
+            }
+
+            using (MemoryStream ms = new MemoryStream(imageBytes))
+            {
+                return Image.FromStream(ms);
+            }
+        }
+
+        /// <summary>
+        /// Конвертация Image в массив байтов с указанным качеством
+        /// </summary>
+        private byte[] ImageToBytesWithQuality(Image image, int quality)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                var jpegCodec = ImageCodecInfo.GetImageEncoders()
+                    .FirstOrDefault(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
+
+                if (jpegCodec != null)
+                {
+                    var encoderParams = new EncoderParameters(1);
+                    encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, quality);
+                    image.Save(ms, jpegCodec, encoderParams);
+                }
+                else
+                {
+                    image.Save(ms, ImageFormat.Jpeg);
+                }
+
+                return ms.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Конвертация Image в массив байтов
         /// </summary>
         private byte[] ImageToBytes(Image image)
         {
@@ -171,27 +279,26 @@ namespace NailService
 
             using (var ms = new MemoryStream())
             {
-                // Сохраняем с оптимальным качеством
-                image.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                image.Save(ms, ImageFormat.Jpeg);
                 return ms.ToArray();
             }
         }
 
         /// <summary>
-        /// Отображение информации о загруженном изображении в подсказке
+        /// Отображение информации о загруженном изображении
         /// </summary>
-        private void ShowImageInfo(FileInfo fileInfo, Image image)
+        private void ShowImageInfo(string fileName, long originalSize, long compressedSize, int width, int height)
         {
-            string info = $"Файл: {fileInfo.Name}\n" +
-                         $"Размер: {FormatFileSize(fileInfo.Length)}\n" +
-                         $"Разрешение: {image.Width}x{image.Height} пикселей\n" +
-                         $"Формат: {image.RawFormat}";
+            string info = $"Файл: {fileName}\n" +
+                         $"Исходный размер: {FormatFileSize(originalSize)}\n" +
+                         $"Размер после обработки: {FormatFileSize(compressedSize)}\n" +
+                         $"Разрешение: {width}x{height} пикселей";
 
             toolTip1.SetToolTip(pictureBoxService, info);
         }
 
         /// <summary>
-        /// Форматирование размера файла в читаемый вид
+        /// Форматирование размера файла
         /// </summary>
         private string FormatFileSize(long bytes)
         {
@@ -209,7 +316,7 @@ namespace NailService
         }
 
         /// <summary>
-        /// Масштабирование изображения с сохранением пропорций
+        /// Масштабирование изображения
         /// </summary>
         private Image ScaleImage(Image image, int maxWidth, int maxHeight)
         {
@@ -232,7 +339,7 @@ namespace NailService
         }
 
         /// <summary>
-        /// Загрузка категорий услуг из базы данных
+        /// Загрузка категорий
         /// </summary>
         private void LoadCategory()
         {
@@ -265,23 +372,7 @@ namespace NailService
         }
 
         /// <summary>
-        /// Проверка, является ли текущее изображение заглушкой
-        /// </summary>
-        private bool IsDefaultImage()
-        {
-            try
-            {
-                // Считаем заглушкой, если нет байтов изображения
-                return _selectedImageBytes == null;
-            }
-            catch
-            {
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Добавление новой услуги или восстановление неактивной
+        /// Добавление новой услуги
         /// </summary>
         private bool AddNewService()
         {
@@ -293,10 +384,8 @@ namespace NailService
                 {
                     connection.Open();
 
-                    // Сначала проверяем, нет ли неактивной услуги с таким названием
                     string checkQuery = @"SELECT IDServices FROM services 
-                                        WHERE ServiceName = @ServiceName 
-                                          AND IsActive = 0";
+                                        WHERE ServiceName = @ServiceName AND IsActive = 0";
 
                     MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
                     checkCmd.Parameters.AddWithValue("@ServiceName", NewService.ServiceName);
@@ -305,222 +394,114 @@ namespace NailService
 
                     if (inactiveServiceId != null && inactiveServiceId != DBNull.Value)
                     {
-                        // Нашли неактивную услугу - восстанавливаем
                         int serviceId = Convert.ToInt32(inactiveServiceId);
+                        string updateQuery = _imageChanged && _selectedImageBytes != null ?
+                            @"UPDATE services SET Description = @Description, Price = @Price, Category = @Category, Photo = @Photo, IsActive = 1 WHERE IDServices = @ServiceId" :
+                            @"UPDATE services SET Description = @Description, Price = @Price, Category = @Category, Photo = NULL, IsActive = 1 WHERE IDServices = @ServiceId";
 
-                        string updateQuery;
-                        MySqlCommand updateCmd;
-
-                        if (_imageChanged && _selectedImageBytes != null)
-                        {
-                            // Восстанавливаем с новым изображением
-                            updateQuery = @"UPDATE services 
-                                          SET Description = @Description,
-                                              Price = @Price,
-                                              Category = @Category,
-                                              Photo = @Photo,
-                                              IsActive = 1
-                                          WHERE IDServices = @ServiceId";
-
-                            updateCmd = new MySqlCommand(updateQuery, connection);
-                            updateCmd.Parameters.AddWithValue("@Photo", _selectedImageBytes);
-                        }
-                        else
-                        {
-                            // Восстанавливаем без изображения (NULL)
-                            updateQuery = @"UPDATE services 
-                                          SET Description = @Description,
-                                              Price = @Price,
-                                              Category = @Category,
-                                              Photo = NULL,
-                                              IsActive = 1
-                                          WHERE IDServices = @ServiceId";
-
-                            updateCmd = new MySqlCommand(updateQuery, connection);
-                        }
-
+                        MySqlCommand updateCmd = new MySqlCommand(updateQuery, connection);
                         updateCmd.Parameters.AddWithValue("@ServiceId", serviceId);
                         updateCmd.Parameters.AddWithValue("@Description", NewService.Description);
                         updateCmd.Parameters.AddWithValue("@Price", NewService.Price);
                         updateCmd.Parameters.AddWithValue("@Category", NewService.Category);
+                        if (_imageChanged && _selectedImageBytes != null)
+                            updateCmd.Parameters.AddWithValue("@Photo", _selectedImageBytes);
 
                         int updatedRows = updateCmd.ExecuteNonQuery();
-
                         if (updatedRows > 0)
                         {
-                            MessageBox.Show("Услуга успешно восстановлена", "Успех",
-                                          MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show("Услуга успешно восстановлена", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             return true;
                         }
                     }
 
-                    // Создаем новую услугу
-                    string insertQuery;
-                    MySqlCommand insertCmd;
+                    string insertQuery = _imageChanged && _selectedImageBytes != null ?
+                        @"INSERT INTO services (ServiceName, Description, Price, Category, Photo, IsActive) VALUES (@ServiceName, @Description, @Price, @Category, @Photo, 1)" :
+                        @"INSERT INTO services (ServiceName, Description, Price, Category, Photo, IsActive) VALUES (@ServiceName, @Description, @Price, @Category, NULL, 1)";
 
-                    if (_imageChanged && _selectedImageBytes != null)
-                    {
-                        // Создаем с изображением
-                        insertQuery = @"INSERT INTO services 
-                                      (ServiceName, Description, Price, Category, Photo, IsActive) 
-                                      VALUES (@ServiceName, @Description, @Price, @Category, @Photo, 1)";
-
-                        insertCmd = new MySqlCommand(insertQuery, connection);
-                        insertCmd.Parameters.AddWithValue("@Photo", _selectedImageBytes);
-                    }
-                    else
-                    {
-                        // Создаем без изображения (NULL)
-                        insertQuery = @"INSERT INTO services 
-                                      (ServiceName, Description, Price, Category, Photo, IsActive) 
-                                      VALUES (@ServiceName, @Description, @Price, @Category, NULL, 1)";
-
-                        insertCmd = new MySqlCommand(insertQuery, connection);
-                    }
-
+                    MySqlCommand insertCmd = new MySqlCommand(insertQuery, connection);
                     insertCmd.Parameters.AddWithValue("@ServiceName", NewService.ServiceName);
                     insertCmd.Parameters.AddWithValue("@Description", NewService.Description);
                     insertCmd.Parameters.AddWithValue("@Price", NewService.Price);
                     insertCmd.Parameters.AddWithValue("@Category", NewService.Category);
+                    if (_imageChanged && _selectedImageBytes != null)
+                        insertCmd.Parameters.AddWithValue("@Photo", _selectedImageBytes);
 
                     int result = insertCmd.ExecuteNonQuery();
 
                     if (result > 0)
                     {
-                        MessageBox.Show("Услуга успешно добавлена", "Успех",
-                                      MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("Услуга успешно добавлена", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return true;
                     }
                     else
                     {
-                        MessageBox.Show("Не удалось добавить услугу", "Ошибка",
-                                      MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Не удалось добавить услугу", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return false;
                     }
                 }
             }
-            catch (MySqlException ex)
+            catch (MySqlException ex) when (ex.Number == 1062)
             {
-                if (ex.Number == 1062) // Ошибка дублирования уникального ключа
-                {
-                    string errorMessage = "Услуга с таким названием уже существует";
-
-                    // Проверяем статус существующей услуги
-                    try
-                    {
-                        using (var connection = new MySqlConnection(_connection))
-                        {
-                            connection.Open();
-                            string checkQuery = @"SELECT IsActive FROM services 
-                                               WHERE ServiceName = @ServiceName";
-                            MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
-                            checkCmd.Parameters.AddWithValue("@ServiceName", NameService.Text.Trim());
-
-                            object result = checkCmd.ExecuteScalar();
-                            if (result != null && result != DBNull.Value)
-                            {
-                                bool isActive = Convert.ToBoolean(result);
-                                if (!isActive)
-                                {
-                                    errorMessage += " (но неактивна). Попробуйте восстановить её через кнопку добавления.";
-                                }
-                            }
-                        }
-                    }
-                    catch { }
-
-                    MessageBox.Show(errorMessage, "Ошибка",
-                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                else
-                {
-                    MessageBox.Show($"Ошибка при добавлении услуги: {ex.Message}", "Ошибка",
-                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                MessageBox.Show("Услуга с таким названием уже существует", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при добавлении услуги: {ex.Message}", "Ошибка",
-                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Ошибка при добавлении услуги: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
         }
 
         /// <summary>
-        /// Сохранение данных из формы в объект NewService
+        /// Сохранение данных из формы
         /// </summary>
         private void SaveServiceData()
         {
             NewService.ServiceName = NameService.Text.Trim();
             NewService.Description = Description.Text.Trim();
-
-            if (decimal.TryParse(Price.Text.Trim(), out decimal priceValue))
-            {
-                NewService.Price = Convert.ToInt32(priceValue);
-            }
-            else
-            {
-                NewService.Price = 0;
-            }
-
+            NewService.Price = decimal.TryParse(Price.Text.Trim(), out decimal priceValue) ? Convert.ToInt32(priceValue) : 0;
             NewService.Category = (int)Category.SelectedValue;
-
-            // Сохраняем байты изображения
-            if (_imageChanged && _selectedImageBytes != null)
-            {
-                NewService.PhotoBytes = _selectedImageBytes;
-            }
-            else
-            {
-                NewService.PhotoBytes = null;
-            }
+            NewService.PhotoBytes = (_imageChanged && _selectedImageBytes != null) ? _selectedImageBytes : null;
         }
 
         /// <summary>
-        /// Валидация введенных данных перед сохранением
+        /// Валидация данных
         /// </summary>
         private bool ValidateData()
         {
             if (string.IsNullOrWhiteSpace(NameService.Text))
             {
-                MessageBox.Show("Введите название услуги", "Внимание",
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Введите название услуги", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 NameService.Focus();
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(Price.Text))
             {
-                MessageBox.Show("Введите цену услуги", "Внимание",
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Введите цену услуги", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 Price.Focus();
                 return false;
             }
 
             if (!decimal.TryParse(Price.Text, out decimal priceValue) || priceValue <= 0)
             {
-                MessageBox.Show("Введите корректную цену (положительное число)", "Внимание",
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Введите корректную цену (положительное число)", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 Price.Focus();
-                Price.SelectAll();
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(Description.Text))
             {
-                MessageBox.Show("Введите описание", "Внимание",
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Введите описание", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 Description.Focus();
                 return false;
             }
 
             if (IsActiveServiceExists())
             {
-                MessageBox.Show("Активная услуга с таким названием уже существует", "Ошибка",
-                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Активная услуга с таким названием уже существует", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 NameService.Focus();
-                NameService.SelectAll();
                 return false;
             }
 
@@ -528,7 +509,7 @@ namespace NailService
         }
 
         /// <summary>
-        /// Проверка существования активной услуги с таким названием
+        /// Проверка существования активной услуги
         /// </summary>
         private bool IsActiveServiceExists()
         {
@@ -537,51 +518,66 @@ namespace NailService
                 using (var connection = new MySqlConnection(_connection))
                 {
                     connection.Open();
-                    string query = @"SELECT COUNT(*) FROM services 
-                                   WHERE ServiceName = @ServiceName 
-                                   AND IsActive = 1";
+                    string query = "SELECT COUNT(*) FROM services WHERE ServiceName = @ServiceName AND IsActive = 1";
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@ServiceName", NameService.Text.Trim());
-
                     int count = Convert.ToInt32(cmd.ExecuteScalar());
                     return count > 0;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show($"Ошибка проверки услуги: {ex.Message}", "Ошибка",
-                              MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return true;
             }
         }
 
         /// <summary>
-        /// Обработчик кнопки "Добавить" - валидация и сохранение услуги
+        /// Обработчик кнопки "Добавить"
         /// </summary>
         private void AddService_Click(object sender, EventArgs e)
         {
-            if (ValidateData())
+            if (ValidateData() && AddNewService())
             {
-                if (CheckAndRestoreInactiveService())
-                {
-                    return;
-                }
-
-                if (AddNewService())
-                {
-                    DialogResult = DialogResult.OK;
-                    Close();
-                }
+                DialogResult = DialogResult.OK;
+                Close();
             }
         }
 
         /// <summary>
-        /// Обработчик кнопки "Назад" - закрытие формы без сохранения
+        /// Обработчик кнопки "Назад"
         /// </summary>
         private void Back_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
             Close();
+        }
+
+        /// <summary>
+        /// Проверка существования услуги
+        /// </summary>
+        private (bool exists, bool isActive, int serviceId) CheckServiceExists(string serviceName)
+        {
+            try
+            {
+                using (var connection = new MySqlConnection(_connection))
+                {
+                    connection.Open();
+                    string query = "SELECT IDServices, IsActive FROM services WHERE ServiceName = @ServiceName LIMIT 1";
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@ServiceName", serviceName);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return (true, reader.GetBoolean("IsActive"), reader.GetInt32("IDServices"));
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            return (false, false, 0);
         }
 
         /// <summary>
@@ -596,84 +592,33 @@ namespace NailService
 
                 if (exists && !isActive)
                 {
-                    var result = MessageBox.Show(
-                        $"Найдена неактивная услуга с таким названием:\n\n" +
-                        $"Название: {serviceName}\n\n" +
-                        "Восстановить эту услугу с новыми данными?",
-                        "Восстановление услуги",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Question);
+                    var result = MessageBox.Show($"Найдена неактивная услуга с таким названием:\n\nНазвание: {serviceName}\n\nВосстановить эту услугу с новыми данными?",
+                        "Восстановление услуги", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
                     if (result == DialogResult.Yes)
                     {
                         SaveServiceData();
                         bool restored = RestoreServiceInDatabase(serviceId, NewService);
-
                         if (restored)
                         {
-                            MessageBox.Show("Услуга успешно восстановлена", "Успех",
-                                          MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show("Услуга успешно восстановлена", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             DialogResult = DialogResult.OK;
                             Close();
                             return true;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Не удалось восстановить услугу", "Ошибка",
-                                          MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при проверке услуги: {ex.Message}", "Ошибка",
-                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Ошибка при проверке услуги: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             return false;
         }
 
         /// <summary>
-        /// Проверка существования услуги в базе данных
-        /// </summary>
-        private (bool exists, bool isActive, int serviceId) CheckServiceExists(string serviceName)
-        {
-            try
-            {
-                using (var connection = new MySqlConnection(_connection))
-                {
-                    connection.Open();
-
-                    string query = @"SELECT IDServices, IsActive 
-                                   FROM services 
-                                   WHERE ServiceName = @ServiceName
-                                   LIMIT 1";
-
-                    MySqlCommand cmd = new MySqlCommand(query, connection);
-                    cmd.Parameters.AddWithValue("@ServiceName", serviceName);
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            int serviceId = reader.GetInt32("IDServices");
-                            bool isActive = reader.GetBoolean("IsActive");
-                            return (true, isActive, serviceId);
-                        }
-                    }
-
-                    return (false, false, 0);
-                }
-            }
-            catch
-            {
-                return (false, false, 0);
-            }
-        }
-
-        /// <summary>
-        /// Восстановление неактивной услуги в базе данных
+        /// Восстановление неактивной услуги
         /// </summary>
         private bool RestoreServiceInDatabase(int serviceId, ServiceModel serviceData)
         {
@@ -682,45 +627,19 @@ namespace NailService
                 using (var connection = new MySqlConnection(_connection))
                 {
                     connection.Open();
+                    string query = _imageChanged && _selectedImageBytes != null ?
+                        @"UPDATE services SET IsActive = 1, Description = @Description, Price = @Price, Category = @Category, Photo = @Photo WHERE IDServices = @ServiceId" :
+                        @"UPDATE services SET IsActive = 1, Description = @Description, Price = @Price, Category = @Category, Photo = NULL WHERE IDServices = @ServiceId";
 
-                    string query;
-                    MySqlCommand cmd;
-
-                    if (_imageChanged && _selectedImageBytes != null)
-                    {
-                        // Восстанавливаем с новым изображением
-                        query = @"UPDATE services 
-                                SET IsActive = 1,
-                                    Description = @Description,
-                                    Price = @Price,
-                                    Category = @Category,
-                                    Photo = @Photo
-                                WHERE IDServices = @ServiceId";
-
-                        cmd = new MySqlCommand(query, connection);
-                        cmd.Parameters.AddWithValue("@Photo", _selectedImageBytes);
-                    }
-                    else
-                    {
-                        // Восстанавливаем без изображения (NULL)
-                        query = @"UPDATE services 
-                                SET IsActive = 1,
-                                    Description = @Description,
-                                    Price = @Price,
-                                    Category = @Category,
-                                    Photo = NULL
-                                WHERE IDServices = @ServiceId";
-
-                        cmd = new MySqlCommand(query, connection);
-                    }
-
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@ServiceId", serviceId);
                     cmd.Parameters.AddWithValue("@Description", serviceData.Description);
                     cmd.Parameters.AddWithValue("@Price", serviceData.Price);
                     cmd.Parameters.AddWithValue("@Category", serviceData.Category);
+                    if (_imageChanged && _selectedImageBytes != null)
+                        cmd.Parameters.AddWithValue("@Photo", _selectedImageBytes);
 
-                    int affectedRows = cmd.ExecuteNonQuery();
-                    return affectedRows > 0;
+                    return cmd.ExecuteNonQuery() > 0;
                 }
             }
             catch
@@ -730,92 +649,35 @@ namespace NailService
         }
 
         /// <summary>
-        /// Фильтрация ввода в поле названия услуги (только русские буквы)
+        /// Фильтрация ввода названия
         /// </summary>
         private void NameService_TextChanged(object sender, EventArgs e)
         {
-            int selectionStart = NameService.SelectionStart;
-            string filteredText = InputValidator.FilterToRussianLetters(NameService.Text, true);
-
-            if (filteredText != NameService.Text)
-            {
-                NameService.Text = filteredText;
-                NameService.SelectionStart = Math.Min(selectionStart, NameService.Text.Length);
-            }
-
             if (!string.IsNullOrWhiteSpace(NameService.Text))
             {
                 CheckForInactiveServiceHint();
             }
         }
 
-        /// <summary>
-        /// Фильтрация ввода в поле цены (только цифры и точка)
-        /// </summary>
-        private void Price_TextChanged(object sender, EventArgs e)
-        {
-            int selectionStart = Price.SelectionStart;
-            bool allowDecimal = true;
-            string filteredText = InputValidator.FilterToDigitsOnly(Price.Text, allowDecimal);
-
-            if (filteredText != Price.Text)
-            {
-                Price.Text = filteredText;
-                Price.SelectionStart = Math.Min(selectionStart, Price.Text.Length);
-            }
-        }
-
-        /// <summary>
-        /// Фильтрация ввода в поле описания и счетчик символов
-        /// </summary>
+        private void Price_TextChanged(object sender, EventArgs e) { }
         private void Description_TextChanged(object sender, EventArgs e)
         {
-            int selectionStart = Description.SelectionStart;
-            string filteredText = InputValidator.FilterToRussianLetters(Description.Text, true);
-
-            if (filteredText != Description.Text)
-            {
-                Description.Text = filteredText;
-                Description.SelectionStart = Math.Min(selectionStart, Description.Text.Length);
-            }
-
             int charCount = Description.Text.Length;
-            int maxChars = 500;
-            lblCharCount.Text = $"{charCount}/{maxChars}";
-
-            if (charCount > maxChars * 0.9)
-            {
-                lblCharCount.ForeColor = Color.Orange;
-            }
-            else if (charCount > maxChars)
-            {
-                lblCharCount.ForeColor = Color.Red;
-            }
-            else
-            {
-                lblCharCount.ForeColor = Color.Green;
-            }
+            lblCharCount.Text = $"{charCount}/500";
+            lblCharCount.ForeColor = charCount > 450 ? Color.Orange : (charCount > 500 ? Color.Red : Color.Green);
         }
 
-        /// <summary>
-        /// Проверка наличия неактивной услуги при вводе названия
-        /// </summary>
         private void CheckForInactiveServiceHint()
         {
             try
             {
                 string serviceName = NameService.Text.Trim();
-
-                if (string.IsNullOrWhiteSpace(serviceName))
-                    return;
+                if (string.IsNullOrWhiteSpace(serviceName)) return;
 
                 using (var connection = new MySqlConnection(_connection))
                 {
                     connection.Open();
-                    string query = @"SELECT IDServices, Price, Description, Category
-                                    FROM services 
-                                    WHERE ServiceName = @ServiceName AND IsActive = 0";
-
+                    string query = "SELECT Price, Description, Category FROM services WHERE ServiceName = @ServiceName AND IsActive = 0";
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@ServiceName", serviceName);
 
@@ -823,15 +685,9 @@ namespace NailService
                     {
                         if (reader.Read())
                         {
-                            decimal price = reader.GetDecimal("Price");
-                            string description = reader["Description"]?.ToString() ?? "";
-                            int categoryId = reader.GetInt32("Category");
-
-                            Price.Text = price.ToString();
-                            Description.Text = description;
-                            SetCategory(categoryId);
-
-                            // Подсвечиваем поле, чтобы показать, что данные подгружены
+                            Price.Text = reader.GetDecimal("Price").ToString();
+                            Description.Text = reader["Description"]?.ToString() ?? "";
+                            SetCategory(reader.GetInt32("Category"));
                             NameService.BackColor = Color.LightYellow;
                         }
                         else
@@ -841,39 +697,9 @@ namespace NailService
                     }
                 }
             }
-            catch
-            {
-                // Игнорируем ошибки при проверке подсказки
-            }
+            catch { }
         }
 
-        /// <summary>
-        /// Получение названия категории по ID
-        /// </summary>
-        private string GetCategoryName(int categoryId)
-        {
-            try
-            {
-                using (var connection = new MySqlConnection(_connection))
-                {
-                    connection.Open();
-                    string query = "SELECT CategoryName FROM Category WHERE IDCategory = @CategoryId";
-                    MySqlCommand cmd = new MySqlCommand(query, connection);
-                    cmd.Parameters.AddWithValue("@CategoryId", categoryId);
-
-                    object result = cmd.ExecuteScalar();
-                    return result?.ToString() ?? "Неизвестно";
-                }
-            }
-            catch
-            {
-                return "Неизвестно";
-            }
-        }
-
-        /// <summary>
-        /// Установка выбранной категории в ComboBox
-        /// </summary>
         private void SetCategory(int categoryId)
         {
             for (int i = 0; i < Category.Items.Count; i++)
@@ -887,186 +713,66 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Проверка при потере фокуса поля названия услуги
-        /// </summary>
-        private void NameService_Leave(object sender, EventArgs e)
-        {
-            CheckForInactiveServiceHint();
-        }
+        private void NameService_Leave(object sender, EventArgs e) => CheckForInactiveServiceHint();
 
-        /// <summary>
-        /// Очистка всех полей формы
-        /// </summary>
         private void ClearButton_Click(object sender, EventArgs e)
         {
             NameService.Text = "";
             Price.Text = "";
             Description.Text = "";
             NameService.BackColor = Color.White;
-
             LoadDefaultImage();
             _selectedImageBytes = null;
             _imageChanged = false;
-
             NameService.Focus();
         }
 
-        /// <summary>
-        /// Загрузка изображения при клике на PictureBox
-        /// </summary>
-        private void pictureBoxService_Click(object sender, EventArgs e)
-        {
-            LoadImage();
-        }
+        private void pictureBoxService_Click(object sender, EventArgs e) => LoadImage();
+        private void btnLoadImage_Click(object sender, EventArgs e) => LoadImage();
+        private void btnRemoveImage_Click(object sender, EventArgs e) => RemoveImage();
 
-        /// <summary>
-        /// Загрузка изображения через кнопку
-        /// </summary>
-        private void btnLoadImage_Click(object sender, EventArgs e)
-        {
-            LoadImage();
-        }
-
-        /// <summary>
-        /// Кнопка удаления изображения
-        /// </summary>
-        private void btnRemoveImage_Click(object sender, EventArgs e)
-        {
-            RemoveImage();
-        }
-
-        /// <summary>
-        /// Удаление изображения (установка заглушки)
-        /// </summary>
         private void RemoveImage()
         {
             LoadDefaultImage();
             _selectedImageBytes = null;
-            _imageChanged = true; // Помечаем как измененное (будет NULL в БД)
+            _imageChanged = true;
         }
 
-        /// <summary>
-        /// Открытие диалога выбора файла и загрузка изображения
-        /// </summary>
         private void LoadImage()
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.Filter = "Изображения (*.jpg;*.jpeg;*.png;*.bmp;*.gif)|*.jpg;*.jpeg;*.png;*.bmp;*.gif|Все файлы (*.*)|*.*";
                 openFileDialog.FilterIndex = 1;
-                openFileDialog.Title = "Выберите изображение услуги (макс. 3 МБ)";
+                openFileDialog.Title = "Выберите изображение услуги";
                 openFileDialog.RestoreDirectory = true;
-
-                openFileDialog.FileOk += OpenFileDialog_FileOk;
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     LoadImageFromFile(openFileDialog.FileName);
                 }
-
-                openFileDialog.FileOk -= OpenFileDialog_FileOk;
             }
         }
 
-        /// <summary>
-        /// Проверка файла перед загрузкой (размер, формат)
-        /// </summary>
-        private void OpenFileDialog_FileOk(object sender, CancelEventArgs e)
-        {
-            var openFileDialog = sender as OpenFileDialog;
-            if (openFileDialog != null)
-            {
-                try
-                {
-                    FileInfo fileInfo = new FileInfo(openFileDialog.FileName);
-
-                    if (fileInfo.Length > MAX_IMAGE_SIZE)
-                    {
-                        MessageBox.Show($"Размер файла слишком большой ({fileInfo.Length / (1024 * 1024)} МБ).\n" +
-                                       $"Максимальный разрешенный размер: {MAX_IMAGE_SIZE / (1024 * 1024)} МБ.",
-                                       "Ошибка размера файла",
-                                       MessageBoxButtons.OK,
-                                       MessageBoxIcon.Warning);
-                        e.Cancel = true;
-                        return;
-                    }
-
-                    string extension = Path.GetExtension(openFileDialog.FileName).ToLower();
-                    string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
-
-                    if (!allowedExtensions.Contains(extension))
-                    {
-                        MessageBox.Show("Выберите файл с поддерживаемым форматом:\n" +
-                                       "JPG, JPEG, PNG, BMP или GIF",
-                                       "Неверный формат файла",
-                                       MessageBoxButtons.OK,
-                                       MessageBoxIcon.Warning);
-                        e.Cancel = true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Ошибка проверки файла: {ex.Message}",
-                                  "Ошибка",
-                                  MessageBoxButtons.OK,
-                                  MessageBoxIcon.Error);
-                    e.Cancel = true;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Обработка перетаскивания файла на PictureBox
-        /// </summary>
         private void pictureBoxService_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
                 e.Effect = DragDropEffects.Copy;
-            }
             else
-            {
                 e.Effect = DragDropEffects.None;
-            }
         }
 
-        /// <summary>
-        /// Обработка сброса файла на PictureBox
-        /// </summary>
         private void pictureBoxService_DragDrop(object sender, DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (files.Length > 0)
             {
-                string filePath = files[0];
-                string extension = Path.GetExtension(filePath).ToLower();
+                string extension = Path.GetExtension(files[0]).ToLower();
                 string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
 
                 if (allowedExtensions.Contains(extension))
                 {
-                    try
-                    {
-                        FileInfo fileInfo = new FileInfo(filePath);
-                        if (fileInfo.Length > MAX_IMAGE_SIZE)
-                        {
-                            MessageBox.Show($"Размер файла слишком большой ({fileInfo.Length / (1024 * 1024)} МБ).\n" +
-                                           $"Максимальный разрешенный размер: {MAX_IMAGE_SIZE / (1024 * 1024)} МБ.",
-                                           "Ошибка размера файла",
-                                           MessageBoxButtons.OK,
-                                           MessageBoxIcon.Warning);
-                            return;
-                        }
-
-                        LoadImageFromFile(filePath);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Ошибка проверки файла: {ex.Message}",
-                                      "Ошибка",
-                                      MessageBoxButtons.OK,
-                                      MessageBoxIcon.Error);
-                    }
+                    LoadImageFromFile(files[0]);
                 }
                 else
                 {
@@ -1076,9 +782,6 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Показ подсказки при наведении на PictureBox
-        /// </summary>
         private void pictureBoxService_MouseHover(object sender, EventArgs e)
         {
             toolTip1.SetToolTip(pictureBoxService,

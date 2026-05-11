@@ -6,6 +6,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 
 namespace NailService
 {
@@ -19,6 +20,7 @@ namespace NailService
         private int _roleID;
         private string _userFIO;
         private int _userId;
+        private bool _isCentered = false;
 
         /// <summary>
         /// Конструктор формы расписания
@@ -29,41 +31,26 @@ namespace NailService
         public Schedule(string userFIO, int roleID, int userId)
         {
             InitializeComponent();
-            Rectangle screenBounds = Screen.PrimaryScreen.WorkingArea;
 
-            // Если форма больше экрана, масштабируем
-            if (this.Size.Height > screenBounds.Height || this.Size.Width > screenBounds.Width)
-            {
-                // Вариант А: Масштабируем форму
-                float scaleX = (float)screenBounds.Width / this.Size.Width;
-                float scaleY = (float)screenBounds.Height / this.Size.Height;
-                float scale = Math.Min(scaleX, scaleY);
-
-                if (scale < 1)
-                {
-                    this.Scale(new SizeF(scale, scale));
-                    this.Size = new Size((int)(this.Size.Width * scale), (int)(this.Size.Height * scale));
-                }
-
-                // Вариант Б: Включаем прокрутку
-                // this.AutoScroll = true;
-                // this.Size = new Size(Math.Min(this.Size.Width, screenBounds.Width), 
-                //                       Math.Min(this.Size.Height, screenBounds.Height));
-            }
-
-            // Центрируем форму на экране
-            this.StartPosition = FormStartPosition.CenterScreen;
             _userFIO = userFIO;
             _roleID = roleID;
             _userId = userId;
+
+            // Включаем возможность изменения размера окна
+            this.FormBorderStyle = FormBorderStyle.Sizable;
+            this.WindowState = FormWindowState.Maximized;
+            this.MinimumSize = new Size(1000, 700);
             currentWeekStart = GetMonday(DateTime.Today);
+
+            // Центрируем форму на экране
+            this.StartPosition = FormStartPosition.CenterScreen;
 
             ApplyCustomStyles();
             FillScheduleWithData();
 
             FIOlabel.Text = $"Менеджер: {_userFIO}";
             LoadUserData();
-
+            RecalculateLayout();
         }
 
         private void LoadUserData()
@@ -90,7 +77,7 @@ namespace NailService
             dataGridViewSchedule.DefaultCellStyle.SelectionBackColor = Color.FromArgb(220, 235, 252);
             dataGridViewSchedule.DefaultCellStyle.SelectionForeColor = Color.Black;
 
-            dataGridViewSchedule.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridViewSchedule.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None; // Изменено на None
             dataGridViewSchedule.ReadOnly = true;
 
             dataGridViewSchedule.RowHeadersVisible = true;
@@ -220,6 +207,8 @@ namespace NailService
         {
             Color accentColor = Color.HotPink;
 
+            dataGridViewSchedule.Columns.Clear();
+
             DataGridViewTextBoxColumn timeColumn = new DataGridViewTextBoxColumn
             {
                 Name = "Time",
@@ -235,6 +224,8 @@ namespace NailService
                 }
             };
             dataGridViewSchedule.Columns.Add(timeColumn);
+
+            int dayColumnWidth = (dataGridViewSchedule.Width - 100) / 5;
 
             for (int i = 0; i < 5; i++)
             {
@@ -253,7 +244,7 @@ namespace NailService
                     Name = headerText,
                     HeaderText = headerText,
                     ReadOnly = true,
-                    Width = 150,
+                    Width = dayColumnWidth,
                     HeaderCell = new DataGridViewColumnHeaderCell
                     {
                         Style = new DataGridViewCellStyle
@@ -575,19 +566,7 @@ namespace NailService
 
         #region Переход к другим формам
 
-        private void ListButton_Click(object sender, EventArgs e)
-        {
-            Show showForm = new Show(_userFIO, _roleID);
-            showForm.Show();
-            this.Hide();
-        }
 
-        private void Reports_Click(object sender, EventArgs e)
-        {
-            ShowReports showReports = new ShowReports(_userFIO, _roleID);
-            showReports.Show();
-            this.Hide();
-        }
 
         private void InMenu_Click(object sender, EventArgs e)
         {
@@ -1074,5 +1053,88 @@ namespace NailService
         }
 
         #endregion
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+
+            if (this.WindowState == FormWindowState.Normal && !_isCentered)
+            {
+                this.CenterToScreen();
+                _isCentered = true;
+            }
+            else if (this.WindowState == FormWindowState.Maximized)
+            {
+                _isCentered = false;
+            }
+
+            RecalculateLayout();
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            RecalculateLayout();
+        }
+
+        /// <summary>
+        /// Пересчет расположения элементов при изменении размера формы
+        /// </summary>
+        private void RecalculateLayout()
+        {
+            int w = this.ClientSize.Width;
+            int h = this.ClientSize.Height;
+
+            // Группа с логотипом
+            groupBox1.Width = w-40;
+            groupBox1.Location = new Point(20, 0);
+
+            // Центрируем заголовок
+            label1.Location = new Point((groupBox1.Width - label1.Width) / 2, 20);
+            FIOlabel.Location = new Point(groupBox1.Width - FIOlabel.Width - 20, 20);
+            pictureBox1.Location = new Point(20, 10);
+
+            // DataGridView
+            dataGridViewSchedule.Width = w - 40;
+            dataGridViewSchedule.Height = h - 250;
+            dataGridViewSchedule.Location = new Point(20, 140);
+
+            // Кнопки навигации по неделям
+            label4.Location = new Point(w - 330, 110);
+
+            // Легенда (цветовые метки) - внизу справа
+            int legendX = w - 600;
+            int legendY = h - 100;
+            panel1.Location = new Point(legendX, legendY);
+            label2.Location = new Point(legendX + 35, legendY - 3);
+            panel2.Location = new Point(legendX, legendY + 25);
+            label3.Location = new Point(legendX + 35, legendY + 22);
+            panel3.Location = new Point(legendX, legendY + 50);
+            label5.Location = new Point(legendX + 35, legendY + 47);
+
+            // Кнопка "Назад"
+            InMenu.Location = new Point(20, h - 65);
+
+            // Кнопка "Текущая неделя"
+            button4.Location = new Point(w - 200, h - 65);
+            button3.Location = new Point(w - 350, h - 65);
+            button2.Location = new Point(w - 300, h - 65);
+
+            // Перестраиваем колонки DataGridView
+            if (dataGridViewSchedule.Columns.Count > 0)
+            {
+                int availableWidth = dataGridViewSchedule.Width - dataGridViewSchedule.RowHeadersWidth - 20;
+                int dayColumnWidth = (availableWidth - 80) / 5;
+
+                if (dataGridViewSchedule.Columns[0] != null)
+                    dataGridViewSchedule.Columns[0].Width = 80;
+
+                for (int i = 1; i <= 5 && i < dataGridViewSchedule.Columns.Count; i++)
+                {
+                    dataGridViewSchedule.Columns[i].Width = dayColumnWidth;
+                }
+            }
+        }
     }
+
 }

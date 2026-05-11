@@ -979,7 +979,7 @@ namespace NailService
                         }
                     }
 
-                    var editForm = new EditServiceForm(serviceModel, _imageService);
+                    var editForm = new EditServiceForm(serviceModel);
                     if (editForm.ShowDialog() == DialogResult.OK)
                     {
                         _editUserClass.UpdateServiceInDatabase(editForm.Service);
