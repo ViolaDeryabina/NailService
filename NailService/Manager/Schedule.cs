@@ -29,6 +29,30 @@ namespace NailService
         public Schedule(string userFIO, int roleID, int userId)
         {
             InitializeComponent();
+            Rectangle screenBounds = Screen.PrimaryScreen.WorkingArea;
+
+            // Если форма больше экрана, масштабируем
+            if (this.Size.Height > screenBounds.Height || this.Size.Width > screenBounds.Width)
+            {
+                // Вариант А: Масштабируем форму
+                float scaleX = (float)screenBounds.Width / this.Size.Width;
+                float scaleY = (float)screenBounds.Height / this.Size.Height;
+                float scale = Math.Min(scaleX, scaleY);
+
+                if (scale < 1)
+                {
+                    this.Scale(new SizeF(scale, scale));
+                    this.Size = new Size((int)(this.Size.Width * scale), (int)(this.Size.Height * scale));
+                }
+
+                // Вариант Б: Включаем прокрутку
+                // this.AutoScroll = true;
+                // this.Size = new Size(Math.Min(this.Size.Width, screenBounds.Width), 
+                //                       Math.Min(this.Size.Height, screenBounds.Height));
+            }
+
+            // Центрируем форму на экране
+            this.StartPosition = FormStartPosition.CenterScreen;
             _userFIO = userFIO;
             _roleID = roleID;
             _userId = userId;
@@ -39,6 +63,7 @@ namespace NailService
 
             FIOlabel.Text = $"Менеджер: {_userFIO}";
             LoadUserData();
+
         }
 
         private void LoadUserData()

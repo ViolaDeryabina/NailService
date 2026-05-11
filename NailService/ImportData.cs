@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
 
@@ -15,6 +16,7 @@ namespace NailService
         private string _connection;
         private OpenFileDialog openFileDialog;
         private DataTable databaseTables;
+
 
         public ImportData()
         {
@@ -37,6 +39,7 @@ namespace NailService
             };
 
             LoadTables();
+            LoadTablesExport();
         }
 
         private void LoadTables()
@@ -723,6 +726,328 @@ namespace NailService
             SysAdmin show = new SysAdmin();
             show.Show();
             this.Hide();
+        }
+
+        private void LoadTablesExport()
+        {
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(_connection))
+                {
+                    con.Open();
+                    DataTable tables = con.GetSchema("Tables");
+
+                    cmbTablesCSV.Items.Clear();
+                    cmbTablesCSV.Items.Add("-- Все таблицы --");
+
+                    foreach (DataRow row in tables.Rows)
+                    {
+                        string tableName = row["TABLE_NAME"].ToString();
+                        if (!tableName.StartsWith("__") && tableName != "sysdiagrams")
+                        {
+                            cmbTablesCSV.Items.Add(tableName);
+                        }
+                    }
+
+                    if (cmbTablesCSV.Items.Count > 0)
+                        cmbTablesCSV.SelectedIndex = 0;
+
+                    con.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка загрузки таблиц: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Экспорт в CSV
+        /// </summary>
+        private async void BtnExportCSV_Click(object sender, EventArgs e)
+        {
+            if (cmbTablesCSV.SelectedItem == null)
+            {
+                MessageBox.Show("Выберите таблицу для экспорта!", "Предупреждение",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string selectedTable = cmbTablesCSV.SelectedItem.ToString();
+
+            using (var folderDialog = new FolderBrowserDialog())
+            {
+                folderDialog.Description = "Выберите папку для сохранения CSV файлов";
+                folderDialog.ShowNewFolderButton = true;
+
+                if (folderDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string exportFolder = folderDialog.SelectedPath;
+
+                    try
+                    {
+                        Cursor = Cursors.WaitCursor;
+
+                        if (selectedTable == "-- Все таблицы --")
+                        {
+                            await ExportAllTablesToCSV(exportFolder);
+                        }
+                        else
+                        {
+                            await ExportSingleTableToCSV(selectedTable, exportFolder);
+                        }
+
+                        Cursor = Cursors.Default;
+
+                        if (MessageBox.Show("Экспорт завершен!\n\nОткрыть папку с файлами?",
+                            "Успех", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                        {
+                            System.Diagnostics.Process.Start("explorer.exe", exportFolder);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Cursor = Cursors.Default;
+                        MessageBox.Show($"Ошибка экспорта: {ex.Message}", "Ошибка",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Экспорт одной таблицы в CSV
+        /// </summary>
+        private async Task ExportSingleTableToCSV(string tableName, string exportFolder)
+        {
+            string csvPath = Path.Combine(exportFolder, $"{tableName}_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+
+            using (MySqlConnection con = new MySqlConnection(_connection))
+            {
+                await con.OpenAsync();
+
+                string query = $"SELECT * FROM `{tableName}`";
+                MySqlCommand cmd = new MySqlCommand(query, con);
+
+                using (MySqlDataReader reader = (MySqlDataReader)await cmd.ExecuteReaderAsync())
+                using (StreamWriter writer = new StreamWriter(csvPath, false, Encoding.UTF8))
+                {
+                    // Заголовки
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        if (i > 0) writer.Write(";");
+                        writer.Write(reader.GetName(i));
+                    }
+                    writer.WriteLine();
+
+                    // Данные
+                    while (await reader.ReadAsync())
+                    {
+                        for (int i = 0; i < reader.FieldCount; i++)
+                        {
+                            if (i > 0) writer.Write(";");
+
+                            if (!reader.IsDBNull(i))
+                            {
+                                string value = reader.GetValue(i).ToString();
+                                if (value.Contains(";") || value.Contains("\""))
+                                {
+                                    value = "\"" + value.Replace("\"", "\"\"") + "\"";
+                                }
+                                writer.Write(value);
+                            }
+                        }
+                        writer.WriteLine();
+                    }
+                }
+            }
+
+            MessageBox.Show($"Таблица '{tableName}' экспортирована!\n\nФайл: {csvPath}",
+                "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        /// <summary>
+        /// Экспорт всех таблиц в CSV
+        /// </summary>
+        private async Task ExportAllTablesToCSV(string exportFolder)
+        {
+            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string exportSubFolder = Path.Combine(exportFolder, $"Export_{timestamp}");
+            Directory.CreateDirectory(exportSubFolder);
+
+            using (MySqlConnection con = new MySqlConnection(_connection))
+            {
+                await con.OpenAsync();
+                DataTable tables = con.GetSchema("Tables");
+                int exportedCount = 0;
+
+                foreach (DataRow row in tables.Rows)
+                {
+                    string tableName = row["TABLE_NAME"].ToString();
+
+                    if (tableName.StartsWith("__") || tableName == "sysdiagrams")
+                        continue;
+
+                    string csvPath = Path.Combine(exportSubFolder, $"{tableName}.csv");
+
+                    string query = $"SELECT * FROM `{tableName}`";
+                    MySqlCommand cmd = new MySqlCommand(query, con);
+
+                    using (MySqlDataReader reader = (MySqlDataReader)await cmd.ExecuteReaderAsync())
+                    using (StreamWriter writer = new StreamWriter(csvPath, false, Encoding.UTF8))
+                    {
+                        // Заголовки
+                        for (int i = 0; i < reader.FieldCount; i++)
+                        {
+                            if (i > 0) writer.Write(";");
+                            writer.Write(reader.GetName(i));
+                        }
+                        writer.WriteLine();
+
+                        // Данные
+                        while (await reader.ReadAsync())
+                        {
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                if (i > 0) writer.Write(";");
+
+                                if (!reader.IsDBNull(i))
+                                {
+                                    string value = reader.GetValue(i).ToString();
+                                    if (value.Contains(";") || value.Contains("\""))
+                                    {
+                                        value = "\"" + value.Replace("\"", "\"\"") + "\"";
+                                    }
+                                    writer.Write(value);
+                                }
+                            }
+                            writer.WriteLine();
+                        }
+                    }
+                    exportedCount++;
+                }
+            }
+
+            MessageBox.Show($"Экспортировано таблиц: \n\nПапка: {exportSubFolder}",
+                "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        /// <summary>
+        /// Экспорт всей базы данных в SQL дамп
+        /// </summary>
+        private async void BtnExportSQL_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveDialog = new SaveFileDialog();
+            saveDialog.Title = "Экспорт базы данных в SQL";
+            saveDialog.Filter = "SQL файлы (*.sql)|*.sql|Все файлы (*.*)|*.*";
+            saveDialog.DefaultExt = "sql";
+            saveDialog.FileName = $"db86_backup_{DateTime.Now:yyyyMMdd_HHmmss}.sql";
+
+            if (saveDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    Cursor = Cursors.WaitCursor;
+
+                    await ExportDatabaseToSQL(saveDialog.FileName);
+
+                    Cursor = Cursors.Default;
+
+                    MessageBox.Show($"База данных успешно экспортирована!\n\nФайл: {saveDialog.FileName}",
+                        "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    if (MessageBox.Show("Открыть папку с файлом?", "Открыть папку",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    {
+                        System.Diagnostics.Process.Start("explorer.exe", Path.GetDirectoryName(saveDialog.FileName));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Cursor = Cursors.Default;
+                    MessageBox.Show($"Ошибка экспорта: {ex.Message}", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Экспорт базы данных в SQL дамп
+        /// </summary>
+        private async Task ExportDatabaseToSQL(string outputPath)
+        {
+            using (MySqlConnection con = new MySqlConnection(_connection))
+            {
+                await con.OpenAsync();
+
+                using (StreamWriter writer = new StreamWriter(outputPath, false, Encoding.UTF8))
+                {
+                    writer.WriteLine("-- MySQL Database Export");
+                    writer.WriteLine($"-- Database: {Connection.Database}");
+                    writer.WriteLine($"-- Date: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                    writer.WriteLine("-- -----------------------------------------------------");
+                    writer.WriteLine();
+
+                    DataTable tables = con.GetSchema("Tables");
+
+                    foreach (DataRow row in tables.Rows)
+                    {
+                        string tableName = row["TABLE_NAME"].ToString();
+
+                        if (tableName.StartsWith("__") || tableName == "sysdiagrams")
+                            continue;
+
+                        // Структура таблицы
+                        string createTableQuery = $"SHOW CREATE TABLE `{tableName}`";
+                        using (MySqlCommand cmd = new MySqlCommand(createTableQuery, con))
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                writer.WriteLine($"-- Table structure for `{tableName}`");
+                                writer.WriteLine(reader.GetString(1) + ";");
+                                writer.WriteLine();
+                            }
+                        }
+
+                        // Данные
+                        string selectQuery = $"SELECT * FROM `{tableName}`";
+                        using (MySqlCommand cmd = new MySqlCommand(selectQuery, con))
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            bool hasRows = false;
+                            while (await reader.ReadAsync())
+                            {
+                                if (!hasRows)
+                                {
+                                    writer.WriteLine($"-- Dumping data for `{tableName}`");
+                                    hasRows = true;
+                                }
+
+                                writer.Write($"INSERT INTO `{tableName}` VALUES (");
+                                for (int i = 0; i < reader.FieldCount; i++)
+                                {
+                                    if (i > 0) writer.Write(", ");
+
+                                    if (reader.IsDBNull(i))
+                                    {
+                                        writer.Write("NULL");
+                                    }
+                                    else
+                                    {
+                                        string value = reader.GetValue(i).ToString();
+                                        value = value.Replace("\\", "\\\\").Replace("'", "''");
+                                        writer.Write($"'{value}'");
+                                    }
+                                }
+                                writer.WriteLine(");");
+                            }
+                            if (hasRows) writer.WriteLine();
+                        }
+                    }
+                }
+            }
         }
     }
 }
