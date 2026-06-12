@@ -647,13 +647,47 @@ namespace NailService
         private void lblClientName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = lblClientName.SelectionStart;
+            int selectionLength = lblClientName.SelectionLength;
+
+            // Фильтрация: оставляем только русские буквы, дефис и пробел
             string filteredText = InputValidator.FilterToRussianLetters(lblClientName.Text);
 
-            if (filteredText != lblClientName.Text)
+            // Преобразование в формат "С заглавной буквы"
+            string properText = CapitalizeRussianName(filteredText);
+
+            if (properText != lblClientName.Text)
             {
-                lblClientName.Text = filteredText;
-                lblClientName.SelectionStart = Math.Min(selectionStart, lblClientName.Text.Length);
+                lblClientName.Text = properText;
+                // Корректируем позицию курсора
+                if (selectionStart > properText.Length)
+                    selectionStart = properText.Length;
+                lblClientName.SelectionStart = selectionStart;
+                lblClientName.SelectionLength = 0;
             }
+        }
+
+        /// <summary>
+        /// Преобразует строку с русскими буквами в формат: первая буква заглавная, остальные строчные.
+        /// Поддерживает имена через дефис (каждая часть начинается с заглавной).
+        /// </summary>
+        private string CapitalizeRussianName(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return input;
+
+            // Разбиваем на части по дефису
+            string[] parts = input.Split('-');
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (parts[i].Length > 0)
+                {
+                    // Первый символ – заглавный, остальные – строчные
+                    char first = char.ToUpper(parts[i][0]);
+                    string rest = parts[i].Substring(1).ToLower();
+                    parts[i] = first + rest;
+                }
+            }
+            return string.Join("-", parts);
         }
     }
 }

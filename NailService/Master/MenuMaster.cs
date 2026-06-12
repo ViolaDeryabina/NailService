@@ -684,6 +684,7 @@ namespace NailService
             int h = this.ClientSize.Height;
             if (w <= 0 || h <= 0) return;
 
+            // Группа с логотипом
             groupBox1.Width = w - 40;
             groupBox1.Location = new Point(20, 10);
             groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
@@ -691,35 +692,64 @@ namespace NailService
             FIOlabel.Location = new Point(groupBox1.Width - FIOlabel.Width - 20, 20);
             pictureBox1.Location = new Point(20, 15);
 
-            dataGridViewSchedule.Width = w - 40;
+            // Ширина таблицы: оставляем место для легенды справа (ширина легенды ~200)
+            int legendAreaWidth = 220;
+            int gridWidth = w - 40 - legendAreaWidth - 20; // 20 – отступ между таблицей и легендой
+            if (gridWidth < 600) gridWidth = w - 40; // если окно слишком узкое, таблица на всю ширину
+
+            dataGridViewSchedule.Width = gridWidth;
             dataGridViewSchedule.Height = h - 200;
             dataGridViewSchedule.Location = new Point(20, 130);
-            dataGridViewSchedule.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dataGridViewSchedule.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
 
+            // Надпись с неделей – привязываем к правому краю окна
             lblWeek.Location = new Point(w - 330, 110);
             lblWeek.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
+            // Кнопки навигации внизу
             int bottomY = h - 65;
             button1.Location = new Point(w - 350, bottomY);
             button2.Location = new Point(w - 280, bottomY);
             button3.Location = new Point(w - 200, bottomY);
             Exit.Location = new Point(20, bottomY);
             Exit.Size = new Size(223, 55);
-
             button1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             button2.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             button3.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             Exit.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
 
-            if (dataGridViewSchedule.Columns.Count > 0 && dataGridViewSchedule.Width > 0)
+            // Легенда – размещаем справа от таблицы
+            int legendX = dataGridViewSchedule.Right + 20;
+            int legendY = dataGridViewSchedule.Top + 50; // на уровне первой строки
+
+            panel1.Location = new Point(legendX, legendY);
+            label2.Location = new Point(legendX + 35, legendY - 3);
+            panel2.Location = new Point(legendX, legendY + 25);
+            label3.Location = new Point(legendX + 35, legendY + 22);
+            panel3.Location = new Point(legendX, legendY + 50);
+            label4.Location = new Point(legendX + 35, legendY + 47); // в MenuMaster – label4
+
+            // Если легенда вылезает за нижний край формы, сдвигаем её вверх
+            if (panel3.Bottom > h - 60)
             {
-                int timeColumnWidth = 80;
-                dataGridViewSchedule.Columns[0].Width = timeColumnWidth;
-                int availableWidth = dataGridViewSchedule.Width - timeColumnWidth - 60;
-                int dayColumnWidth = availableWidth / 5;
-                if (dayColumnWidth > 80)
-                    for (int i = 1; i <= 5 && i < dataGridViewSchedule.Columns.Count; i++)
-                        dataGridViewSchedule.Columns[i].Width = dayColumnWidth;
+                int delta = panel3.Bottom - (h - 60);
+                legendY -= delta;
+                panel1.Location = new Point(legendX, legendY);
+                label2.Location = new Point(legendX + 35, legendY - 3);
+                panel2.Location = new Point(legendX, legendY + 25);
+                label3.Location = new Point(legendX + 35, legendY + 22);
+                panel3.Location = new Point(legendX, legendY + 50);
+                label4.Location = new Point(legendX + 35, legendY + 47);
+            }
+
+            // Настройка колонок DataGridView (без горизонтального скролла)
+            if (dataGridViewSchedule.Columns.Count > 0)
+            {
+                dataGridViewSchedule.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                dataGridViewSchedule.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                dataGridViewSchedule.Columns[0].Width = 80;
+                for (int i = 1; i < dataGridViewSchedule.Columns.Count; i++)
+                    dataGridViewSchedule.Columns[i].FillWeight = 100;
             }
             dataGridViewSchedule.Refresh();
         }

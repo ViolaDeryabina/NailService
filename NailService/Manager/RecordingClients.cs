@@ -277,24 +277,6 @@ namespace NailService
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        private string CapitalizeRussianName(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name)) return name;
-            string lower = name.ToLower();
-            char first = char.ToUpper(lower[0]);
-            string result = first + lower.Substring(1);
-            if (result.Contains('-'))
-            {
-                string[] parts = result.Split('-');
-                for (int i = 0; i < parts.Length; i++)
-                    if (parts[i].Length > 0)
-                        parts[i] = char.ToUpper(parts[i][0]) + parts[i].Substring(1).ToLower();
-                result = string.Join("-", parts);
-            }
-            return result;
-        }
-
         private bool ValidateForm()
         {
             if (string.IsNullOrWhiteSpace(txtClientName.Text))
@@ -561,13 +543,47 @@ namespace NailService
         private void txtClientName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = txtClientName.SelectionStart;
+            int selectionLength = txtClientName.SelectionLength;
+
+            // Фильтрация: оставляем только русские буквы, дефис и пробел
             string filteredText = InputValidator.FilterToRussianLetters(txtClientName.Text);
 
-            if (filteredText != txtClientName.Text)
+            // Преобразование в формат "С заглавной буквы"
+            string properText = CapitalizeRussianName(filteredText);
+
+            if (properText != txtClientName.Text)
             {
-                txtClientName.Text = filteredText;
-                txtClientName.SelectionStart = Math.Min(selectionStart, txtClientName.Text.Length);
+                txtClientName.Text = properText;
+                // Корректируем позицию курсора
+                if (selectionStart > properText.Length)
+                    selectionStart = properText.Length;
+                txtClientName.SelectionStart = selectionStart;
+                txtClientName.SelectionLength = 0;
             }
+        }
+
+        /// <summary>
+        /// Преобразует строку с русскими буквами в формат: первая буква заглавная, остальные строчные.
+        /// Поддерживает имена через дефис (каждая часть начинается с заглавной).
+        /// </summary>
+        private string CapitalizeRussianName(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return input;
+
+            // Разбиваем на части по дефису
+            string[] parts = input.Split('-');
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (parts[i].Length > 0)
+                {
+                    // Первый символ – заглавный, остальные – строчные
+                    char first = char.ToUpper(parts[i][0]);
+                    string rest = parts[i].Substring(1).ToLower();
+                    parts[i] = first + rest;
+                }
+            }
+            return string.Join("-", parts);
         }
     }
 
