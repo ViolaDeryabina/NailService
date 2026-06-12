@@ -17,16 +17,14 @@ namespace NailService
     public partial class MenuManager : Form
     {
         private string _fio;
+        private int _userId; // ID пользователя (менеджера)
 
-        /// <summary>
-        /// Конструктор формы меню менеджера
-        /// </summary>
-        /// <param name="FIO">ФИО текущего пользователя</param>
-        public MenuManager(string FIO)
+        public MenuManager(string FIO, int userId)
         {
             InitializeComponent();
             _fio = FIO;
-            FIOlabel.Text = $"Менеджер: {_fio}";
+            _userId = userId;
+            FIOlabel.Text = $"Менеджер: {FIO}";
         }
 
         /// <summary>
@@ -34,20 +32,11 @@ namespace NailService
         /// </summary>
         private void RecordButton_Click(object sender, EventArgs e)
         {
-            Schedule schedule = new Schedule(_fio, 4, 0);
+            Schedule schedule = new Schedule(_fio, 4,_userId);
             schedule.Show();
             this.Hide();
         }
 
-        /// <summary>
-        /// Открытие формы просмотра списков (клиенты, услуги)
-        /// </summary>
-        private void ListButton_Click(object sender, EventArgs e)
-        {
-            Show show = new Show(_fio, 4);
-            show.Show();
-            this.Hide();
-        }
 
         /// <summary>
         /// Выход из учетной записи и возврат на форму входа
@@ -65,6 +54,13 @@ namespace NailService
             {
                 e.Cancel = true; // Отменяем закрытие
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            ServiceForm show = new ServiceForm(_fio,4, _userId);
+            show.Show();
+            this.Hide();
         }
     }
 }

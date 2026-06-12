@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AddUserForm));
             this.label1 = new System.Windows.Forms.Label();
             this.LastName = new System.Windows.Forms.TextBox();
@@ -45,7 +46,13 @@
             this.btnCancel = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.txtPhone = new System.Windows.Forms.TextBox();
+            this.txtDescription = new System.Windows.Forms.TextBox();
+            this.lblPhone = new System.Windows.Forms.Label();
+            this.lblDescription = new System.Windows.Forms.Label();
+            this.errorProvider1 = new System.Windows.Forms.ErrorProvider(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -172,7 +179,7 @@
             // 
             this.btnCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnCancel.Location = new System.Drawing.Point(12, 356);
+            this.btnCancel.Location = new System.Drawing.Point(12, 511);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(223, 47);
             this.btnCancel.TabIndex = 15;
@@ -184,7 +191,7 @@
             // 
             this.button4.BackColor = System.Drawing.Color.HotPink;
             this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button4.Location = new System.Drawing.Point(366, 356);
+            this.button4.Location = new System.Drawing.Point(366, 511);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(223, 47);
             this.button4.TabIndex = 16;
@@ -202,12 +209,56 @@
             this.pictureBox1.TabIndex = 17;
             this.pictureBox1.TabStop = false;
             // 
+            // txtPhone
+            // 
+            this.txtPhone.Font = new System.Drawing.Font("MS Reference Sans Serif", 15.25F);
+            this.txtPhone.Location = new System.Drawing.Point(126, 308);
+            this.txtPhone.Name = "txtPhone";
+            this.txtPhone.Size = new System.Drawing.Size(463, 32);
+            this.txtPhone.TabIndex = 18;
+            this.txtPhone.TextChanged += new System.EventHandler(this.txtPhone_TextChanged);
+            // 
+            // txtDescription
+            // 
+            this.txtDescription.Font = new System.Drawing.Font("MS Reference Sans Serif", 15.25F);
+            this.txtDescription.Location = new System.Drawing.Point(126, 346);
+            this.txtDescription.Multiline = true;
+            this.txtDescription.Name = "txtDescription";
+            this.txtDescription.Size = new System.Drawing.Size(463, 138);
+            this.txtDescription.TabIndex = 19;
+            // 
+            // lblPhone
+            // 
+            this.lblPhone.AutoSize = true;
+            this.lblPhone.Location = new System.Drawing.Point(12, 316);
+            this.lblPhone.Name = "lblPhone";
+            this.lblPhone.Size = new System.Drawing.Size(72, 24);
+            this.lblPhone.TabIndex = 20;
+            this.lblPhone.Text = "Номер";
+            // 
+            // lblDescription
+            // 
+            this.lblDescription.AutoSize = true;
+            this.lblDescription.Location = new System.Drawing.Point(12, 354);
+            this.lblDescription.Name = "lblDescription";
+            this.lblDescription.Size = new System.Drawing.Size(105, 24);
+            this.lblDescription.TabIndex = 21;
+            this.lblDescription.Text = "Описание";
+            // 
+            // errorProvider1
+            // 
+            this.errorProvider1.ContainerControl = this;
+            // 
             // AddUserForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(624, 424);
+            this.ClientSize = new System.Drawing.Size(608, 570);
+            this.Controls.Add(this.lblDescription);
+            this.Controls.Add(this.lblPhone);
+            this.Controls.Add(this.txtDescription);
+            this.Controls.Add(this.txtPhone);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.btnCancel);
@@ -234,6 +285,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Добавление пользователя";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -257,5 +309,10 @@
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.TextBox txtPhone;
+        private System.Windows.Forms.TextBox txtDescription;
+        private System.Windows.Forms.Label lblPhone;
+        private System.Windows.Forms.Label lblDescription;
+        private System.Windows.Forms.ErrorProvider errorProvider1;
     }
 }

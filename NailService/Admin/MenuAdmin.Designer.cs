@@ -33,8 +33,10 @@
             this.FIOlabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.button3 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.Orders = new System.Windows.Forms.Button();
-            this.Settings = new System.Windows.Forms.Button();
             this.Exit = new System.Windows.Forms.Button();
             this.ListButton = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -70,14 +72,16 @@
             this.label1.Font = new System.Drawing.Font("MS Reference Sans Serif", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label1.Location = new System.Drawing.Point(311, 17);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(321, 44);
+            this.label1.Size = new System.Drawing.Size(320, 44);
             this.label1.TabIndex = 0;
             this.label1.Text = "Ногтевой сервис";
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.button3);
+            this.groupBox2.Controls.Add(this.button2);
+            this.groupBox2.Controls.Add(this.button1);
             this.groupBox2.Controls.Add(this.Orders);
-            this.groupBox2.Controls.Add(this.Settings);
             this.groupBox2.Controls.Add(this.Exit);
             this.groupBox2.Controls.Add(this.ListButton);
             this.groupBox2.Font = new System.Drawing.Font("MS Reference Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
@@ -87,31 +91,57 @@
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             // 
+            // button3
+            // 
+            this.button3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button3.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.button3.Location = new System.Drawing.Point(6, 203);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(223, 55);
+            this.button3.TabIndex = 16;
+            this.button3.Text = "Услуги";
+            this.button3.UseVisualStyleBackColor = false;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // button2
+            // 
+            this.button2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button2.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.button2.Location = new System.Drawing.Point(6, 142);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(223, 55);
+            this.button2.TabIndex = 15;
+            this.button2.Text = "Мастера";
+            this.button2.UseVisualStyleBackColor = false;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // button1
+            // 
+            this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button1.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.button1.Location = new System.Drawing.Point(6, 81);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(223, 55);
+            this.button1.TabIndex = 14;
+            this.button1.Text = "Пользователи";
+            this.button1.UseVisualStyleBackColor = false;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // Orders
             // 
             this.Orders.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.Orders.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.Orders.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.Orders.Location = new System.Drawing.Point(6, 142);
+            this.Orders.Location = new System.Drawing.Point(6, 264);
             this.Orders.Name = "Orders";
             this.Orders.Size = new System.Drawing.Size(223, 58);
             this.Orders.TabIndex = 13;
             this.Orders.Text = "Учёт оказанных услуг";
             this.Orders.UseVisualStyleBackColor = false;
             this.Orders.Click += new System.EventHandler(this.Orders_Click);
-            // 
-            // Settings
-            // 
-            this.Settings.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
-            this.Settings.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.Settings.Font = new System.Drawing.Font("MS Reference Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.Settings.Location = new System.Drawing.Point(6, 81);
-            this.Settings.Name = "Settings";
-            this.Settings.Size = new System.Drawing.Size(223, 55);
-            this.Settings.TabIndex = 12;
-            this.Settings.Text = "Настройки";
-            this.Settings.UseVisualStyleBackColor = false;
-            this.Settings.Click += new System.EventHandler(this.Settings_Click);
             // 
             // Exit
             // 
@@ -185,7 +215,9 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button Exit;
         private System.Windows.Forms.Button ListButton;
-        private System.Windows.Forms.Button Settings;
         private System.Windows.Forms.Button Orders;
+        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button button1;
     }
 }

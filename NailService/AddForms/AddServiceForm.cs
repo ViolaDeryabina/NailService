@@ -15,33 +15,69 @@ namespace NailService
     {
         private string _connection;
         public ServiceModel NewService { get; private set; }
-        private Show _showForm;
         private Image _selectedImage;
         private byte[] _selectedImageBytes = null;
         private bool _imageChanged = false;
+        private bool _isEditMode = false;
+        private Form _parentForm;
+        private int _editingServiceId = 0;
 
-        /// <summary>
-        /// Максимальный размер файла изображения (5 МБ)
-        /// </summary>
+
         private const long MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
         /// <summary>
-        /// Конструктор формы добавления услуги
+        /// Конструктор формы редактирования услуги
         /// </summary>
-        public AddServiceForm(Show showForm = null)
+        public AddServiceForm(Form parentForm)
         {
             InitializeComponent();
             _connection = Connection.ConnectionString;
-            _showForm = showForm;
+            _parentForm = parentForm;
+            _isEditMode = true;
+            _imageChanged = false;
             NewService = new ServiceModel();
-            _selectedImage = null;
-            _selectedImageBytes = null;
-            lblCharCount.Text = "0/500";
 
             LoadCategory();
-            LoadDefaultImage();
+            LoadServiceData();
         }
+        /// <summary>
+        /// Загрузка данных услуги в форму для редактирования
+        /// </summary>
+        private void LoadServiceData()
+        {
+            NameService.Text = NewService.ServiceName;
+            Price.Text = NewService.Price.ToString();
+            Description.Text = NewService.Description;
 
+            // Выбираем категорию
+            for (int i = 0; i < Category.Items.Count; i++)
+            {
+                DataRowView row = (DataRowView)Category.Items[i];
+                if (Convert.ToInt32(row["IDCategory"]) == NewService.Category)
+                {
+                    Category.SelectedIndex = i;
+                    break;
+                }
+            }
+
+            // Загружаем изображение
+            if (_selectedImageBytes != null && _selectedImageBytes.Length > 0)
+            {
+                using (MemoryStream ms = new MemoryStream(_selectedImageBytes))
+                {
+                    _selectedImage = Image.FromStream(ms);
+                    pictureBoxService.Image = ScaleImage(_selectedImage, pictureBoxService.Width, pictureBoxService.Height);
+                    _imageChanged = false;
+                }
+            }
+            else
+            {
+                LoadDefaultImage();
+            }
+
+            this.Text = "Редактирование услуги";
+            button1.Text = "Сохранить";
+        }
         /// <summary>
         /// Загрузка изображения-заглушки для новых услуг
         /// </summary>

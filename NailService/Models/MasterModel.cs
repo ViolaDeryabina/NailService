@@ -10,36 +10,21 @@ namespace NailService
     {
         public int IDMasters { get; set; }
         public int UserId { get; set; }
-        public string Description { get; set; }
-        public string Phone { get; set; }
         public string LastName { get; set; }
         public string FirstName { get; set; }
         public string MiddleName { get; set; }
-
         public string FullName
         {
             get
             {
-                return $"{LastName} {FirstName} {MiddleName}".Trim();
+                string full = LastName + " " + FirstName;
+                if (!string.IsNullOrWhiteSpace(MiddleName))
+                    full += " " + MiddleName;
+                return full;
             }
         }
-
-        public string ShortName
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(LastName) || string.IsNullOrEmpty(FirstName))
-                    return "";
-
-                string result = $"{LastName} {FirstName[0]}.";
-
-                if (!string.IsNullOrEmpty(MiddleName))
-                {
-                    result += $"{MiddleName[0]}.";
-                }
-
-                return result;
-            }
-        }
+        public string Description { get; set; }
+        public string Phone { get; set; }
+        public bool IsActive { get; set; }
     }
 }

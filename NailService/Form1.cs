@@ -199,7 +199,7 @@ namespace NailService
             if (role != null && FIO != null)
             {
                 int masterID = EditUserClass.GetMasterId(Login.Text, passwordHash);
-                OpenRoleForm(role, FIO, masterID);
+                OpenRoleForm(role, FIO, masterID, Login.Text, passwordHash); // передаём логин и хэш
             }
         }
 
@@ -240,22 +240,40 @@ namespace NailService
             return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
         }
 
-        private void OpenRoleForm(string role, string fio, int masterID)
+        private void OpenRoleForm(string role, string fio, int masterID, string login, string passwordHash)
         {
+            int userId = GetUserId(login, passwordHash); // получаем IDUser
+
             switch (role)
             {
                 case "Админ":
-                    new MenuAdmin(fio, Login.Text).Show();
+                    new MenuAdmin(fio, login).Show();
                     break;
                 case "Мастер":
                     new MenuMaster(fio, masterID).Show();
                     break;
                 case "Менеджер":
-                    new MenuManager(fio).Show();
+                    new MenuManager(fio, userId).Show();  // передаём userId
                     break;
             }
             this.Hide();
         }
+
+        // Добавьте этот метод в класс Form1 (например, после GetRoleName)
+        private int GetUserId(string login, string passwordHash)
+        {
+            using (MySqlConnection con = new MySqlConnection(_connection))
+            {
+                con.Open();
+                string query = "SELECT IDUser FROM users WHERE Login = @Login AND Password = @Password";
+                MySqlCommand cmd = new MySqlCommand(query, con);
+                cmd.Parameters.AddWithValue("@Login", login);
+                cmd.Parameters.AddWithValue("@Password", passwordHash);
+                object result = cmd.ExecuteScalar();
+                return result != null ? Convert.ToInt32(result) : 0;
+            }
+        }
+
 
         private void OpenSysAdminForm()
         {

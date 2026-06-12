@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace NailService
 {
@@ -52,8 +51,12 @@ namespace NailService
             if (ValidateData())
             {
                 SaveMasterData();
-                DialogResult = DialogResult.OK;
-                Close();
+
+                if (UpdateMasterInDatabase())
+                {
+                    DialogResult = DialogResult.OK;
+                    Close();
+                }
             }
         }
 
@@ -71,7 +74,6 @@ namespace NailService
         /// <summary>
         /// Валидация введенных данных перед сохранением
         /// </summary>
-        /// <returns>true если данные корректны</returns>
         private bool ValidateData()
         {
             if (string.IsNullOrWhiteSpace(Phone.Text))
@@ -82,7 +84,7 @@ namespace NailService
                 return false;
             }
 
-            string phoneDigits = new string(Phone.Text.Where(char.IsDigit).ToArray());
+            string phoneDigits = GetPhoneDigits(Phone.Text);
             if (phoneDigits.Length < 10)
             {
                 MessageBox.Show("Номер телефона должен содержать не менее 10 цифр",
@@ -91,8 +93,7 @@ namespace NailService
                 return false;
             }
 
-            string currentPhoneDigits = GetPhoneDigits(Phone.Text);
-            if (currentPhoneDigits != Master.Phone && !IsPhoneUnique(currentPhoneDigits))
+            if (!IsPhoneUnique(phoneDigits))
             {
                 MessageBox.Show("Мастер с таким номером телефона уже существует",
                     "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -107,8 +108,6 @@ namespace NailService
         /// <summary>
         /// Проверка уникальности номера телефона (исключая текущего мастера)
         /// </summary>
-        /// <param name="phone">Номер телефона для проверки</param>
-        /// <returns>true если номер уникален</returns>
         private bool IsPhoneUnique(string phone)
         {
             try
@@ -137,54 +136,45 @@ namespace NailService
 
         #region Работа с телефоном
 
-        /// <summary>
-        /// Извлечение только цифр из строки телефона
-        /// </summary>
-        /// <returns>Строка, содержащая только цифры</returns>
         private string GetPhoneDigits(string phone)
         {
             return new string(phone.Where(char.IsDigit).ToArray());
         }
 
-        /// <summary>
-        /// Автоматическое форматирование номера телефона при вводе
-        /// </summary>
         private void Phone_TextChanged(object sender, EventArgs e)
         {
             int originalSelectionStart = Phone.SelectionStart;
             string originalText = Phone.Text;
 
-            string filteredText = InputValidator.FilterToPhone(originalText);
-            string formattedText = InputValidator.FormatPhoneNumber(filteredText);
+            string filteredText = new string(originalText.Where(c => char.IsDigit(c)).ToArray());
+            string formattedText = FormatPhoneNumber(filteredText);
 
             if (formattedText != originalText)
             {
                 Phone.Text = formattedText;
-                int adjustedPosition = GetAdjustedCursorPosition(originalSelectionStart, originalText, formattedText);
-                Phone.SelectionStart = Math.Min(adjustedPosition, formattedText.Length);
+                Phone.SelectionStart = Math.Min(originalSelectionStart, formattedText.Length);
             }
         }
 
-        /// <summary>
-        /// Корректировка позиции курсора после форматирования телефона
-        /// </summary>
-        private int GetAdjustedCursorPosition(int originalPosition, string oldText, string newText)
+        private string FormatPhoneNumber(string digits)
         {
-            if (originalPosition >= oldText.Length)
-                return newText.Length;
+            if (string.IsNullOrEmpty(digits))
+                return string.Empty;
 
-            int formatCharsBeforeCursor = 0;
-            char[] formatChars = { '(', ')', ' ', '-', '+' };
-
-            for (int i = 0; i < originalPosition && i < newText.Length; i++)
+            if (digits.Length >= 11 && (digits[0] == '7' || digits[0] == '8'))
             {
-                if (formatChars.Contains(newText[i]))
+                string number = digits.Length > 11 ? digits.Substring(0, 11) : digits;
+                if (number.Length == 11)
                 {
-                    formatCharsBeforeCursor++;
+                    return $"+7 ({number.Substring(1, 3)}) {number.Substring(4, 3)}-{number.Substring(7, 2)}-{number.Substring(9, 2)}";
+                }
+                else if (number.Length > 1)
+                {
+                    return $"+7 ({number.Substring(1, Math.Min(3, number.Length - 1))})";
                 }
             }
 
-            return originalPosition + formatCharsBeforeCursor;
+            return digits;
         }
 
         #endregion
@@ -196,6 +186,51 @@ namespace NailService
         {
             Master.Description = Description.Text.Trim();
             Master.Phone = GetPhoneDigits(Phone.Text);
+        }
+
+        /// <summary>
+        /// Обновление данных мастера в базе данных
+        /// </summary>
+        private bool UpdateMasterInDatabase()
+        {
+            try
+            {
+                using (var connection = new MySqlConnection(_connection))
+                {
+                    connection.Open();
+
+                    string query = @"UPDATE Masters 
+                                    SET Description = @Description,
+                                        Phone = @Phone
+                                    WHERE IDMasters = @MasterId";
+
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@MasterId", Master.IDMasters);
+                    cmd.Parameters.AddWithValue("@Description", string.IsNullOrWhiteSpace(Master.Description) ? (object)DBNull.Value : Master.Description);
+                    cmd.Parameters.AddWithValue("@Phone", Master.Phone);
+
+                    int result = cmd.ExecuteNonQuery();
+
+                    if (result > 0)
+                    {
+                        MessageBox.Show("Данные мастера успешно обновлены", "Успех",
+                                      MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return true;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Не удалось обновить данные мастера", "Ошибка",
+                                      MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при обновлении мастера: {ex.Message}", "Ошибка",
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
         }
     }
 }

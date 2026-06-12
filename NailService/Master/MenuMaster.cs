@@ -1,19 +1,11 @@
 ﻿using MySql.Data.MySqlClient;
-using NailServiceApp.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
-using System.Linq;
 using System.Windows.Forms;
-
 
 namespace NailService
 {
-    /// <summary>
-    /// Форма главного меню для пользователей с ролью "Мастер"
-    /// Отображает расписание записей только для текущего мастера
-    /// </summary>
     public partial class MenuMaster : Form
     {
         private string _fio;
@@ -22,126 +14,64 @@ namespace NailService
         private DateTime currentWeekStart;
         private bool _isCentered = false;
 
-        /// <summary>
-        /// Конструктор формы меню мастера
-        /// </summary>
-        /// <param name="FIO">ФИО текущего пользователя</param>
-        /// <param name="userId">ID пользователя</param>
         public MenuMaster(string FIO, int userId)
         {
             InitializeComponent();
-            // Настройки формы для масштабирования
+
             this.FormBorderStyle = FormBorderStyle.Sizable;
             this.WindowState = FormWindowState.Maximized;
             this.MinimumSize = new Size(800, 600);
 
             _fio = FIO;
-            _userId = userId;
-            _masterId = userId;
+            _userId = userId;          // сохраняем как userId (можно переименовать)
+            _masterId = userId;        // сразу используем как ID мастера
             FIOlabel.Text = $"Мастер: {_fio}";
 
-            GetMasterId();
+            // Проверяем, существует ли мастер с таким ID
+            if (!CheckMasterExists())
+            {
+                MessageBox.Show($"Мастер с ID={_masterId} не найден в базе данных.\n" +
+                                "Пожалуйста, обратитесь к администратору.",
+                                "Ошибка авторизации", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                this.Close();
+                return;
+            }
+
             currentWeekStart = GetMonday(DateTime.Today);
             ApplyCustomStyles();
             FillScheduleWithData();
             RecalculateLayout();
         }
-
         /// <summary>
-        /// Пересчет расположения элементов при изменении размера формы
+        /// Проверка существования мастера по IDMasters
         /// </summary>
-        private void RecalculateLayout()
+        private bool CheckMasterExists()
         {
-            int w = this.ClientSize.Width;
-            int h = this.ClientSize.Height;
-
-            // Если форма еще не инициализирована или ширина слишком маленькая
-            if (w <= 0 || h <= 0) return;
-
-            // Группа с логотипом - на всю ширину
-            groupBox1.Width = w - 40;
-            groupBox1.Location = new Point(20, 10);
-            groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-
-            // Центрируем заголовок
-            label1.Location = new Point((groupBox1.Width - label1.Width) / 2, 20);
-            FIOlabel.Location = new Point(groupBox1.Width - FIOlabel.Width - 20, 20);
-            pictureBox1.Location = new Point(20, 15);
-
-            // DataGridView - растягиваем на всю ширину и высоту
-            dataGridViewSchedule.Width = w - 40;
-            dataGridViewSchedule.Height = h - 200;
-            dataGridViewSchedule.Location = new Point(20, 130);
-            dataGridViewSchedule.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-
-            // Надпись с неделей
-            lblWeek.Location = new Point(w - 330, 110);
-            lblWeek.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-
-            // Кнопки навигации внизу
-            int bottomY = h - 65;
-            button1.Location = new Point(w - 350, bottomY);
-            button2.Location = new Point(w - 280, bottomY);
-            button3.Location = new Point(w - 200, bottomY);
-            Exit.Location = new Point(20, bottomY);
-            Exit.Size = new Size(223, 55);
-
-            button1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            button2.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            button3.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            Exit.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-
-            // Перестраиваем колонки DataGridView на полную ширину
-            if (dataGridViewSchedule.Columns.Count > 0 && dataGridViewSchedule.Width > 0)
+            try
             {
-                // Фиксированная ширина для колонки "Время" (80px)
-                int timeColumnWidth = 80;
-                dataGridViewSchedule.Columns[0].Width = timeColumnWidth;
-
-                // Оставшееся пространство делим на 5 дней
-                int availableWidth = dataGridViewSchedule.Width - timeColumnWidth - 60;
-                int dayColumnWidth = availableWidth / 5;
-
-                if (dayColumnWidth > 80)
+                using (MySqlConnection con = new MySqlConnection(Connection.ConnectionString))
                 {
-                    for (int i = 1; i <= 5 && i < dataGridViewSchedule.Columns.Count; i++)
-                    {
-                        dataGridViewSchedule.Columns[i].Width = dayColumnWidth;
-                    }
+                    con.Open();
+                    string query = "SELECT COUNT(*) FROM Masters WHERE IDMasters = @MasterId";
+                    MySqlCommand cmd = new MySqlCommand(query, con);
+                    cmd.Parameters.AddWithValue("@MasterId", _masterId);
+                    int count = Convert.ToInt32(cmd.ExecuteScalar());
+                    return count > 0;
                 }
             }
-
-            // Принудительное обновление таблицы
-            dataGridViewSchedule.Refresh();
-        }
-
-        protected override void OnResize(EventArgs e)
-        {
-            base.OnResize(e);
-
-            if (this.WindowState == FormWindowState.Normal && !_isCentered)
+            catch (Exception ex)
             {
-                this.CenterToScreen();
-                _isCentered = true;
+                MessageBox.Show($"Ошибка проверки мастера: {ex.Message}", "Ошибка",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
-            else if (this.WindowState == FormWindowState.Maximized)
-            {
-                _isCentered = false;
-            }
-
-            RecalculateLayout();
-        }
-
-        protected override void OnLoad(EventArgs e)
-        {
-            base.OnLoad(e);
-            RecalculateLayout();
         }
 
         /// <summary>
-        /// Получение ID мастера по ID пользователя
+        /// Получение ID мастера по ID пользователя.
+        /// Возвращает true, если мастер найден.
         /// </summary>
-        private void GetMasterId()
+        private bool GetMasterId()
         {
             try
             {
@@ -151,64 +81,46 @@ namespace NailService
                     string query = "SELECT IDMasters FROM Masters WHERE User = @UserId";
                     MySqlCommand cmd = new MySqlCommand(query, con);
                     cmd.Parameters.AddWithValue("@UserId", _userId);
-
                     object result = cmd.ExecuteScalar();
                     if (result != null)
                     {
                         _masterId = Convert.ToInt32(result);
+                        return true;
                     }
+                    return false;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка получения ID мастера: {ex.Message}");
+                MessageBox.Show($"Ошибка получения ID мастера: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
         }
 
         #region Стили и оформление
 
-        /// <summary>
-        /// Применение стилей к DataGridView
-        /// </summary>
         private void ApplyCustomStyles()
         {
-            Color selectionColor = Color.FromArgb(255, 203, 219);
-            Color accentColor = Color.HotPink;
-
             dataGridViewSchedule.DefaultCellStyle.Font = new Font("MS Reference Sans Serif", 10);
             dataGridViewSchedule.ColumnHeadersDefaultCellStyle.Font = new Font("MS Reference Sans Serif", 11, FontStyle.Bold);
-
             dataGridViewSchedule.DefaultCellStyle.SelectionBackColor = Color.FromArgb(220, 235, 252);
             dataGridViewSchedule.DefaultCellStyle.SelectionForeColor = Color.Black;
-
-            // Изменено с Fill на None
-            dataGridViewSchedule.RowHeadersVisible = false;
             dataGridViewSchedule.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
             dataGridViewSchedule.ReadOnly = true;
-
             dataGridViewSchedule.RowHeadersVisible = true;
             dataGridViewSchedule.RowHeadersWidth = 70;
             dataGridViewSchedule.RowTemplate.Height = 80;
-
             dataGridViewSchedule.CellFormatting += DataGridViewSchedule_CellFormatting;
         }
 
-        /// <summary>
-        /// Возвращает цвет для статуса записи
-        /// </summary>
         private Color GetStatusColor(int statusId)
         {
             switch (statusId)
             {
-                case 3: // Выполнен
-                    return Color.FromArgb(197, 225, 165);
-                case 1: // Запланирован
-                case 2: // Подтвержден
-                    return Color.FromArgb(255, 245, 157);
-                case 4: // Отменен
-                    return Color.FromArgb(255, 171, 145);
-                default:
-                    return Color.White;
+                case 1: return Color.FromArgb(255, 245, 157); // Занято
+                case 2: return Color.FromArgb(197, 225, 165); // Выполнено
+                case 3: return Color.FromArgb(255, 171, 145); // Отменено
+                default: return Color.White;
             }
         }
 
@@ -216,9 +128,6 @@ namespace NailService
 
         #region Навигация по неделям
 
-        /// <summary>
-        /// Получение понедельника указанной даты
-        /// </summary>
         private DateTime GetMonday(DateTime date)
         {
             int delta = DayOfWeek.Monday - date.DayOfWeek;
@@ -226,25 +135,16 @@ namespace NailService
             return date.AddDays(delta);
         }
 
-        /// <summary>
-        /// Смена недели
-        /// </summary>
         private void ChangeWeek(int weeks)
         {
             currentWeekStart = currentWeekStart.AddDays(weeks * 7);
             FillScheduleWithData();
         }
 
-        /// <summary>
-        /// Получение дат текущей недели (пн-пт)
-        /// </summary>
         private DateTime[] GetCurrentWeekDates()
         {
             DateTime[] weekDates = new DateTime[5];
-            for (int i = 0; i < 5; i++)
-            {
-                weekDates[i] = currentWeekStart.AddDays(i);
-            }
+            for (int i = 0; i < 5; i++) weekDates[i] = currentWeekStart.AddDays(i);
             return weekDates;
         }
 
@@ -252,21 +152,13 @@ namespace NailService
 
         #region Загрузка и отображение расписания
 
-        /// <summary>
-        /// Заполнение расписания данными
-        /// </summary>
         private void FillScheduleWithData()
         {
             try
             {
                 UpdateWeekLabel();
 
-                var weekDates = new DateTime[5];
-                for (int i = 0; i < 5; i++)
-                {
-                    weekDates[i] = currentWeekStart.AddDays(i);
-                }
-
+                var weekDates = GetCurrentWeekDates();
                 dataGridViewSchedule.Rows.Clear();
                 dataGridViewSchedule.Columns.Clear();
 
@@ -277,14 +169,10 @@ namespace NailService
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при загрузке расписания: {ex.Message}", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Ошибка при загрузке расписания: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        /// <summary>
-        /// Создание колонок для дней недели
-        /// </summary>
         private void CreateColumns(DateTime[] weekDates)
         {
             Color accentColor = Color.HotPink;
@@ -294,7 +182,6 @@ namespace NailService
                 Name = "Time",
                 HeaderText = "Время",
                 ReadOnly = true,
-                // Не задаем Width - будет установлено в RecalculateLayout
                 DefaultCellStyle = new DataGridViewCellStyle
                 {
                     BackColor = accentColor,
@@ -311,18 +198,13 @@ namespace NailService
                 string dayOfWeek = GetRussianDayOfWeekFull(weekDates[i].DayOfWeek);
                 string headerText = $"{dayOfWeek}\n{dayName}";
 
-                Color headerBackColor = accentColor;
-                if (weekDates[i].Date == DateTime.Today)
-                {
-                    headerBackColor = Color.FromArgb(255, 100, 150);
-                }
+                Color headerBackColor = weekDates[i].Date == DateTime.Today ? Color.FromArgb(255, 100, 150) : accentColor;
 
                 DataGridViewTextBoxColumn dayColumn = new DataGridViewTextBoxColumn
                 {
                     Name = headerText,
                     HeaderText = headerText,
                     ReadOnly = true,
-                    // Убираем фиксированную ширину 150
                     HeaderCell = new DataGridViewColumnHeaderCell
                     {
                         Style = new DataGridViewCellStyle
@@ -347,13 +229,9 @@ namespace NailService
                 };
                 dataGridViewSchedule.Columns.Add(dayColumn);
             }
-
             dataGridViewSchedule.Refresh();
         }
 
-        /// <summary>
-        /// Получение полного названия дня недели на русском
-        /// </summary>
         private string GetRussianDayOfWeekFull(DayOfWeek dayOfWeek)
         {
             switch (dayOfWeek)
@@ -369,34 +247,24 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Добавление строк с временными слотами
-        /// </summary>
         private void AddTimeRows()
         {
             int[] timeSlots = { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
-
             foreach (int hour in timeSlots)
             {
                 int rowIndex = dataGridViewSchedule.Rows.Add();
                 dataGridViewSchedule.Rows[rowIndex].Cells["Time"].Value = $"{hour:00}:00";
-
                 for (int col = 1; col <= 5; col++)
-                {
                     dataGridViewSchedule.Rows[rowIndex].Cells[col].Style.BackColor = Color.White;
-                }
             }
         }
 
-        /// <summary>
-        /// Загрузка данных записей текущего мастера из базы данных
-        /// </summary>
         private void LoadScheduleData(DateTime[] weekDates)
         {
             try
             {
+                // Очистка ячеек
                 for (int row = 0; row < dataGridViewSchedule.Rows.Count; row++)
-                {
                     for (int col = 1; col <= 5; col++)
                     {
                         dataGridViewSchedule.Rows[row].Cells[col].Value = null;
@@ -405,30 +273,25 @@ namespace NailService
                         dataGridViewSchedule.Rows[row].Cells[col].Style.Font = new Font("MS Reference Sans Serif", 8.5f);
                         dataGridViewSchedule.Rows[row].Cells[col].Style.ForeColor = Color.Black;
                     }
-                }
 
                 using (MySqlConnection con = new MySqlConnection(Connection.ConnectionString))
                 {
                     con.Open();
-
                     string query = @"
                         SELECT 
                             r.IDRecord,
                             r.Date,
-                            c.LastName as ClientLastName,
-                            c.FirstName as ClientFirstName,
-                            c.MiddleName as ClientMiddleName,
+                            r.ClientName,
+                            r.ClientPhone,
                             s.ServiceName,
                             s.Price,
                             stat.StatusName,
                             stat.IDStatus
                         FROM Record r
-                        INNER JOIN Client c ON r.Client = c.IDClient
                         INNER JOIN Services s ON r.Service = s.IDServices
                         INNER JOIN Status stat ON r.Status = stat.IDStatus
                         WHERE r.Master = @MasterId 
-                        AND r.Date BETWEEN @startDate AND @endDate 
-                        AND r.Status IN (1, 2, 3, 4)";
+                        AND r.Date BETWEEN @startDate AND @endDate";
 
                     MySqlCommand cmd = new MySqlCommand(query, con);
                     cmd.Parameters.AddWithValue("@MasterId", _masterId);
@@ -440,13 +303,7 @@ namespace NailService
                         while (reader.Read())
                         {
                             DateTime recordDate = Convert.ToDateTime(reader["Date"]);
-
-                            string clientName = NameFormatter.FormatToShortName(
-                                reader["ClientLastName"].ToString(),
-                                reader["ClientFirstName"].ToString(),
-                                reader["ClientMiddleName"].ToString()
-                            );
-
+                            string clientName = reader["ClientName"].ToString();
                             string service = reader["ServiceName"].ToString();
                             int statusId = Convert.ToInt32(reader["IDStatus"]);
                             string statusName = reader["StatusName"].ToString();
@@ -454,23 +311,13 @@ namespace NailService
 
                             int dayIndex = -1;
                             for (int i = 0; i < weekDates.Length; i++)
-                            {
-                                if (weekDates[i].Date == recordDate.Date)
-                                {
-                                    dayIndex = i;
-                                    break;
-                                }
-                            }
+                                if (weekDates[i].Date == recordDate.Date) { dayIndex = i; break; }
 
                             int timeIndex = -1;
                             for (int row = 0; row < dataGridViewSchedule.Rows.Count; row++)
                             {
                                 string timeValue = dataGridViewSchedule.Rows[row].Cells["Time"].Value?.ToString();
-                                if (timeValue == $"{recordDate.Hour:00}:00")
-                                {
-                                    timeIndex = row;
-                                    break;
-                                }
+                                if (timeValue == $"{recordDate.Hour:00}:00") { timeIndex = row; break; }
                             }
 
                             if (dayIndex >= 0 && timeIndex >= 0)
@@ -491,74 +338,49 @@ namespace NailService
 
                                 Color statusColor = GetStatusColor(statusId);
                                 dataGridViewSchedule.Rows[timeIndex].Cells[dayIndex + 1].Style.BackColor = statusColor;
-                                dataGridViewSchedule.Rows[timeIndex].Cells[dayIndex + 1].Style.ForeColor = Color.Black;
-                                dataGridViewSchedule.Rows[timeIndex].Cells[dayIndex + 1].Style.Font =
-                                    new Font("MS Reference Sans Serif", 8.5f, FontStyle.Bold);
+                                dataGridViewSchedule.Rows[timeIndex].Cells[dayIndex + 1].Style.Font = new Font("MS Reference Sans Serif", 8.5f, FontStyle.Bold);
                             }
                         }
                     }
                 }
-
                 HighlightCurrentTimeSlot();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при загрузке записей: {ex.Message}", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"Ошибка при загрузке записей: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
-        /// <summary>
-        /// Подсветка текущего временного слота
-        /// </summary>
         private void HighlightCurrentTimeSlot()
         {
             int currentHour = DateTime.Now.Hour;
-
             for (int row = 0; row < dataGridViewSchedule.Rows.Count; row++)
             {
                 string timeValue = dataGridViewSchedule.Rows[row].Cells["Time"].Value?.ToString();
-                if (!string.IsNullOrEmpty(timeValue))
+                if (!string.IsNullOrEmpty(timeValue) && int.Parse(timeValue.Split(':')[0]) == currentHour)
                 {
-                    int rowHour = int.Parse(timeValue.Split(':')[0]);
-                    if (rowHour == currentHour)
-                    {
-                        for (int col = 1; col <= 5; col++)
-                        {
-                            if (dataGridViewSchedule.Rows[row].Cells[col].Value == null)
-                            {
-                                dataGridViewSchedule.Rows[row].Cells[col].Style.BackColor = Color.FromArgb(255, 230, 240);
-                            }
-                        }
-                    }
+                    for (int col = 1; col <= 5; col++)
+                        if (dataGridViewSchedule.Rows[row].Cells[col].Value == null)
+                            dataGridViewSchedule.Rows[row].Cells[col].Style.BackColor = Color.FromArgb(255, 230, 240);
                 }
             }
         }
 
-        /// <summary>
-        /// Форматирование ячеек - подсветка выходных дней
-        /// </summary>
         private void DataGridViewSchedule_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (e.RowIndex >= 0 && e.ColumnIndex >= 1 && e.ColumnIndex <= 5)
             {
                 DateTime[] weekDates = GetCurrentWeekDates();
                 int dayIndex = e.ColumnIndex - 1;
-
                 if (dayIndex >= 0 && dayIndex < weekDates.Length)
                 {
                     DayOfWeek day = weekDates[dayIndex].DayOfWeek;
                     if ((day == DayOfWeek.Saturday || day == DayOfWeek.Sunday) && e.Value == null)
-                    {
                         e.CellStyle.BackColor = Color.FromArgb(255, 240, 245);
-                    }
                 }
             }
         }
 
-        /// <summary>
-        /// Обновление надписи с неделей
-        /// </summary>
         private void UpdateWeekLabel()
         {
             DateTime weekEnd = currentWeekStart.AddDays(4);
@@ -567,7 +389,6 @@ namespace NailService
 
             string startStr = $"{currentWeekStart.Day} {months[currentWeekStart.Month - 1]}";
             string endStr = $"{weekEnd.Day} {months[weekEnd.Month - 1]} {weekEnd.Year}";
-
             lblWeek.Text = $"{startStr} — {endStr}";
             lblWeek.ForeColor = Color.HotPink;
             lblWeek.Font = new Font("MS Reference Sans Serif", 10, FontStyle.Bold);
@@ -577,23 +398,15 @@ namespace NailService
 
         #region Обработка событий DataGridView
 
-        /// <summary>
-        /// Обработка двойного клика по ячейке - показ информации о записи
-        /// </summary>
         private void DataGridViewSchedule_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0 && e.ColumnIndex >= 1 && e.ColumnIndex <= 5)
+            if (e.RowIndex >= 0 && e.ColumnIndex >= 1 && e.ColumnIndex <= 5 &&
+                dataGridViewSchedule.Rows[e.RowIndex].Cells[e.ColumnIndex].Value != null)
             {
-                if (dataGridViewSchedule.Rows[e.RowIndex].Cells[e.ColumnIndex].Value != null)
-                {
-                    ShowDetailedRecordInfo(e.RowIndex, e.ColumnIndex);
-                }
+                ShowDetailedRecordInfo(e.RowIndex, e.ColumnIndex);
             }
         }
 
-        /// <summary>
-        /// Отображение подробной информации о записи
-        /// </summary>
         private void ShowDetailedRecordInfo(int rowIndex, int columnIndex)
         {
             if (dataGridViewSchedule.Rows[rowIndex].Cells[columnIndex].Tag is RecordInfo recordInfo)
@@ -605,34 +418,21 @@ namespace NailService
                                 $"📅 Дата: {recordInfo.Date:dd.MM.yyyy}\n" +
                                 $"⏰ Время: {recordInfo.Date:HH:mm}\n" +
                                 $"📊 Статус: {recordInfo.Status}";
-
-                MessageBox.Show(message, "Детали записи",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(message, "Детали записи", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
                 string cellValue = dataGridViewSchedule.Rows[rowIndex].Cells[columnIndex].Value.ToString();
-                MessageBox.Show($"Запись:\n\n{cellValue}",
-                    "Информация о записи",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
+                MessageBox.Show($"Запись:\n\n{cellValue}", "Информация о записи", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
         #endregion
 
-        #region Навигация по неделям (кнопки)
+        #region Кнопки навигации
 
-        private void btnPrevWeek_Click(object sender, EventArgs e)
-        {
-            ChangeWeek(-1);
-        }
-
-        private void btnNextWeek_Click(object sender, EventArgs e)
-        {
-            ChangeWeek(1);
-        }
-
+        private void btnPrevWeek_Click(object sender, EventArgs e) => ChangeWeek(-1);
+        private void btnNextWeek_Click(object sender, EventArgs e) => ChangeWeek(1);
         private void btnCurrentWeek_Click(object sender, EventArgs e)
         {
             currentWeekStart = GetMonday(DateTime.Today);
@@ -641,7 +441,7 @@ namespace NailService
 
         #endregion
 
-        #region Выход и обновление
+        #region Выход
 
         private void Exit_Click(object sender, EventArgs e)
         {
@@ -654,29 +454,63 @@ namespace NailService
 
         #region Отчеты и статистика
 
-        private void btnExportToExcel_Click(object sender, EventArgs e)
+        private void btnExportToExcel_Click(object sender, EventArgs e) => ExportToExcel();
+        private void btnStatistics_Click(object sender, EventArgs e) => ShowWeekStatistics();
+
+        private DataTable GetWeeklyReportData()
         {
-            ExportToExcel();
+            DataTable dt = new DataTable();
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(Connection.ConnectionString))
+                {
+                    con.Open();
+                    DateTime weekStart = currentWeekStart.Date;
+                    DateTime weekEnd = currentWeekStart.AddDays(4).Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+
+                    string query = @"
+                        SELECT 
+                            DATE_FORMAT(r.Date, '%d.%m.%Y') as 'Дата',
+                            DATE_FORMAT(r.Date, '%H:%i') as 'Время',
+                            r.ClientName as 'Клиент',
+                            s.ServiceName as 'Услуга',
+                            s.Price as 'Цена',
+                            CASE WHEN r.discount = 1 THEN '5%' ELSE '-' END as 'Скидка',
+                            s.Price as 'Итоговая цена',
+                            CASE 
+                                WHEN r.Status = 1 THEN 'Занято'
+                                WHEN r.Status = 2 THEN 'Выполнено'
+                                WHEN r.Status = 3 THEN 'Отменено'
+                                ELSE 'Неизвестно'
+                            END as 'Статус'
+                        FROM Record r
+                        INNER JOIN Services s ON r.Service = s.IDServices
+                        WHERE r.Master = @MasterId 
+                        AND r.Date BETWEEN @startDate AND @endDate
+                        ORDER BY r.Date";
+
+                    MySqlCommand cmd = new MySqlCommand(query, con);
+                    cmd.Parameters.AddWithValue("@MasterId", _masterId);
+                    cmd.Parameters.AddWithValue("@startDate", weekStart);
+                    cmd.Parameters.AddWithValue("@endDate", weekEnd);
+                    new MySqlDataAdapter(cmd).Fill(dt);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка получения данных для отчета: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            return dt;
         }
 
-        private void btnStatistics_Click(object sender, EventArgs e)
-        {
-            ShowWeekStatistics();
-        }
-
-        /// <summary>
-        /// Экспорт данных в Excel
-        /// </summary>
         private void ExportToExcel()
         {
             try
             {
                 DataTable reportData = GetWeeklyReportData();
-
                 if (reportData.Rows.Count == 0)
                 {
-                    MessageBox.Show("Нет записей за выбранную неделю для формирования отчета!",
-                        "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Нет записей за выбранную неделю для формирования отчета!", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
@@ -686,18 +520,14 @@ namespace NailService
                     Title = "Сохранить отчет",
                     FileName = $"Отчет_мастера_{_fio}_{currentWeekStart:dd.MM.yyyy}-{currentWeekStart.AddDays(4):dd.MM.yyyy}.xlsx"
                 };
-
-                if (saveDialog.ShowDialog() != DialogResult.OK)
-                    return;
+                if (saveDialog.ShowDialog() != DialogResult.OK) return;
 
                 string filePath = saveDialog.FileName;
-
-                Microsoft.Office.Interop.Excel.Application excelApp = new Microsoft.Office.Interop.Excel.Application();
+                var excelApp = new Microsoft.Office.Interop.Excel.Application();
                 excelApp.Visible = false;
                 excelApp.DisplayAlerts = false;
-
-                Microsoft.Office.Interop.Excel.Workbook workbook = excelApp.Workbooks.Add();
-                Microsoft.Office.Interop.Excel.Worksheet worksheet = workbook.ActiveSheet;
+                var workbook = excelApp.Workbooks.Add();
+                var worksheet = workbook.ActiveSheet;
 
                 worksheet.PageSetup.Orientation = Microsoft.Office.Interop.Excel.XlPageOrientation.xlLandscape;
 
@@ -719,7 +549,6 @@ namespace NailService
 
                 // Заголовки таблицы
                 string[] headers = { "Дата", "Время", "Клиент", "Услуга", "Цена", "Скидка", "Итог", "Статус" };
-
                 for (int i = 0; i < headers.Length; i++)
                 {
                     worksheet.Cells[4, i + 1] = headers[i];
@@ -730,10 +559,8 @@ namespace NailService
                     worksheet.Cells[4, i + 1].HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
                 }
 
-                // Данные
                 int row = 5;
                 decimal totalSum = 0;
-
                 foreach (DataRow dataRow in reportData.Rows)
                 {
                     for (int col = 0; col < reportData.Columns.Count; col++)
@@ -746,26 +573,19 @@ namespace NailService
                             if (decimal.TryParse(dataRow[col].ToString(), out decimal price))
                             {
                                 worksheet.Cells[row, col + 1] = price;
-                                //worksheet.Cells[row, col + 1].NumberFormat = "#,##0.00";
                                 worksheet.Cells[row, col + 1].HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignRight;
                                 if (col == 6) totalSum += price;
                             }
                         }
                         else if (col == 0 || col == 1)
-                        {
                             worksheet.Cells[row, col + 1].HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
-                        }
 
-                        // Подкрашивание статуса
                         if (col == 7)
                         {
                             string status = dataRow[col].ToString();
-                            if (status.Contains("Запланирован") || status.Contains("Подтвержден"))
-                                worksheet.Cells[row, col + 1].Interior.Color = Color.FromArgb(255, 245, 157);
-                            else if (status.Contains("Выполнен"))
-                                worksheet.Cells[row, col + 1].Interior.Color = Color.FromArgb(197, 225, 165);
-                            else if (status.Contains("Отменен"))
-                                worksheet.Cells[row, col + 1].Interior.Color = Color.FromArgb(255, 171, 145);
+                            if (status.Contains("Занято")) worksheet.Cells[row, col + 1].Interior.Color = Color.FromArgb(255, 245, 157);
+                            else if (status.Contains("Выполнено")) worksheet.Cells[row, col + 1].Interior.Color = Color.FromArgb(197, 225, 165);
+                            else if (status.Contains("Отменено")) worksheet.Cells[row, col + 1].Interior.Color = Color.FromArgb(255, 171, 145);
                         }
                     }
                     row++;
@@ -777,11 +597,8 @@ namespace NailService
                 worksheet.Cells[row, 1].Font.Bold = true;
                 worksheet.Cells[row, 1].HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignRight;
                 worksheet.Cells[row, 1].Interior.Color = Color.FromArgb(255, 203, 219);
-
                 worksheet.Cells[row, 7] = totalSum;
                 worksheet.Cells[row, 7].Font.Bold = true;
-                //
-                //worksheet.Cells[row, 7].NumberFormat = "#,##0.00";
                 worksheet.Cells[row, 7].HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignRight;
                 worksheet.Cells[row, 7].Interior.Color = Color.FromArgb(255, 203, 219);
 
@@ -790,80 +607,16 @@ namespace NailService
                 workbook.Close();
                 excelApp.Quit();
 
-                MessageBox.Show($"Отчет успешно сохранен!\n\n{filePath}", "Успех",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information); 
-                if (MessageBox.Show("Открыть отчет?", "Вопрос",
-                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                {
+                MessageBox.Show($"Отчет успешно сохранен!\n\n{filePath}", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (MessageBox.Show("Открыть отчет?", "Вопрос", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     System.Diagnostics.Process.Start(filePath);
-                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при создании отчета: {ex.Message}", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Ошибка при создании отчета: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        /// <summary>
-        /// Получение данных для недельного отчета
-        /// </summary>
-        private DataTable GetWeeklyReportData()
-        {
-            DataTable dt = new DataTable();
-
-            try
-            {
-                using (MySqlConnection con = new MySqlConnection(Connection.ConnectionString))
-                {
-                    con.Open();
-
-                    DateTime weekStart = currentWeekStart.Date;
-                    DateTime weekEnd = currentWeekStart.AddDays(4).Date.AddHours(23).AddMinutes(59).AddSeconds(59);
-
-                    string query = @"
-                        SELECT 
-                            DATE_FORMAT(r.Date, '%d.%m.%Y') as 'Дата',
-                            DATE_FORMAT(r.Date, '%H:%i') as 'Время',
-                            CONCAT(c.LastName, ' ', LEFT(c.FirstName, 1), '.', LEFT(c.MiddleName, 1), '.') as 'Клиент',
-                            s.ServiceName as 'Услуга',
-                            s.Price as 'Цена',
-                            CASE 
-                                WHEN r.discount = 1 THEN '5%' 
-                                ELSE '-' 
-                            END as 'Скидка',
-                            s.Price as 'Итоговая цена',
-                            stat.StatusName as 'Статус'
-                        FROM Record r
-                        INNER JOIN Client c ON r.Client = c.IDClient
-                        INNER JOIN Services s ON r.Service = s.IDServices
-                        INNER JOIN Status stat ON r.Status = stat.IDStatus
-                        WHERE r.Master = @MasterId 
-                        AND r.Date BETWEEN @startDate AND @endDate 
-                        AND r.Status != 4
-                        ORDER BY r.Date";
-
-                    MySqlCommand cmd = new MySqlCommand(query, con);
-                    cmd.Parameters.AddWithValue("@MasterId", _masterId);
-                    cmd.Parameters.AddWithValue("@startDate", weekStart);
-                    cmd.Parameters.AddWithValue("@endDate", weekEnd);
-
-                    MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
-                    adapter.Fill(dt);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка получения данных для отчета: {ex.Message}", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            return dt;
-        }
-
-        /// <summary>
-        /// Отображение статистики за неделю
-        /// </summary>
         private void ShowWeekStatistics()
         {
             try
@@ -871,7 +624,6 @@ namespace NailService
                 using (MySqlConnection con = new MySqlConnection(Connection.ConnectionString))
                 {
                     con.Open();
-
                     DateTime weekStart = currentWeekStart.Date;
                     DateTime weekEnd = currentWeekStart.AddDays(4).Date.AddHours(23).AddMinutes(59).AddSeconds(59);
 
@@ -879,10 +631,9 @@ namespace NailService
                         SELECT 
                             COUNT(*) as total,
                             SUM(CASE WHEN r.Status = 1 THEN 1 ELSE 0 END) as planned,
-                            SUM(CASE WHEN r.Status = 2 THEN 1 ELSE 0 END) as confirmed,
-                            SUM(CASE WHEN r.Status = 3 THEN 1 ELSE 0 END) as completed,
-                            SUM(CASE WHEN r.Status = 4 THEN 1 ELSE 0 END) as cancelled,
-                            SUM(CASE WHEN r.Status = 3 THEN s.Price ELSE 0 END) as revenue_completed
+                            SUM(CASE WHEN r.Status = 2 THEN 1 ELSE 0 END) as completed,
+                            SUM(CASE WHEN r.Status = 3 THEN 1 ELSE 0 END) as cancelled,
+                            SUM(CASE WHEN r.Status = 2 THEN s.Price ELSE 0 END) as revenue
                         FROM Record r
                         INNER JOIN Services s ON r.Service = s.IDServices
                         WHERE r.Master = @MasterId 
@@ -899,32 +650,92 @@ namespace NailService
                         {
                             int total = reader.GetInt32(0);
                             int planned = reader.GetInt32(1);
-                            int confirmed = reader.GetInt32(2);
-                            int completed = reader.GetInt32(3);
-                            int cancelled = reader.GetInt32(4);
-                            decimal revenueCompleted = reader.IsDBNull(5) ? 0 : reader.GetDecimal(5);
+                            int completed = reader.GetInt32(2);
+                            int cancelled = reader.GetInt32(3);
+                            decimal revenue = reader.IsDBNull(4) ? 0 : reader.GetDecimal(4);
 
                             string stats = $"📊 СТАТИСТИКА ЗА НЕДЕЛЮ\n\n" +
                                            $"📅 Период: {weekStart:dd.MM.yyyy} - {weekEnd:dd.MM.yyyy}\n" +
                                            $"━━━━━━━━━━━━━━━━━━━━━━\n" +
                                            $"✅ Выполнено: {completed}\n" +
-                                           $"💰 Выручка: {revenueCompleted:N0} руб.\n" +
-                                           $"📌 Подтверждено: {confirmed}\n" +
-                                           $"⏳ Запланировано: {planned}\n" +
+                                           $"💰 Выручка: {revenue:N0} руб.\n" +
+                                           $"⏳ Запланировано (Занято): {planned}\n" +
                                            $"❌ Отменено: {cancelled}\n" +
                                            $"━━━━━━━━━━━━━━━━━━━━━━\n" +
                                            $"📊 Всего записей: {total}";
-
-                            MessageBox.Show(stats, "Статистика",
-                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show(stats, "Статистика", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка получения статистики: {ex.Message}");
+                MessageBox.Show($"Ошибка получения статистики: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        #endregion
+
+        #region Layout
+
+        private void RecalculateLayout()
+        {
+            int w = this.ClientSize.Width;
+            int h = this.ClientSize.Height;
+            if (w <= 0 || h <= 0) return;
+
+            groupBox1.Width = w - 40;
+            groupBox1.Location = new Point(20, 10);
+            groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            label1.Location = new Point((groupBox1.Width - label1.Width) / 2, 20);
+            FIOlabel.Location = new Point(groupBox1.Width - FIOlabel.Width - 20, 20);
+            pictureBox1.Location = new Point(20, 15);
+
+            dataGridViewSchedule.Width = w - 40;
+            dataGridViewSchedule.Height = h - 200;
+            dataGridViewSchedule.Location = new Point(20, 130);
+            dataGridViewSchedule.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+
+            lblWeek.Location = new Point(w - 330, 110);
+            lblWeek.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
+            int bottomY = h - 65;
+            button1.Location = new Point(w - 350, bottomY);
+            button2.Location = new Point(w - 280, bottomY);
+            button3.Location = new Point(w - 200, bottomY);
+            Exit.Location = new Point(20, bottomY);
+            Exit.Size = new Size(223, 55);
+
+            button1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            button2.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            button3.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            Exit.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+
+            if (dataGridViewSchedule.Columns.Count > 0 && dataGridViewSchedule.Width > 0)
+            {
+                int timeColumnWidth = 80;
+                dataGridViewSchedule.Columns[0].Width = timeColumnWidth;
+                int availableWidth = dataGridViewSchedule.Width - timeColumnWidth - 60;
+                int dayColumnWidth = availableWidth / 5;
+                if (dayColumnWidth > 80)
+                    for (int i = 1; i <= 5 && i < dataGridViewSchedule.Columns.Count; i++)
+                        dataGridViewSchedule.Columns[i].Width = dayColumnWidth;
+            }
+            dataGridViewSchedule.Refresh();
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            if (WindowState == FormWindowState.Normal && !_isCentered) { CenterToScreen(); _isCentered = true; }
+            else if (WindowState == FormWindowState.Maximized) _isCentered = false;
+            RecalculateLayout();
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            RecalculateLayout();
         }
 
         #endregion
@@ -932,15 +743,10 @@ namespace NailService
         private void MenuMaster_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
-            {
-                e.Cancel = true; // Отменяем закрытие
-            }
+                e.Cancel = true;
         }
     }
 
-    /// <summary>
-    /// Класс для хранения информации о записи в Tag ячейки DataGridView
-    /// </summary>
     public class RecordInfo
     {
         public int RecordId { get; set; }

@@ -37,15 +37,7 @@ namespace NailService
             this.Hide();
         }
 
-        /// <summary>
-        /// Открытие формы настроек приложения
-        /// </summary>
-        private void Settings_Click(object sender, EventArgs e)
-        {
-            SettingForm settingForm = new SettingForm();
-            settingForm.Show();
-            this.Hide();
-        }
+
 
         /// <summary>
         /// Открытие формы отчетов
@@ -73,6 +65,27 @@ namespace NailService
             {
                 e.Cancel = true; // Отменяем закрытие
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            UserShow form1 = new UserShow(_fio, 2);
+            form1.Show();
+            this.Hide();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            MasterForm form1 = new MasterForm(_fio, 2);
+            form1.Show();
+            this.Hide();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            ServiceForm form1 = new ServiceForm(_fio, 2, 3);
+            form1.Show();
+            this.Hide();
         }
     }
 }

@@ -33,12 +33,12 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.FIO = new System.Windows.Forms.ComboBox();
             this.Phone = new System.Windows.Forms.TextBox();
             this.Description = new System.Windows.Forms.TextBox();
             this.EditMaster = new System.Windows.Forms.Button();
             this.Back = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.FIO = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -78,15 +78,6 @@
             this.label4.Size = new System.Drawing.Size(105, 24);
             this.label4.TabIndex = 3;
             this.label4.Text = "Описание";
-            // 
-            // FIO
-            // 
-            this.FIO.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.FIO.FormattingEnabled = true;
-            this.FIO.Location = new System.Drawing.Point(133, 77);
-            this.FIO.Name = "FIO";
-            this.FIO.Size = new System.Drawing.Size(441, 32);
-            this.FIO.TabIndex = 4;
             // 
             // Phone
             // 
@@ -138,18 +129,25 @@
             this.pictureBox1.TabIndex = 9;
             this.pictureBox1.TabStop = false;
             // 
+            // FIO
+            // 
+            this.FIO.Location = new System.Drawing.Point(133, 75);
+            this.FIO.Name = "FIO";
+            this.FIO.Size = new System.Drawing.Size(441, 31);
+            this.FIO.TabIndex = 10;
+            // 
             // EditMasterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(602, 424);
+            this.Controls.Add(this.FIO);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.Back);
             this.Controls.Add(this.EditMaster);
             this.Controls.Add(this.Description);
             this.Controls.Add(this.Phone);
-            this.Controls.Add(this.FIO);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -175,11 +173,11 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.ComboBox FIO;
         private System.Windows.Forms.TextBox Phone;
         private System.Windows.Forms.TextBox Description;
         private System.Windows.Forms.Button EditMaster;
         private System.Windows.Forms.Button Back;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.TextBox FIO;
     }
 }

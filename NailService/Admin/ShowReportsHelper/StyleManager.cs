@@ -18,11 +18,14 @@ namespace NailService
         {
             switch (statusID)
             {
-                case 1: return Color.FromArgb(255, 245, 157);    // Запланирован - янтарный
-                case 2: return Color.FromArgb(197, 225, 165);    // Подтвержден - салатовый
-                case 3: return Color.FromArgb(225, 225, 225);    // Выполнен - светлый серый
-                case 4: return Color.FromArgb(255, 171, 145);    // Отменен - коралловый
-                default: return Color.White;
+                case 1: // Занято
+                    return Color.LightCoral;
+                case 2: // Выполнено
+                    return Color.LightGreen;
+                case 3: // Отменено
+                    return Color.LightGray;
+                default:
+                    return Color.White;
             }
         }
 

@@ -15,8 +15,6 @@ namespace NailService
     {
         private string _connection;
         private OpenFileDialog openFileDialog;
-        private DataTable databaseTables;
-
 
         public ImportData()
         {
@@ -34,8 +32,8 @@ namespace NailService
 
             openFileDialog = new OpenFileDialog
             {
-                Filter = "SQL файлы (*.sql)|*.sql|CSV файлы (*.csv)|*.csv|Все файлы (*.*)|*.*",
-                Title = "Выберите файл для импорта"
+                Filter = "CSV файлы (*.csv)|*.csv|Все файлы (*.*)|*.*",
+                Title = "Выберите CSV файл для импорта"
             };
 
             LoadTables();
@@ -52,7 +50,6 @@ namespace NailService
                     DataTable tables = con.GetSchema("Tables");
 
                     cmbTables.Items.Clear();
-                    cmbTables.Items.Add("-- Весь дамп (полный импорт) --");
 
                     foreach (DataRow row in tables.Rows)
                     {
@@ -74,8 +71,6 @@ namespace NailService
                 MessageBox.Show($"Ошибка загрузки списка таблиц: {ex.Message}");
             }
         }
-
-
 
         private void BtnSelectFile_Click(object sender, EventArgs e)
         {
@@ -140,357 +135,19 @@ namespace NailService
                 return;
             }
 
-            string selectedItem = cmbTables.SelectedItem.ToString();
+            string tableName = cmbTables.SelectedItem.ToString();
             string filePath = txtFilePath.Text;
             string extension = Path.GetExtension(filePath).ToLower();
 
-            // Проверяем, выбран ли полный дамп
-            if (selectedItem == "-- Весь дамп (полный импорт) --")
-            {
-                if (extension == ".sql")
-                {
-                    ImportFullDump(filePath);
-                }
-                else
-                {
-                    MessageBox.Show("Для полного импорта выберите SQL файл дампа!");
-                }
-                return;
-            }
-
-            // Импорт отдельных таблиц
             if (extension == ".csv")
             {
-                string tableName = selectedItem;
                 ImportTableFromCSV(tableName, filePath);
             }
             else
             {
-                MessageBox.Show("Для импорта отдельных таблиц выберите CSV файл!");
+                MessageBox.Show("Пожалуйста, выберите CSV файл для импорта!");
             }
         }
-        /// <summary>
-        /// Импорт полного дампа базы данных из SQL файла
-        /// </summary>
-        private async void ImportFullDump(string filePath)
-        {
-            try
-            {
-                Cursor = Cursors.WaitCursor;
-
-                string sqlContent = File.ReadAllText(filePath, Encoding.UTF8);
-
-                // Предлагаем очистить таблицы перед импортом
-                DialogResult clearResult = MessageBox.Show(
-                    "Очистить существующие таблицы перед импортом?\n\n" +
-                    "Да - таблицы будут удалены и созданы заново\n" +
-                    "Нет - данные будут добавлены к существующим\n" +
-                    "Внимание! При выборе 'Да' все существующие данные будут потеряны!",
-                    "Очистка таблиц", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-
-                if (clearResult == DialogResult.Cancel)
-                {
-                    Cursor = Cursors.Default;
-                    return;
-                }
-
-                bool clearTables = (clearResult == DialogResult.Yes);
-
-                using (MySqlConnection con = new MySqlConnection(_connection))
-                {
-                    await con.OpenAsync();
-
-                    if (clearTables)
-                    {
-                        // Правильный порядок удаления таблиц (сначала те, у которых есть внешние ключи)
-                        string[] dropOrder = {
-                    "record", "masters", "services", "client", "users", "status", "category", "role"
-                };
-
-                        foreach (var table in dropOrder)
-                        {
-                            try
-                            {
-                                // Отключаем проверку внешних ключей
-                                using (var cmd = new MySqlCommand($"SET FOREIGN_KEY_CHECKS = 0", con))
-                                    await cmd.ExecuteNonQueryAsync();
-
-                                using (var cmd = new MySqlCommand($"DROP TABLE IF EXISTS `{table}`", con))
-                                    await cmd.ExecuteNonQueryAsync();
-                            }
-                            catch (Exception ex)
-                            {
-                                System.Diagnostics.Debug.WriteLine($"Ошибка удаления {table}: {ex.Message}");
-                            }
-                        }
-
-                        // Включаем проверку внешних ключей обратно
-                        using (var cmd = new MySqlCommand($"SET FOREIGN_KEY_CHECKS = 1", con))
-                            await cmd.ExecuteNonQueryAsync();
-
-                        MessageBox.Show("Таблицы очищены.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-
-                    // Разбираем SQL на запросы
-                    var queries = ParseSqlQueries(sqlContent);
-
-                    int totalQueries = queries.Count;
-                    int successCount = 0;
-                    int errorCount = 0;
-                    var errors = new List<string>();
-
-                    // Сортируем запросы: сначала CREATE TABLE, потом INSERT, потом остальное
-                    var sortedQueries = SortQueriesByType(queries);
-
-                    // Создаем прогресс бар
-                    using (var progressForm = new Form())
-                    {
-                        progressForm.Text = "Импорт данных";
-                        progressForm.Size = new System.Drawing.Size(500, 120);
-                        progressForm.FormBorderStyle = FormBorderStyle.FixedDialog;
-                        progressForm.StartPosition = FormStartPosition.CenterParent;
-                        progressForm.ControlBox = false;
-
-                        var progressBar = new ProgressBar();
-                        progressBar.Dock = DockStyle.Top;
-                        progressBar.Height = 30;
-                        progressBar.Minimum = 0;
-                        progressBar.Maximum = sortedQueries.Count;
-                        progressBar.Value = 0;
-
-                        var lblStatus = new Label();
-                        lblStatus.Dock = DockStyle.Fill;
-                        lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-                        lblStatus.Text = "Выполнение запросов...";
-                        lblStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 10);
-
-                        progressForm.Controls.Add(lblStatus);
-                        progressForm.Controls.Add(progressBar);
-                        progressForm.Height = 150;
-
-                        progressForm.Show();
-
-                        // Отключаем проверку внешних ключей на время импорта
-                        using (var cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 0", con))
-                            await cmd.ExecuteNonQueryAsync();
-
-                        try
-                        {
-                            for (int i = 0; i < sortedQueries.Count; i++)
-                            {
-                                string query = sortedQueries[i];
-                                progressBar.Value = i + 1;
-                                lblStatus.Text = $"Выполнение запроса {i + 1} из {sortedQueries.Count}...";
-                                Application.DoEvents();
-
-                                if (string.IsNullOrWhiteSpace(query))
-                                    continue;
-
-                                try
-                                {
-                                    using (var cmd = new MySqlCommand(query, con))
-                                    {
-                                        await cmd.ExecuteNonQueryAsync();
-                                        successCount++;
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    errorCount++;
-                                    string shortQuery = query.Length > 100 ? query.Substring(0, 100) + "..." : query;
-                                    errors.Add($"Ошибка: {ex.Message}\nЗапрос: {shortQuery}");
-                                }
-                            }
-                        }
-                        finally
-                        {
-                            // Включаем проверку внешних ключей обратно
-                            using (var cmd = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 1", con))
-                                await cmd.ExecuteNonQueryAsync();
-                        }
-
-                        progressForm.Close();
-                    }
-
-                    Cursor = Cursors.Default;
-
-                    string message = $"Импорт дампа завершен!\n\n" +
-                        $"✅ Успешно выполнено: {successCount} запросов\n" +
-                        $"❌ Ошибок: {errorCount}";
-
-                    if (errors.Count > 0 && errors.Count <= 5)
-                    {
-                        message += $"\n\nОшибки:\n{string.Join("\n", errors)}";
-                    }
-                    else if (errors.Count > 5)
-                    {
-                        message += $"\n\nПервые 5 ошибок:\n{string.Join("\n", errors.Take(5))}";
-                    }
-
-                    MessageBox.Show(message, "Импорт завершен",
-                        MessageBoxButtons.OK, errorCount > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                Cursor = Cursors.Default;
-                MessageBox.Show($"Ошибка импорта дампа:\n{ex.Message}", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        /// <summary>
-        /// Сортировка запросов: сначала CREATE TABLE, потом INSERT, потом остальное
-        /// </summary>
-        private List<string> SortQueriesByType(List<string> queries)
-        {
-            var createQueries = new List<string>();
-            var insertQueries = new List<string>();
-            var otherQueries = new List<string>();
-
-            foreach (var query in queries)
-            {
-                string upperQuery = query.Trim().ToUpper();
-
-                if (upperQuery.StartsWith("CREATE TABLE"))
-                {
-                    createQueries.Add(query);
-                }
-                else if (upperQuery.StartsWith("INSERT INTO"))
-                {
-                    insertQueries.Add(query);
-                }
-                else if (upperQuery.StartsWith("DROP TABLE") ||
-                         upperQuery.StartsWith("LOCK TABLES") ||
-                         upperQuery.StartsWith("UNLOCK TABLES") ||
-                         upperQuery.StartsWith("ALTER TABLE"))
-                {
-                    // Пропускаем, так как таблицы уже созданы
-                    continue;
-                }
-                else
-                {
-                    otherQueries.Add(query);
-                }
-            }
-
-            var result = new List<string>();
-            result.AddRange(createQueries);
-            result.AddRange(insertQueries);
-            result.AddRange(otherQueries);
-
-            return result;
-        }
-
-
-        /// <summary>
-        /// Парсинг SQL скрипта на отдельные запросы
-        /// </summary>
-        private List<string> ParseSqlQueries(string sql)
-        {
-            var queries = new List<string>();
-
-            // Убираем BOM и лишние символы
-            if (sql.Length > 0 && sql[0] == 0xFEFF)
-                sql = sql.Substring(1);
-
-            // Убираем комментарии
-            sql = RemoveComments(sql);
-
-            // Обрабатываем построчно
-            var currentQuery = new StringBuilder();
-            bool inString = false;
-            bool inEscape = false;
-            char stringDelimiter = '\'';
-
-            for (int i = 0; i < sql.Length; i++)
-            {
-                char c = sql[i];
-
-                // Обработка экранирования
-                if (inEscape)
-                {
-                    currentQuery.Append(c);
-                    inEscape = false;
-                    continue;
-                }
-
-                // Обработка начала экранирования
-                if (c == '\\' && inString)
-                {
-                    currentQuery.Append(c);
-                    inEscape = true;
-                    continue;
-                }
-
-                // Обработка строк
-                if ((c == '\'' || c == '"') && !inEscape)
-                {
-                    if (!inString)
-                    {
-                        inString = true;
-                        stringDelimiter = c;
-                    }
-                    else if (c == stringDelimiter)
-                    {
-                        // Проверяем, не экранирован ли кавычка (двойная кавычка)
-                        if (i + 1 < sql.Length && sql[i + 1] == stringDelimiter)
-                        {
-                            currentQuery.Append(c);
-                            i++; // Пропускаем следующую кавычку
-                            currentQuery.Append(sql[i]);
-                        }
-                        else
-                        {
-                            inString = false;
-                        }
-                    }
-                }
-
-                currentQuery.Append(c);
-
-                // Если встретили точку с запятой и не внутри строки
-                if (c == ';' && !inString)
-                {
-                    string query = currentQuery.ToString().Trim();
-                    if (!string.IsNullOrWhiteSpace(query) && query.Length > 3)
-                    {
-                        queries.Add(query);
-                    }
-                    currentQuery.Clear();
-                }
-            }
-
-            // Добавляем последний запрос, если есть
-            string lastQuery = currentQuery.ToString().Trim();
-            if (!string.IsNullOrWhiteSpace(lastQuery) && lastQuery.Length > 3)
-            {
-                queries.Add(lastQuery);
-            }
-
-            return queries;
-        }
-
-        /// <summary>
-        /// Удаление комментариев из SQL
-        /// </summary>
-        private string RemoveComments(string sql)
-        {
-            // Удаляем однострочные комментарии --
-            sql = Regex.Replace(sql, @"--[^\r\n]*", "", RegexOptions.Multiline);
-
-            // Удаляем многострочные комментарии /* */
-            sql = Regex.Replace(sql, @"/\*.*?\*/", "", RegexOptions.Singleline);
-
-            // Удаляем пустые строки
-            sql = Regex.Replace(sql, @"^\s*$\r?\n", "", RegexOptions.Multiline);
-
-            return sql;
-        }
-
-       
-
-       
 
         /// <summary>
         /// Импорт таблицы из CSV файла
@@ -1150,125 +807,8 @@ namespace NailService
                 }
             }
 
-            MessageBox.Show($"Экспортировано таблиц: \n\nПапка: {exportSubFolder}",
+            MessageBox.Show($"Таблицы экспортированы!\n\nПапка: {exportSubFolder}",
                 "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        /// <summary>
-        /// Экспорт всей базы данных в SQL дамп
-        /// </summary>
-        private async void BtnExportSQL_Click(object sender, EventArgs e)
-        {
-            SaveFileDialog saveDialog = new SaveFileDialog();
-            saveDialog.Title = "Экспорт базы данных в SQL";
-            saveDialog.Filter = "SQL файлы (*.sql)|*.sql|Все файлы (*.*)|*.*";
-            saveDialog.DefaultExt = "sql";
-            saveDialog.FileName = $"db86_backup_{DateTime.Now:yyyyMMdd_HHmmss}.sql";
-
-            if (saveDialog.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    Cursor = Cursors.WaitCursor;
-
-                    await ExportDatabaseToSQL(saveDialog.FileName);
-
-                    Cursor = Cursors.Default;
-
-                    MessageBox.Show($"База данных успешно экспортирована!\n\nФайл: {saveDialog.FileName}",
-                        "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                    if (MessageBox.Show("Открыть папку с файлом?", "Открыть папку",
-                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                    {
-                        System.Diagnostics.Process.Start("explorer.exe", Path.GetDirectoryName(saveDialog.FileName));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Cursor = Cursors.Default;
-                    MessageBox.Show($"Ошибка экспорта: {ex.Message}", "Ошибка",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Экспорт базы данных в SQL дамп
-        /// </summary>
-        private async Task ExportDatabaseToSQL(string outputPath)
-        {
-            using (MySqlConnection con = new MySqlConnection(_connection))
-            {
-                await con.OpenAsync();
-
-                using (StreamWriter writer = new StreamWriter(outputPath, false, Encoding.UTF8))
-                {
-                    writer.WriteLine("-- MySQL Database Export");
-                    writer.WriteLine($"-- Database: {Connection.Database}");
-                    writer.WriteLine($"-- Date: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                    writer.WriteLine("-- -----------------------------------------------------");
-                    writer.WriteLine();
-
-                    DataTable tables = con.GetSchema("Tables");
-
-                    foreach (DataRow row in tables.Rows)
-                    {
-                        string tableName = row["TABLE_NAME"].ToString();
-
-                        if (tableName.StartsWith("__") || tableName == "sysdiagrams")
-                            continue;
-
-                        // Структура таблицы
-                        string createTableQuery = $"SHOW CREATE TABLE `{tableName}`";
-                        using (MySqlCommand cmd = new MySqlCommand(createTableQuery, con))
-                        using (var reader = await cmd.ExecuteReaderAsync())
-                        {
-                            if (await reader.ReadAsync())
-                            {
-                                writer.WriteLine($"-- Table structure for `{tableName}`");
-                                writer.WriteLine(reader.GetString(1) + ";");
-                                writer.WriteLine();
-                            }
-                        }
-
-                        // Данные
-                        string selectQuery = $"SELECT * FROM `{tableName}`";
-                        using (MySqlCommand cmd = new MySqlCommand(selectQuery, con))
-                        using (var reader = await cmd.ExecuteReaderAsync())
-                        {
-                            bool hasRows = false;
-                            while (await reader.ReadAsync())
-                            {
-                                if (!hasRows)
-                                {
-                                    writer.WriteLine($"-- Dumping data for `{tableName}`");
-                                    hasRows = true;
-                                }
-
-                                writer.Write($"INSERT INTO `{tableName}` VALUES (");
-                                for (int i = 0; i < reader.FieldCount; i++)
-                                {
-                                    if (i > 0) writer.Write(", ");
-
-                                    if (reader.IsDBNull(i))
-                                    {
-                                        writer.Write("NULL");
-                                    }
-                                    else
-                                    {
-                                        string value = reader.GetValue(i).ToString();
-                                        value = value.Replace("\\", "\\\\").Replace("'", "''");
-                                        writer.Write($"'{value}'");
-                                    }
-                                }
-                                writer.WriteLine(");");
-                            }
-                            if (hasRows) writer.WriteLine();
-                        }
-                    }
-                }
-            }
         }
     }
 }

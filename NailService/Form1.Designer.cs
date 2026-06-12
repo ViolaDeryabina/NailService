@@ -150,13 +150,14 @@
             // 
             // buttonRefreshCaptcha
             // 
+            this.buttonRefreshCaptcha.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.buttonRefreshCaptcha.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonRefreshCaptcha.Location = new System.Drawing.Point(416, 318);
             this.buttonRefreshCaptcha.Name = "buttonRefreshCaptcha";
             this.buttonRefreshCaptcha.Size = new System.Drawing.Size(266, 43);
             this.buttonRefreshCaptcha.TabIndex = 11;
             this.buttonRefreshCaptcha.Text = "Обновить";
-            this.buttonRefreshCaptcha.UseVisualStyleBackColor = true;
+            this.buttonRefreshCaptcha.UseVisualStyleBackColor = false;
             this.buttonRefreshCaptcha.Click += new System.EventHandler(this.ButtonRefreshCaptcha_Click);
             // 
             // groupBox1

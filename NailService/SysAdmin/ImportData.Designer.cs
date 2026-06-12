@@ -40,11 +40,11 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.label4 = new System.Windows.Forms.Label();
-            this.cmbTablesCSV = new System.Windows.Forms.ComboBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.button4 = new System.Windows.Forms.Button();
             this.BtnExportCSV = new System.Windows.Forms.Button();
+            this.button4 = new System.Windows.Forms.Button();
+            this.label5 = new System.Windows.Forms.Label();
+            this.cmbTablesCSV = new System.Windows.Forms.ComboBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -52,12 +52,15 @@
             // 
             // button1
             // 
+            this.button1.BackColor = System.Drawing.Color.HotPink;
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button1.ForeColor = System.Drawing.SystemColors.ControlText;
             this.button1.Location = new System.Drawing.Point(419, 192);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(332, 42);
             this.button1.TabIndex = 0;
             this.button1.Text = "Импорт";
-            this.button1.UseVisualStyleBackColor = true;
+            this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.btnImportCSV_Click);
             // 
             // txtFilePath
@@ -78,19 +81,21 @@
             // 
             // button2
             // 
+            this.button2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.button2.Location = new System.Drawing.Point(8, 138);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(173, 33);
             this.button2.TabIndex = 3;
             this.button2.Text = "Обзор";
-            this.button2.UseVisualStyleBackColor = true;
+            this.button2.UseVisualStyleBackColor = false;
             this.button2.Click += new System.EventHandler(this.BtnSelectFile_Click);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F);
-            this.label1.Location = new System.Drawing.Point(219, 7);
+            this.label1.Location = new System.Drawing.Point(277, 3);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(210, 31);
             this.label1.TabIndex = 4;
@@ -118,12 +123,14 @@
             // 
             // button3
             // 
+            this.button3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.button3.Location = new System.Drawing.Point(8, 192);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(310, 42);
             this.button3.TabIndex = 7;
             this.button3.Text = "Назад";
-            this.button3.UseVisualStyleBackColor = true;
+            this.button3.UseVisualStyleBackColor = false;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // tabControl1
@@ -169,23 +176,29 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Экспорт";
             // 
-            // label4
+            // BtnExportCSV
             // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F);
-            this.label4.Location = new System.Drawing.Point(219, 7);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(218, 31);
-            this.label4.TabIndex = 0;
-            this.label4.Text = "Эскпорт данных";
+            this.BtnExportCSV.BackColor = System.Drawing.Color.HotPink;
+            this.BtnExportCSV.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.BtnExportCSV.Location = new System.Drawing.Point(434, 192);
+            this.BtnExportCSV.Name = "BtnExportCSV";
+            this.BtnExportCSV.Size = new System.Drawing.Size(310, 42);
+            this.BtnExportCSV.TabIndex = 4;
+            this.BtnExportCSV.Text = "Экспорт";
+            this.BtnExportCSV.UseVisualStyleBackColor = false;
+            this.BtnExportCSV.Click += new System.EventHandler(this.BtnExportCSV_Click);
             // 
-            // cmbTablesCSV
+            // button4
             // 
-            this.cmbTablesCSV.FormattingEnabled = true;
-            this.cmbTablesCSV.Location = new System.Drawing.Point(8, 89);
-            this.cmbTablesCSV.Name = "cmbTablesCSV";
-            this.cmbTablesCSV.Size = new System.Drawing.Size(310, 32);
-            this.cmbTablesCSV.TabIndex = 1;
+            this.button4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button4.Location = new System.Drawing.Point(8, 192);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(310, 42);
+            this.button4.TabIndex = 3;
+            this.button4.Text = "Назад";
+            this.button4.UseVisualStyleBackColor = false;
+            this.button4.Click += new System.EventHandler(this.button3_Click);
             // 
             // label5
             // 
@@ -197,25 +210,23 @@
             this.label5.TabIndex = 2;
             this.label5.Text = "Выбрать таблицу";
             // 
-            // button4
+            // cmbTablesCSV
             // 
-            this.button4.Location = new System.Drawing.Point(8, 192);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(310, 42);
-            this.button4.TabIndex = 3;
-            this.button4.Text = "Назад";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.button3_Click);
+            this.cmbTablesCSV.FormattingEnabled = true;
+            this.cmbTablesCSV.Location = new System.Drawing.Point(8, 89);
+            this.cmbTablesCSV.Name = "cmbTablesCSV";
+            this.cmbTablesCSV.Size = new System.Drawing.Size(736, 32);
+            this.cmbTablesCSV.TabIndex = 1;
             // 
-            // BtnExportCSV
+            // label4
             // 
-            this.BtnExportCSV.Location = new System.Drawing.Point(434, 192);
-            this.BtnExportCSV.Name = "BtnExportCSV";
-            this.BtnExportCSV.Size = new System.Drawing.Size(310, 42);
-            this.BtnExportCSV.TabIndex = 4;
-            this.BtnExportCSV.Text = "Экспорт";
-            this.BtnExportCSV.UseVisualStyleBackColor = true;
-            this.BtnExportCSV.Click += new System.EventHandler(this.BtnExportCSV_Click);
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F);
+            this.label4.Location = new System.Drawing.Point(277, 3);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(218, 31);
+            this.label4.TabIndex = 0;
+            this.label4.Text = "Эскпорт данных";
             // 
             // ImportData
             // 

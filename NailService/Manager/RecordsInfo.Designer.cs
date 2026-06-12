@@ -33,19 +33,23 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.lblDateTimeInfo = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.btnSave = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.cmbClient = new System.Windows.Forms.ComboBox();
             this.cmbMaster = new System.Windows.Forms.ComboBox();
             this.cmbService = new System.Windows.Forms.ComboBox();
-            this.lblStatusInfo = new System.Windows.Forms.Label();
             this.btnPrintReceipt = new System.Windows.Forms.Button();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.lblClientPhone = new System.Windows.Forms.TextBox();
+            this.lblClientName = new System.Windows.Forms.TextBox();
+            this.lblStatusInfo = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // cmbStatus
@@ -53,16 +57,16 @@
             this.cmbStatus.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
             this.cmbStatus.FormattingEnabled = true;
-            this.cmbStatus.Location = new System.Drawing.Point(121, 251);
+            this.cmbStatus.Location = new System.Drawing.Point(115, 327);
             this.cmbStatus.Name = "cmbStatus";
-            this.cmbStatus.Size = new System.Drawing.Size(408, 33);
+            this.cmbStatus.Size = new System.Drawing.Size(423, 33);
             this.cmbStatus.TabIndex = 3;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F);
-            this.label1.Location = new System.Drawing.Point(202, 3);
+            this.label1.Location = new System.Drawing.Point(242, 9);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(234, 31);
             this.label1.TabIndex = 4;
@@ -86,19 +90,10 @@
             this.lblDateTimeInfo.TabIndex = 6;
             this.lblDateTimeInfo.Text = "Запись";
             // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 141);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(75, 24);
-            this.label4.TabIndex = 7;
-            this.label4.Text = "Клиент";
-            // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(12, 179);
+            this.label5.Location = new System.Drawing.Point(12, 255);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(78, 24);
             this.label5.TabIndex = 8;
@@ -107,7 +102,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(12, 217);
+            this.label6.Location = new System.Drawing.Point(12, 293);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(70, 24);
             this.label6.TabIndex = 9;
@@ -116,7 +111,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(12, 255);
+            this.label7.Location = new System.Drawing.Point(12, 331);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(72, 24);
             this.label7.TabIndex = 10;
@@ -126,7 +121,7 @@
             // 
             this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button1.Location = new System.Drawing.Point(16, 304);
+            this.button1.Location = new System.Drawing.Point(10, 388);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(271, 45);
             this.button1.TabIndex = 11;
@@ -138,7 +133,7 @@
             // 
             this.btnSave.BackColor = System.Drawing.Color.HotPink;
             this.btnSave.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnSave.Location = new System.Drawing.Point(409, 304);
+            this.btnSave.Location = new System.Drawing.Point(409, 388);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(276, 45);
             this.btnSave.TabIndex = 12;
@@ -156,24 +151,14 @@
             this.pictureBox1.TabIndex = 13;
             this.pictureBox1.TabStop = false;
             // 
-            // cmbClient
-            // 
-            this.cmbClient.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbClient.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
-            this.cmbClient.FormattingEnabled = true;
-            this.cmbClient.Location = new System.Drawing.Point(121, 137);
-            this.cmbClient.Name = "cmbClient";
-            this.cmbClient.Size = new System.Drawing.Size(408, 33);
-            this.cmbClient.TabIndex = 0;
-            // 
             // cmbMaster
             // 
             this.cmbMaster.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbMaster.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
             this.cmbMaster.FormattingEnabled = true;
-            this.cmbMaster.Location = new System.Drawing.Point(121, 175);
+            this.cmbMaster.Location = new System.Drawing.Point(115, 251);
             this.cmbMaster.Name = "cmbMaster";
-            this.cmbMaster.Size = new System.Drawing.Size(408, 33);
+            this.cmbMaster.Size = new System.Drawing.Size(423, 33);
             this.cmbMaster.TabIndex = 1;
             // 
             // cmbService
@@ -181,54 +166,99 @@
             this.cmbService.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbService.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.25F);
             this.cmbService.FormattingEnabled = true;
-            this.cmbService.Location = new System.Drawing.Point(121, 213);
+            this.cmbService.Location = new System.Drawing.Point(115, 289);
             this.cmbService.Name = "cmbService";
-            this.cmbService.Size = new System.Drawing.Size(408, 33);
+            this.cmbService.Size = new System.Drawing.Size(423, 33);
             this.cmbService.TabIndex = 2;
-            // 
-            // lblStatusInfo
-            // 
-            this.lblStatusInfo.AutoSize = true;
-            this.lblStatusInfo.Location = new System.Drawing.Point(117, 53);
-            this.lblStatusInfo.Name = "lblStatusInfo";
-            this.lblStatusInfo.Size = new System.Drawing.Size(76, 24);
-            this.lblStatusInfo.TabIndex = 14;
-            this.lblStatusInfo.Text = "Запись";
             // 
             // btnPrintReceipt
             // 
             this.btnPrintReceipt.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.btnPrintReceipt.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnPrintReceipt.Location = new System.Drawing.Point(535, 251);
+            this.btnPrintReceipt.Location = new System.Drawing.Point(550, 327);
             this.btnPrintReceipt.Name = "btnPrintReceipt";
-            this.btnPrintReceipt.Size = new System.Drawing.Size(150, 33);
+            this.btnPrintReceipt.Size = new System.Drawing.Size(135, 33);
             this.btnPrintReceipt.TabIndex = 15;
             this.btnPrintReceipt.Text = "Чек";
             this.btnPrintReceipt.UseVisualStyleBackColor = false;
             this.btnPrintReceipt.Click += new System.EventHandler(this.btnPrintReceipt_Click);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.label4);
+            this.groupBox1.Controls.Add(this.label3);
+            this.groupBox1.Controls.Add(this.lblClientPhone);
+            this.groupBox1.Controls.Add(this.lblClientName);
+            this.groupBox1.Location = new System.Drawing.Point(10, 135);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(528, 110);
+            this.groupBox1.TabIndex = 16;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Клиент";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(2, 68);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(90, 24);
+            this.label4.TabIndex = 3;
+            this.label4.Text = "Телефон";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(2, 32);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(46, 24);
+            this.label3.TabIndex = 2;
+            this.label3.Text = "Имя";
+            // 
+            // lblClientPhone
+            // 
+            this.lblClientPhone.Location = new System.Drawing.Point(105, 65);
+            this.lblClientPhone.Name = "lblClientPhone";
+            this.lblClientPhone.Size = new System.Drawing.Size(402, 29);
+            this.lblClientPhone.TabIndex = 1;
+            this.lblClientPhone.TextChanged += new System.EventHandler(this.lblClientPhone_TextChanged);
+            // 
+            // lblClientName
+            // 
+            this.lblClientName.Location = new System.Drawing.Point(105, 29);
+            this.lblClientName.Name = "lblClientName";
+            this.lblClientName.Size = new System.Drawing.Size(402, 29);
+            this.lblClientName.TabIndex = 0;
+            this.lblClientName.TextChanged += new System.EventHandler(this.lblClientName_TextChanged);
+            // 
+            // lblStatusInfo
+            // 
+            this.lblStatusInfo.AutoSize = true;
+            this.lblStatusInfo.Location = new System.Drawing.Point(117, 48);
+            this.lblStatusInfo.Name = "lblStatusInfo";
+            this.lblStatusInfo.Size = new System.Drawing.Size(0, 24);
+            this.lblStatusInfo.TabIndex = 17;
             // 
             // RecordsInfo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(697, 362);
-            this.Controls.Add(this.btnPrintReceipt);
+            this.ClientSize = new System.Drawing.Size(697, 456);
             this.Controls.Add(this.lblStatusInfo);
+            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.btnPrintReceipt);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
-            this.Controls.Add(this.label4);
             this.Controls.Add(this.lblDateTimeInfo);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cmbStatus);
             this.Controls.Add(this.cmbService);
             this.Controls.Add(this.cmbMaster);
-            this.Controls.Add(this.cmbClient);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -239,6 +269,8 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Просмотр записи";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -249,17 +281,20 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label lblDateTimeInfo;
-        private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.ComboBox cmbClient;
         private System.Windows.Forms.ComboBox cmbMaster;
         private System.Windows.Forms.ComboBox cmbService;
-        private System.Windows.Forms.Label lblStatusInfo;
         private System.Windows.Forms.Button btnPrintReceipt;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox lblClientPhone;
+        private System.Windows.Forms.TextBox lblClientName;
+        private System.Windows.Forms.Label lblStatusInfo;
     }
 }

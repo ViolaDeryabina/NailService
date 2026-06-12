@@ -11,8 +11,6 @@ namespace NailService
 {
     /// <summary>
     /// Форма для просмотра и фильтрации отчетов по записям
-    /// Поддерживает фильтрацию по дате, мастеру, статусу, поиск и сортировку
-    /// Для администраторов доступно редактирование статусов записей
     /// </summary>
     public partial class ShowReports : Form
     {
@@ -32,20 +30,13 @@ namespace NailService
         private int pageSize = 20;
         private int totalRecords = 0;
         private int totalPages = 0;
-        private List<RecordData> _allFilteredRecords; // Кэш всех отфильтрованных записей
+        private List<RecordData> _allFilteredRecords;
 
-        /// <summary>
-        /// Конструктор формы отчетов
-        /// </summary>
-        /// <param name="FIO">ФИО текущего пользователя</param>
-        /// <param name="RoleID">ID роли (2-админ, 4-менеджер)</param>
         public ShowReports(string FIO, int RoleID)
         {
             InitializeComponent();
             _fio = FIO;
             _roleID = RoleID;
-
-            // Включаем изменение размера окна
 
             this.FormBorderStyle = FormBorderStyle.Sizable;
             this.WindowState = FormWindowState.Maximized;
@@ -60,13 +51,13 @@ namespace NailService
 
             cmbSort.Items.Clear();
             cmbSort.Items.AddRange(new string[] {
-        "Цена (по возрастанию)",
-        "Цена (по убыванию)",
-        "Мастер (А-Я)",
-        "Мастер (Я-А)",
-        "Клиент (А-Я)",
-        "Клиент (Я-А)"
-    });
+                "Цена (по возрастанию)",
+                "Цена (по убыванию)",
+                "Мастер (А-Я)",
+                "Мастер (Я-А)",
+                "Клиент (А-Я)",
+                "Клиент (Я-А)"
+            });
             cmbSort.SelectedIndex = 0;
 
             SetupDateTimePickers();
@@ -76,22 +67,14 @@ namespace NailService
             FIOlabel.Text = RoleID == 2 ? $"Админ: {_fio}" : "";
         }
 
-       
-        /// <summary>
-        /// Инициализация элементов управления пагинацией
-        /// </summary>
         private void InitializePagination()
         {
-            // Настраиваем кнопки навигации
             btnPrev.Click += BtnPrev_Click;
             btnNext.Click += BtnNext_Click;
             btnFirst.Click += BtnFirst_Click;
             btnLast.Click += BtnLast_Click;
         }
 
-        /// <summary>
-        /// Настройка DateTimePicker с ограничениями по датам из БД
-        /// </summary>
         private void SetupDateTimePickers()
         {
             try
@@ -117,12 +100,10 @@ namespace NailService
                 dtpFromDate.Format = DateTimePickerFormat.Custom;
                 dtpFromDate.CustomFormat = "dd.MM.yyyy";
                 dtpFromDate.ShowUpDown = false;
-                dtpFromDate.ShowCheckBox = false;
 
                 dtpToDate.Format = DateTimePickerFormat.Custom;
                 dtpToDate.CustomFormat = "dd.MM.yyyy";
                 dtpToDate.ShowUpDown = false;
-                dtpToDate.ShowCheckBox = false;
             }
             catch (Exception ex)
             {
@@ -130,9 +111,6 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Настройка DataGridView: создание колонок, установка стилей, подписка на события
-        /// </summary>
         private void SetupDataGridView()
         {
             try
@@ -148,13 +126,6 @@ namespace NailService
 
                 dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn
                 {
-                    Name = "ClientName",
-                    HeaderText = "Клиент",
-                    ReadOnly = true
-                });
-
-                dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn
-                {
                     Name = "Date",
                     HeaderText = "Дата и время",
                     ReadOnly = true
@@ -162,18 +133,12 @@ namespace NailService
 
                 _statusItems = _filterManager.GetStatusItems();
 
-                DataGridViewComboBoxColumn statusColumn = new DataGridViewComboBoxColumn
+                dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn
                 {
                     Name = "Status",
                     HeaderText = "Статус",
-                    DataSource = new BindingSource(_statusItems, null),
-                    DisplayMember = "Name",
-                    ValueMember = "ID",
-                    FlatStyle = FlatStyle.Flat,
-                    ReadOnly = (_roleID != 2),
-                    AutoComplete = true
-                };
-                dataGridViewRecords.Columns.Add(statusColumn);
+                    ReadOnly = true
+                });
 
                 dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn
                 {
@@ -221,24 +186,36 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Форматирование ячеек - установка цвета фона для статуса
-        /// </summary>
         private void DataGridViewRecords_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (dataGridViewRecords.Columns[e.ColumnIndex].Name == "Status" && e.RowIndex >= 0)
             {
-                if (dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Value != null)
+                try
                 {
-                    int statusId = Convert.ToInt32(dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
-                    e.CellStyle.BackColor = StyleManager.GetStatusColor(statusId);
+                    var cell = dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex];
+                    if (cell.Tag != null)
+                    {
+                        int statusId = Convert.ToInt32(cell.Tag);
+                        e.CellStyle.BackColor = StyleManager.GetStatusColor(statusId);
+                    }
+                    else if (cell.Value != null)
+                    {
+                        // Пытаемся найти статус по названию
+                        string statusName = cell.Value.ToString();
+                        var statusItem = _statusItems?.FirstOrDefault(s => s.Name == statusName);
+                        if (statusItem != null)
+                        {
+                            e.CellStyle.BackColor = StyleManager.GetStatusColor(statusItem.ID);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Ошибка форматирования: {ex.Message}");
                 }
             }
         }
 
-        /// <summary>
-        /// Загрузка данных с применением текущих фильтров и пагинацией
-        /// </summary>
         private void LoadData()
         {
             try
@@ -284,34 +261,21 @@ namespace NailService
                     }
                 }
 
-                // Получаем все отфильтрованные записи
                 _allFilteredRecords = _filterManager.GetFilteredRecords(searchText, masterFilter, statusFilter,
                     fromDate, toDate, sortBy, ascending);
 
-                // Обновляем общее количество записей
                 totalRecords = _allFilteredRecords.Count;
-
-                // Рассчитываем общее количество страниц
                 totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
                 if (totalPages == 0) totalPages = 1;
 
-                // Корректируем текущую страницу
-                if (currentPage > totalPages)
-                {
-                    currentPage = totalPages;
-                }
-                if (currentPage < 1)
-                {
-                    currentPage = 1;
-                }
+                if (currentPage > totalPages) currentPage = totalPages;
+                if (currentPage < 1) currentPage = 1;
 
-                // Получаем записи для текущей страницы
                 var pagedRecords = _allFilteredRecords
                     .Skip((currentPage - 1) * pageSize)
                     .Take(pageSize)
                     .ToList();
 
-                // Заполняем DataGridView
                 int statusColumnIndex = -1;
                 int recordIdColumnIndex = -1;
 
@@ -333,9 +297,8 @@ namespace NailService
                 {
                     int rowIndex = dataGridViewRecords.Rows.Add(
                         record.MasterName,
-                        record.ClientName,
                         record.Date.ToString("dd.MM.yyyy HH:mm"),
-                        record.StatusID,
+                        record.Status, 
                         record.Service,
                         record.Price.ToString("C0"),
                         record.UserName,
@@ -344,21 +307,15 @@ namespace NailService
 
                     if (rowIndex >= 0)
                     {
-                        dataGridViewRecords.Rows[rowIndex].Cells[statusColumnIndex].Tag = record.StatusID;
+                        dataGridViewRecords.Rows[rowIndex].Cells["Status"].Tag = record.StatusID;
                     }
                 }
 
-                // Рассчитываем общую выручку по ВСЕМ отфильтрованным записям
                 decimal totalRevenue = CalculateTotalRevenue(_allFilteredRecords);
                 lblTotalRevenue.Text = $"Общая выручка: {totalRevenue:N0} руб.";
 
-                // Обновляем информацию о пагинации
                 UpdatePaginationInfo();
-
-                // Обновляем кнопки навигации
                 UpdateNavigationButtons();
-
-                // Создаем кнопки для номеров страниц
                 CreatePageButtons();
             }
             catch (Exception ex)
@@ -371,9 +328,6 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Обновление информации о пагинации (сколько записей показано из общего количества)
-        /// </summary>
         private void UpdatePaginationInfo()
         {
             int startRecord = ((currentPage - 1) * pageSize) + 1;
@@ -386,12 +340,8 @@ namespace NailService
             }
 
             lblPaginationInfo.Text = $"Показано: {startRecord}-{endRecord} из {totalRecords} записей | Страница: {currentPage} из {totalPages}";
-           
         }
 
-        /// <summary>
-        /// Обновление состояния кнопок навигации
-        /// </summary>
         private void UpdateNavigationButtons()
         {
             btnFirst.Enabled = currentPage > 1;
@@ -400,16 +350,12 @@ namespace NailService
             btnLast.Enabled = currentPage < totalPages;
         }
 
-        /// <summary>
-        /// Создание кнопок для перехода по страницам
-        /// </summary>
         private void CreatePageButtons()
         {
-           // flowLayoutPanelPages.Controls.Clear();
+            // flowLayoutPanelPages.Controls.Clear();
 
             if (totalPages <= 1) return;
 
-            // Определяем диапазон отображаемых страниц (максимум 10 кнопок)
             int startPage = Math.Max(1, currentPage - 4);
             int endPage = Math.Min(totalPages, startPage + 9);
 
@@ -432,13 +378,10 @@ namespace NailService
                     Tag = i
                 };
                 btnPage.Click += BtnPage_Click;
-               // flowLayoutPanelPages.Controls.Add(btnPage);
+                // flowLayoutPanelPages.Controls.Add(btnPage);
             }
         }
 
-        /// <summary>
-        /// Обработчик клика по кнопке страницы
-        /// </summary>
         private void BtnPage_Click(object sender, EventArgs e)
         {
             if (sender is Button btn && btn.Tag != null)
@@ -452,57 +395,11 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Обработчик кнопки "Первая страница"
-        /// </summary>
-        private void BtnFirst_Click(object sender, EventArgs e)
-        {
-            if (currentPage > 1)
-            {
-                currentPage = 1;
-                LoadData();
-            }
-        }
+        private void BtnFirst_Click(object sender, EventArgs e) { if (currentPage > 1) { currentPage = 1; LoadData(); } }
+        private void BtnPrev_Click(object sender, EventArgs e) { if (currentPage > 1) { currentPage--; LoadData(); } }
+        private void BtnNext_Click(object sender, EventArgs e) { if (currentPage < totalPages) { currentPage++; LoadData(); } }
+        private void BtnLast_Click(object sender, EventArgs e) { if (currentPage < totalPages) { currentPage = totalPages; LoadData(); } }
 
-        /// <summary>
-        /// Обработчик кнопки "Предыдущая страница"
-        /// </summary>
-        private void BtnPrev_Click(object sender, EventArgs e)
-        {
-            if (currentPage > 1)
-            {
-                currentPage--;
-                LoadData();
-            }
-        }
-
-        /// <summary>
-        /// Обработчик кнопки "Следующая страница"
-        /// </summary>
-        private void BtnNext_Click(object sender, EventArgs e)
-        {
-            if (currentPage < totalPages)
-            {
-                currentPage++;
-                LoadData();
-            }
-        }
-
-        /// <summary>
-        /// Обработчик кнопки "Последняя страница"
-        /// </summary>
-        private void BtnLast_Click(object sender, EventArgs e)
-        {
-            if (currentPage < totalPages)
-            {
-                currentPage = totalPages;
-                LoadData();
-            }
-        }
-
-        /// <summary>
-        /// Проверка прав на редактирование при начале редактирования ячейки
-        /// </summary>
         private void DataGridViewRecords_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
         {
             if (dataGridViewRecords.Columns[e.ColumnIndex].Name != "Status")
@@ -559,15 +456,10 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Обработка изменения значения в ячейке - обновление статуса в БД
-        /// </summary>
         private void DataGridViewRecords_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
-
-            if (dataGridViewRecords.Columns[e.ColumnIndex].Name != "Status")
-                return;
+            if (dataGridViewRecords.Columns[e.ColumnIndex].Name != "Status") return;
 
             try
             {
@@ -596,8 +488,7 @@ namespace NailService
                     oldStatusId = Convert.ToInt32(dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Tag);
                 }
 
-                if (oldStatusId == newStatusId)
-                    return;
+                if (oldStatusId == newStatusId) return;
 
                 DialogResult result = MessageBox.Show(
                     "Вы уверены, что хотите изменить статус этой записи?",
@@ -613,20 +504,17 @@ namespace NailService
                     {
                         dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor =
                             StyleManager.GetStatusColor(newStatusId);
-
                         dataGridViewRecords.Rows[e.RowIndex].Cells[e.ColumnIndex].Tag = newStatusId;
 
                         MessageBox.Show("Статус успешно обновлен!", "Успех",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                        // Обновляем данные в кэше
                         var record = _allFilteredRecords.FirstOrDefault(r => r.RecordID == recordId);
                         if (record != null)
                         {
                             record.StatusID = newStatusId;
                         }
 
-                        // Пересчитываем общую выручку
                         decimal totalRevenue = CalculateTotalRevenue(_allFilteredRecords);
                         lblTotalRevenue.Text = $"Общая выручка: {totalRevenue:N0} руб.";
                     }
@@ -656,56 +544,14 @@ namespace NailService
         }
 
         #region Обработчики фильтров
-
-        private void dtpFromDate_ValueChanged(object sender, EventArgs e)
-        {
-            if (dtpFromDate.Value > dtpToDate.Value)
-            {
-                dtpToDate.Value = dtpFromDate.Value;
-            }
-            currentPage = 1; // Сбрасываем на первую страницу при изменении фильтра
-            LoadData();
-        }
-
-        private void dtpToDate_ValueChanged(object sender, EventArgs e)
-        {
-            if (dtpToDate.Value < dtpFromDate.Value)
-            {
-                dtpFromDate.Value = dtpToDate.Value;
-            }
-            currentPage = 1; // Сбрасываем на первую страницу при изменении фильтра
-            LoadData();
-        }
-
-        private void txtSearch_TextChanged(object sender, EventArgs e)
-        {
-            currentPage = 1; // Сбрасываем на первую страницу при изменении фильтра
-            LoadData();
-        }
-
-        private void cmbMasterFilter_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            currentPage = 1; // Сбрасываем на первую страницу при изменении фильтра
-            LoadData();
-        }
-
-        private void cmbSort_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            currentPage = 1; // Сбрасываем на первую страницу при изменении фильтра
-            LoadData();
-        }
-
-        private void cmbStatusFilter_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            currentPage = 1; // Сбрасываем на первую страницу при изменении фильтра
-            LoadData();
-        }
-
+        private void dtpFromDate_ValueChanged(object sender, EventArgs e) { if (dtpFromDate.Value > dtpToDate.Value) dtpToDate.Value = dtpFromDate.Value; currentPage = 1; LoadData(); }
+        private void dtpToDate_ValueChanged(object sender, EventArgs e) { if (dtpToDate.Value < dtpFromDate.Value) dtpFromDate.Value = dtpToDate.Value; currentPage = 1; LoadData(); }
+        private void txtSearch_TextChanged(object sender, EventArgs e) { currentPage = 1; LoadData(); }
+        private void cmbMasterFilter_SelectedIndexChanged(object sender, EventArgs e) { currentPage = 1; LoadData(); }
+        private void cmbSort_SelectedIndexChanged(object sender, EventArgs e) { currentPage = 1; LoadData(); }
+        private void cmbStatusFilter_SelectedIndexChanged(object sender, EventArgs e) { currentPage = 1; LoadData(); }
         #endregion
 
-        /// <summary>
-        /// Сброс всех фильтров к значениям по умолчанию
-        /// </summary>
         private void btnClearFilters_Click(object sender, EventArgs e)
         {
             txtSearch.Text = "";
@@ -715,21 +561,15 @@ namespace NailService
 
             var dateRange = _filterManager.GetDateRange();
             DateTime defaultFrom = dateRange.MaxDate.AddMonths(-1);
-            if (defaultFrom < dateRange.MinDate)
-            {
-                defaultFrom = dateRange.MinDate;
-            }
+            if (defaultFrom < dateRange.MinDate) defaultFrom = dateRange.MinDate;
 
             dtpFromDate.Value = defaultFrom;
             dtpToDate.Value = dateRange.MaxDate;
 
-            currentPage = 1; // Сбрасываем на первую страницу
+            currentPage = 1;
             LoadData();
         }
 
-        /// <summary>
-        /// Возврат в главное меню в зависимости от роли
-        /// </summary>
         private void InMenu_Click(object sender, EventArgs e)
         {
             if (_roleID == 2)
@@ -746,9 +586,6 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Генерация Excel-отчета с текущими данными
-        /// </summary>
         private void ReportsButton_Click(object sender, EventArgs e)
         {
             if (dataGridViewRecords.Rows.Count == 0)
@@ -777,22 +614,13 @@ namespace NailService
                         totalRecords, _allFilteredRecords, _statusItems);
                     excelGenerator.Generate(filePath);
                 }
-                // В методе ReportsButton_Click, там где создаёте PDF генератор:
                 else if (format == "PDF")
                 {
                     decimal totalRevenue = CalculateTotalRevenue(_allFilteredRecords);
 
                     var pdfGenerator = new PdfReportGenerator(
-                        dtpFromDate,
-                        dtpToDate,
-                        cmbMasterFilter,
-                        cmbStatusFilter,
-                        cmbSort,
-                        txtSearch,
-                        totalRecords,
-                        _allFilteredRecords,    // список записей
-                        _statusItems,           // список статусов
-                        totalRevenue);
+                        dtpFromDate, dtpToDate, cmbMasterFilter, cmbStatusFilter, cmbSort, txtSearch,
+                        totalRecords, _allFilteredRecords, _statusItems, totalRevenue);
                     pdfGenerator.Generate(filePath);
                 }
 
@@ -805,36 +633,28 @@ namespace NailService
             }
         }
 
-        
-
         /// <summary>
-        /// Расчет общей выручки (исключая отмененные записи)
+        /// Расчет общей выручки
         /// </summary>
         private decimal CalculateTotalRevenue(List<RecordData> records)
         {
             decimal total = 0;
             foreach (var record in records)
             {
-                if (record.StatusID != 4)
+                if (record.StatusID != 3) // 3 - Отменено
                 {
                     total += record.Price;
                 }
             }
             return total;
         }
-
-
         private void ShowReports_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
             {
-                e.Cancel = true; // Отменяем закрытие
+                e.Cancel = true;
             }
         }
-
-        /// <summary>
-        /// Обработчик изменения размера формы - пересчитывает позиции элементов
-        /// </summary>
 
         protected override void OnResize(EventArgs e)
         {
@@ -849,33 +669,22 @@ namespace NailService
             int w = this.ClientSize.Width;
             int h = this.ClientSize.Height;
 
-            // Растягиваем элементы по ширине
             groupBox1.Width = w - 24;
             groupBox2.Width = w - 24;
             dataGridViewRecords.Width = w - 24;
             dataGridViewRecords.Height = h - 340;
 
-            // Центрируем заголовок
             label1.Location = new Point((w - 342) / 2, 10);
             FIOlabel.Location = new Point(w - 200, 12);
 
-            // Кнопка "В меню" в левом нижнем углу
             InMenu.Location = new Point(12, h - 60);
-
-            // Кнопка "Сформировать отчёт" в правом нижнем углу
+            button1.Location = new Point(w - 575, h - 60);
             ReportsButton.Location = new Point(w - 275, h - 60);
-
-            // Общая выручка - над кнопкой "В меню"
             lblTotalRevenue.Location = new Point(12, h - 105);
 
-            // ===== ПАГИНАЦИЯ (слева, над lblTotalRevenue) =====
             int paginationY = h - 130;
-
-            // Информация о записях (слева)
             lblPaginationInfo.Location = new Point(12, paginationY);
 
-        
-            // Кнопки пагинации (справа)
             int btnY = h - 120;
             btnLast.Location = new Point(w - 60, btnY);
             btnNext.Location = new Point(w - 115, btnY);
@@ -886,10 +695,106 @@ namespace NailService
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-
-            // Устанавливаем начальную позицию по центру
             this.StartPosition = FormStartPosition.CenterScreen;
             this.CenterToScreen();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Получаем статистику по услугам
+                var serviceStats = GetServiceStatistics();
+
+                if (serviceStats == null || serviceStats.Count == 0)
+                {
+                    MessageBox.Show("Нет данных для формирования статистики!", "Информация",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                string formatResult = ReportHelper.ShowFormatDialog();
+                if (string.IsNullOrEmpty(formatResult)) return;
+
+                string filePath = ReportHelper.ShowSaveFileDialog(
+                    formatResult == "Excel" ? "Excel Files|*.xlsx" : "PDF Files|*.pdf",
+                    $"Сохранить отчет {formatResult}",
+                    formatResult == "Excel" ? "xlsx" : "pdf");
+
+                if (string.IsNullOrEmpty(filePath)) return;
+
+
+                SaveFileDialog saveDialog = new SaveFileDialog();
+                saveDialog.Title = $"Сохранить отчет со статистикой ({formatResult})";
+                saveDialog.Filter = formatResult;
+                saveDialog.DefaultExt = formatResult;
+                saveDialog.FileName = $"Статистика_услуг_{DateTime.Now:yyyyMMdd_HHmmss}.{formatResult}";
+
+                if (saveDialog.ShowDialog() == DialogResult.OK)
+                {
+                    if (formatResult == "Excel")
+                    {
+                        var generator = new ExcelReportGenerator(null, null, null, null, null, null, 0, null, null);
+                        generator.GenerateServiceStatistics(saveDialog.FileName, serviceStats);
+                    }
+                    else // PDF
+                    {
+                        var pdfGenerator = new PdfReportGenerator(
+                            null, null, null, null, null, null, 0, null, null, 0, serviceStats);
+                        pdfGenerator.GenerateServiceStatistics(saveDialog.FileName, serviceStats);
+                    }
+
+                    MessageBox.Show($"Отчет успешно сохранен в формате {formatResult}!", "Успех",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    if (MessageBox.Show("Открыть сохраненный файл?", "Открыть файл",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    {
+                        System.Diagnostics.Process.Start(saveDialog.FileName);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private List<ServiceStatistic> GetServiceStatistics()
+        {
+            var statistics = new List<ServiceStatistic>();
+
+            using (var connection = new MySqlConnection(Connection.ConnectionString))
+            {
+                connection.Open();
+                string query = @"
+                SELECT 
+                s.ServiceName,
+                COUNT(r.IDRecord) as Count,
+                SUM(s.Price) as Revenue
+                FROM Record r
+                INNER JOIN Services s ON r.Service = s.IDServices
+                WHERE r.Status != 3
+                GROUP BY s.ServiceName, s.IDServices
+                ORDER BY COUNT(r.IDRecord) DESC;";
+
+                using (var command = new MySqlCommand(query, connection))
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        statistics.Add(new ServiceStatistic
+                        {
+                            ServiceName = reader["ServiceName"].ToString(),
+                            Count = Convert.ToInt32(reader["Count"]),
+                            Revenue = Convert.ToDecimal(reader["Revenue"])
+                        });
+                    }
+                }
+            }
+
+            return statistics;
         }
     }
 }

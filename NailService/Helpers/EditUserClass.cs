@@ -218,74 +218,37 @@ namespace NailService
 
             return service;
         }
-
-        /// <summary>
-        /// Обновление данных услуги в базе
-        /// </summary>
         public bool UpdateServiceInDatabase(ServiceModel service)
         {
-            using (var connection = GetNewConnection())
+            try
             {
-                try
+                using (var connection = new MySqlConnection(_connection))
                 {
                     connection.Open();
 
-                    string query;
-                    MySqlCommand cmd;
+                    string query = @"UPDATE services 
+                           SET ServiceName = @ServiceName,
+                               Description = @Description,
+                               Price = @Price,
+                               Category = @Category,
+                               Photo = @Photo
+                           WHERE IDServices = @ServiceId";
 
-                    if (service.PhotoBytes != null && service.PhotoBytes.Length > 0)
-                    {
-                        query = @"UPDATE services 
-                         SET ServiceName = @ServiceName,
-                             Description = @Description,
-                             Price = @Price,
-                             Category = @Category,
-                             Photo = @Photo
-                         WHERE IDServices = @ServiceId";
-
-                        cmd = new MySqlCommand(query, connection);
-                        cmd.Parameters.AddWithValue("@Photo", service.PhotoBytes);
-                    }
-                    else
-                    {
-                        query = @"UPDATE services 
-                         SET ServiceName = @ServiceName,
-                             Description = @Description,
-                             Price = @Price,
-                             Category = @Category,
-                             Photo = NULL
-                         WHERE IDServices = @ServiceId";
-
-                        cmd = new MySqlCommand(query, connection);
-                    }
-
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@ServiceId", service.IDServices);
                     cmd.Parameters.AddWithValue("@ServiceName", service.ServiceName);
                     cmd.Parameters.AddWithValue("@Description", service.Description);
                     cmd.Parameters.AddWithValue("@Price", service.Price);
                     cmd.Parameters.AddWithValue("@Category", service.Category);
+                    cmd.Parameters.AddWithValue("@Photo", service.PhotoBytes ?? (object)DBNull.Value);
 
-                    int result = cmd.ExecuteNonQuery();
-
-                    if (result > 0)
-                    {
-                        MessageBox.Show("Услуга успешно обновлена", "Успех",
-                                      MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        return true;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Не удалось обновить услугу", "Ошибка",
-                                      MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return false;
-                    }
+                    return cmd.ExecuteNonQuery() > 0;
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Ошибка при обновлении услуги: {ex.Message}", "Ошибка",
-                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return false;
-                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка обновления услуги: {ex.Message}");
+                return false;
             }
         }
 

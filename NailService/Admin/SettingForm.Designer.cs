@@ -38,10 +38,11 @@
             this.label4 = new System.Windows.Forms.Label();
             this.Password = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
-            this.Connection = new System.Windows.Forms.Button();
-            this.Exit = new System.Windows.Forms.Button();
+            this.ConnectionButton = new System.Windows.Forms.Button();
             this.numericTimeout = new System.Windows.Forms.NumericUpDown();
             this.label6 = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericTimeout)).BeginInit();
             this.SuspendLayout();
             // 
@@ -123,34 +124,27 @@
             this.label5.TabIndex = 7;
             this.label5.Text = "Пароль пользователя";
             // 
-            // Connection
+            // ConnectionButton
             // 
-            this.Connection.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
-            this.Connection.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.Connection.Location = new System.Drawing.Point(23, 443);
-            this.Connection.Name = "Connection";
-            this.Connection.Size = new System.Drawing.Size(297, 49);
-            this.Connection.TabIndex = 9;
-            this.Connection.Text = "Установить соединение";
-            this.Connection.UseVisualStyleBackColor = false;
-            this.Connection.Click += new System.EventHandler(this.Connection_Click);
-            // 
-            // Exit
-            // 
-            this.Exit.BackColor = System.Drawing.Color.HotPink;
-            this.Exit.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.Exit.Location = new System.Drawing.Point(23, 498);
-            this.Exit.Name = "Exit";
-            this.Exit.Size = new System.Drawing.Size(297, 49);
-            this.Exit.TabIndex = 10;
-            this.Exit.Text = "Перезапуск";
-            this.Exit.UseVisualStyleBackColor = false;
-            this.Exit.Click += new System.EventHandler(this.Exit_Click);
+            this.ConnectionButton.BackColor = System.Drawing.Color.HotPink;
+            this.ConnectionButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.ConnectionButton.Location = new System.Drawing.Point(23, 412);
+            this.ConnectionButton.Name = "ConnectionButton";
+            this.ConnectionButton.Size = new System.Drawing.Size(297, 49);
+            this.ConnectionButton.TabIndex = 9;
+            this.ConnectionButton.Text = "Установить соединение";
+            this.ConnectionButton.UseVisualStyleBackColor = false;
+            this.ConnectionButton.Click += new System.EventHandler(this.ConnectionButton_Click);
             // 
             // numericTimeout
             // 
             this.numericTimeout.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.25F);
             this.numericTimeout.Location = new System.Drawing.Point(23, 360);
+            this.numericTimeout.Maximum = new decimal(new int[] {
+            180,
+            0,
+            0,
+            0});
             this.numericTimeout.Name = "numericTimeout";
             this.numericTimeout.Size = new System.Drawing.Size(297, 32);
             this.numericTimeout.TabIndex = 11;
@@ -164,16 +158,41 @@
             this.label6.TabIndex = 12;
             this.label6.Text = "Время бездействия";
             // 
+            // button1
+            // 
+            this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button1.Location = new System.Drawing.Point(23, 522);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(297, 49);
+            this.button1.TabIndex = 13;
+            this.button1.Text = "Назад";
+            this.button1.UseVisualStyleBackColor = false;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // button2
+            // 
+            this.button2.BackColor = System.Drawing.Color.HotPink;
+            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button2.Location = new System.Drawing.Point(23, 467);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(297, 49);
+            this.button2.TabIndex = 14;
+            this.button2.Text = "Проверить соединение";
+            this.button2.UseVisualStyleBackColor = false;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
             // SettingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(336, 558);
+            this.ClientSize = new System.Drawing.Size(336, 586);
+            this.Controls.Add(this.button2);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.numericTimeout);
-            this.Controls.Add(this.Exit);
-            this.Controls.Add(this.Connection);
+            this.Controls.Add(this.ConnectionButton);
             this.Controls.Add(this.Password);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.NameUser);
@@ -210,9 +229,10 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox Password;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Button Connection;
-        private System.Windows.Forms.Button Exit;
+        private System.Windows.Forms.Button ConnectionButton;
         private System.Windows.Forms.NumericUpDown numericTimeout;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button2;
     }
 }

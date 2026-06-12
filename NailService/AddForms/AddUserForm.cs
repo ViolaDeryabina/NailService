@@ -15,24 +15,63 @@ namespace NailService
     {
         private string _connection;
         public UserModel NewUser { get; private set; }
-        private Show _showForm; // Ссылка на форму Show для вызова методов проверки/восстановления
+        private Show _showForm;
+        private bool _isMasterMode;
+        private Form _parentForm;
 
-        /// <summary>
-        /// Конструктор формы добавления пользователя
-        /// </summary>
-        /// <param name="showForm">Ссылка на главную форму для проверки существующих пользователей</param>
         public AddUserForm(Show showForm = null)
         {
             InitializeComponent();
             _connection = Connection.ConnectionString;
             _showForm = showForm;
+            _isMasterMode = false;
             NewUser = new UserModel();
             LoadRoles();
+            ShowMasterFields(false);
+            this.Text = "Добавление пользователя";
         }
 
-        /// <summary>
-        /// Загрузка доступных ролей из базы данных
-        /// </summary>
+        public AddUserForm(Form parentForm, bool isMasterMode)
+        {
+            InitializeComponent();
+            _connection = Connection.ConnectionString;
+            _parentForm = parentForm;
+            _isMasterMode = isMasterMode;
+            NewUser = new UserModel();
+            LoadRolesForMaster();
+            ShowMasterFields(true);
+            this.Text = "Добавление мастера";
+        }
+
+        private void ShowMasterFields(bool show)
+        {
+            if (txtDescription != null)
+                txtDescription.Visible = show;
+            if (lblDescription != null)
+                lblDescription.Visible = show;
+            if (txtPhone != null)
+                txtPhone.Visible = show;
+            if (lblPhone != null)
+                lblPhone.Visible = show;
+
+            if (show)
+            {
+                this.Size = new Size(624, 609);
+                if (button4 != null)
+                    button4.Location = new Point(366, 511);
+                if (btnCancel != null)
+                    btnCancel.Location = new Point(12, 511);
+            }
+            else
+            {
+                this.Size = new Size(624, 463);
+                if (button4 != null)
+                    button4.Location = new Point(366, 356);
+                if (btnCancel != null)
+                    btnCancel.Location = new Point(12, 356);
+            }
+        }
+
         private void LoadRoles()
         {
             try
@@ -40,7 +79,7 @@ namespace NailService
                 using (var connection = new MySqlConnection(_connection))
                 {
                     connection.Open();
-                    string query = "SELECT IDRole, RoleName FROM Role";
+                    string query = "SELECT IDRole, RoleName FROM Role WHERE RoleName != 'Мастер'";
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
@@ -63,44 +102,67 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Обработчик кнопки "Сохранить" - валидация и сохранение пользователя
-        /// </summary>
+        private void LoadRolesForMaster()
+        {
+            try
+            {
+                using (var connection = new MySqlConnection(_connection))
+                {
+                    connection.Open();
+                    string query = "SELECT IDRole, RoleName FROM Role WHERE RoleName = 'Мастер'";
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    adapter.Fill(dt);
+
+                    RoleCb.DataSource = dt;
+                    RoleCb.DisplayMember = "RoleName";
+                    RoleCb.ValueMember = "IDRole";
+
+                    if (RoleCb.Items.Count > 0)
+                    {
+                        RoleCb.SelectedIndex = 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка загрузки ролей: {ex.Message}", "Ошибка",
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void btnSave_Click(object sender, EventArgs e)
         {
             if (ValidateData())
             {
                 if (_showForm != null && CheckAndRestoreInactiveUser())
                 {
-                    return; // Пользователь восстановлен, форма закрывается
+                    return;
                 }
 
-                if (AddNewUser())
+                if (_isMasterMode)
                 {
-                    DialogResult = DialogResult.OK;
-                    Close();
+                    AddNewMaster();
+                }
+                else
+                {
+                    AddNewUser();
                 }
             }
         }
 
-        /// <summary>
-        /// Обработчик кнопки "Отмена" - закрытие формы без сохранения
-        /// </summary>
         private void btnCancel_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
             Close();
         }
 
-        /// <summary>
-        /// Валидация введенных данных перед сохранением
-        /// </summary>
-        /// <returns>true если данные корректны</returns>
         private bool ValidateData()
         {
             if (string.IsNullOrWhiteSpace(LastName.Text))
             {
-                MessageBox.Show("Введите фамилию пользователя", "Внимание",
+                MessageBox.Show("Введите фамилию", "Внимание",
                               MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 LastName.Focus();
                 return false;
@@ -108,7 +170,7 @@ namespace NailService
 
             if (string.IsNullOrWhiteSpace(FirstName.Text))
             {
-                MessageBox.Show("Введите имя пользователя", "Внимание",
+                MessageBox.Show("Введите имя", "Внимание",
                               MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 FirstName.Focus();
                 return false;
@@ -116,7 +178,7 @@ namespace NailService
 
             if (string.IsNullOrWhiteSpace(Login.Text))
             {
-                MessageBox.Show("Введите логин пользователя", "Внимание",
+                MessageBox.Show("Введите логин", "Внимание",
                               MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 Login.Focus();
                 return false;
@@ -124,10 +186,30 @@ namespace NailService
 
             if (string.IsNullOrWhiteSpace(Password.Text))
             {
-                MessageBox.Show("Введите пароль пользователя", "Внимание",
+                MessageBox.Show("Введите пароль", "Внимание",
                               MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 Password.Focus();
                 return false;
+            }
+
+            if (_isMasterMode)
+            {
+                if (string.IsNullOrWhiteSpace(txtPhone?.Text))
+                {
+                    MessageBox.Show("Введите телефон мастера", "Внимание",
+                                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtPhone.Focus();
+                    return false;
+                }
+
+                string phoneDigits = new string(txtPhone.Text.Where(char.IsDigit).ToArray());
+                if (phoneDigits.Length < 10)
+                {
+                    MessageBox.Show("Введите корректный номер телефона (минимум 10 цифр)", "Внимание",
+                                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtPhone.Focus();
+                    return false;
+                }
             }
 
             if (IsActiveUserExists())
@@ -142,9 +224,6 @@ namespace NailService
             return true;
         }
 
-        /// <summary>
-        /// Проверка существования активного пользователя с таким логином
-        /// </summary>
         private bool IsActiveUserExists()
         {
             try
@@ -164,23 +243,66 @@ namespace NailService
             {
                 MessageBox.Show($"Ошибка проверки логина: {ex.Message}", "Ошибка",
                               MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return true; // При ошибке блокируем добавление для безопасности
+                return true;
             }
         }
 
         /// <summary>
-        /// Проверка и восстановление неактивного пользователя
+        /// Проверка существования пользователя для восстановления
         /// </summary>
-        /// <returns>true если пользователь восстановлен и форма закрыта</returns>
+        public (bool exists, bool isActive, int userId) CheckUserExists(string lastName, string firstName, string login)
+        {
+            using (var connection = Connection.GetConnection())
+            {
+                try
+                {
+                    connection.Open();
+
+                    string query = @"
+                SELECT IDUser, IsActive 
+                FROM users 
+                WHERE (Login = @Login 
+                       OR (LastName = @LastName AND FirstName = @FirstName))
+                ORDER BY IsActive DESC
+                LIMIT 1";
+
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@Login", login);
+                    cmd.Parameters.AddWithValue("@LastName", lastName);
+                    cmd.Parameters.AddWithValue("@FirstName", firstName);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            int userId = reader.GetInt32("IDUser");
+                            bool isActive = reader.GetBoolean("IsActive");
+                            return (true, isActive, userId);
+                        }
+                    }
+
+                    return (false, false, 0);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка проверки пользователя: {ex.Message}", "Ошибка",
+                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return (false, false, 0);
+                }
+            }
+        }
+
         private bool CheckAndRestoreInactiveUser()
         {
+            if (_showForm == null) return false;
+
             try
             {
                 string lastName = LastName.Text.Trim();
                 string firstName = FirstName.Text.Trim();
                 string login = Login.Text.Trim();
 
-                var (exists, isActive, userId) = _showForm.CheckUserExists(lastName, firstName, login);
+                var (exists, isActive, userId) = CheckUserExists(lastName, firstName, login);
 
                 if (exists && !isActive)
                 {
@@ -196,7 +318,7 @@ namespace NailService
                     if (result == DialogResult.Yes)
                     {
                         SaveUserData();
-                        bool restored = _showForm.RestoreUser(userId, NewUser);
+                        bool restored = RestoreUser(userId, NewUser);
 
                         if (restored)
                         {
@@ -224,8 +346,48 @@ namespace NailService
         }
 
         /// <summary>
-        /// Добавление нового пользователя или восстановление неактивного
+        /// Восстановление неактивного пользователя
         /// </summary>
+        public bool RestoreUser(int userId, UserModel userData)
+        {
+            using (var connection = Connection.GetConnection())
+            {
+                try
+                {
+                    connection.Open();
+
+                    string query = @"
+                UPDATE users 
+                SET IsActive = 1,
+                    Login = @Login,
+                    Password = @Password,
+                    Role = @Role,
+                    LastName = @LastName,
+                    FirstName = @FirstName,
+                    MiddleName = @MiddleName
+                WHERE IDUser = @UserId";
+
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    cmd.Parameters.AddWithValue("@Login", userData.Login);
+                    cmd.Parameters.AddWithValue("@Password", userData.Password);
+                    cmd.Parameters.AddWithValue("@Role", userData.RoleId);
+                    cmd.Parameters.AddWithValue("@LastName", userData.LastName);
+                    cmd.Parameters.AddWithValue("@FirstName", userData.FirstName);
+                    cmd.Parameters.AddWithValue("@MiddleName", string.IsNullOrWhiteSpace(userData.MiddleName) ? (object)DBNull.Value : userData.MiddleName);
+
+                    int affectedRows = cmd.ExecuteNonQuery();
+                    return affectedRows > 0;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка восстановления пользователя: {ex.Message}", "Ошибка",
+                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+        }
+
         private bool AddNewUser()
         {
             try
@@ -236,7 +398,6 @@ namespace NailService
                 {
                     connection.Open();
 
-                    // Поиск неактивного пользователя с таким логином
                     string checkQuery = "SELECT IDUser FROM Users WHERE Login = @Login AND IsActive = 0";
                     MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
                     checkCmd.Parameters.AddWithValue("@Login", NewUser.Login);
@@ -245,7 +406,6 @@ namespace NailService
 
                     if (inactiveUserId != null && inactiveUserId != DBNull.Value)
                     {
-                        // Восстановление неактивного пользователя
                         int userId = Convert.ToInt32(inactiveUserId);
 
                         string updateQuery = @"UPDATE Users 
@@ -276,7 +436,6 @@ namespace NailService
                     }
                     else
                     {
-                        // Создание нового пользователя
                         string insertQuery = @"INSERT INTO Users 
                                             (LastName, FirstName, MiddleName, Login, Password, Role, IsActive) 
                                             VALUES (@LastName, @FirstName, @MiddleName, @Login, @Password, @Role, 1)";
@@ -306,7 +465,7 @@ namespace NailService
             }
             catch (MySqlException ex)
             {
-                if (ex.Number == 1062) // Ошибка дублирования уникального ключа
+                if (ex.Number == 1062)
                 {
                     MessageBox.Show("Пользователь с таким логином уже существует", "Ошибка",
                                   MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -327,8 +486,127 @@ namespace NailService
         }
 
         /// <summary>
-        /// Сохранение данных из формы в объект NewUser
+        /// Добавление нового мастера (без транзакций)
         /// </summary>
+        private bool AddNewMaster()
+        {
+            try
+            {
+                SaveUserData();
+
+                using (var connection = new MySqlConnection(_connection))
+                {
+                    connection.Open();
+
+                    int newUserId = 0;
+                    bool userCreated = false;
+                    bool masterCreated = false;
+
+                    // 1. Создаем или восстанавливаем пользователя
+                    string checkQuery = "SELECT IDUser FROM Users WHERE Login = @Login AND IsActive = 0";
+                    MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
+                    checkCmd.Parameters.AddWithValue("@Login", NewUser.Login);
+                    object inactiveUserId = checkCmd.ExecuteScalar();
+
+                    if (inactiveUserId != null && inactiveUserId != DBNull.Value)
+                    {
+                        // Восстанавливаем существующего пользователя
+                        newUserId = Convert.ToInt32(inactiveUserId);
+                        string updateQuery = @"UPDATE Users 
+                                            SET LastName = @LastName,
+                                                FirstName = @FirstName,
+                                                MiddleName = @MiddleName,
+                                                Password = @Password,
+                                                Role = @Role,
+                                                IsActive = 1
+                                            WHERE IDUser = @UserId";
+
+                        MySqlCommand updateCmd = new MySqlCommand(updateQuery, connection);
+                        updateCmd.Parameters.AddWithValue("@UserId", newUserId);
+                        updateCmd.Parameters.AddWithValue("@LastName", NewUser.LastName);
+                        updateCmd.Parameters.AddWithValue("@FirstName", NewUser.FirstName);
+                        updateCmd.Parameters.AddWithValue("@MiddleName", NewUser.MiddleName);
+                        updateCmd.Parameters.AddWithValue("@Password", NewUser.Password);
+                        updateCmd.Parameters.AddWithValue("@Role", NewUser.RoleId);
+
+                        int updatedRows = updateCmd.ExecuteNonQuery();
+                        userCreated = updatedRows > 0;
+                    }
+                    else
+                    {
+                        // Создаем нового пользователя
+                        string insertQuery = @"INSERT INTO Users 
+                                            (LastName, FirstName, MiddleName, Login, Password, Role, IsActive) 
+                                            VALUES (@LastName, @FirstName, @MiddleName, @Login, @Password, @Role, 1)";
+
+                        MySqlCommand insertCmd = new MySqlCommand(insertQuery, connection);
+                        insertCmd.Parameters.AddWithValue("@LastName", NewUser.LastName);
+                        insertCmd.Parameters.AddWithValue("@FirstName", NewUser.FirstName);
+                        insertCmd.Parameters.AddWithValue("@MiddleName", NewUser.MiddleName);
+                        insertCmd.Parameters.AddWithValue("@Login", NewUser.Login);
+                        insertCmd.Parameters.AddWithValue("@Password", NewUser.Password);
+                        insertCmd.Parameters.AddWithValue("@Role", NewUser.RoleId);
+
+                        insertCmd.ExecuteNonQuery();
+                        newUserId = (int)insertCmd.LastInsertedId;
+                        userCreated = true;
+                    }
+
+                    if (!userCreated)
+                    {
+                        MessageBox.Show("Не удалось создать пользователя для мастера", "Ошибка",
+                                      MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return false;
+                    }
+
+                    // 2. Создаем запись мастера
+                    string masterQuery = @"INSERT INTO Masters (User, Description, Phone, IsActive) 
+                                           VALUES (@UserId, @Description, @Phone, 1)";
+
+                    MySqlCommand masterCmd = new MySqlCommand(masterQuery, connection);
+                    masterCmd.Parameters.AddWithValue("@UserId", newUserId);
+                    masterCmd.Parameters.AddWithValue("@Description", string.IsNullOrWhiteSpace(txtDescription?.Text) ? (object)DBNull.Value : txtDescription.Text.Trim());
+                    masterCmd.Parameters.AddWithValue("@Phone", txtPhone?.Text.Trim());
+
+                    masterCmd.ExecuteNonQuery();
+                    masterCreated = true;
+
+                    if (masterCreated)
+                    {
+                        MessageBox.Show("Мастер успешно добавлен", "Успех",
+                                      MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return true;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Не удалось добавить мастера", "Ошибка",
+                                      MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return false;
+                    }
+                }
+            }
+            catch (MySqlException ex)
+            {
+                if (ex.Number == 1062)
+                {
+                    MessageBox.Show("Пользователь с таким логином уже существует", "Ошибка",
+                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    MessageBox.Show($"Ошибка при добавлении мастера: {ex.Message}", "Ошибка",
+                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при добавлении мастера: {ex.Message}", "Ошибка",
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
+
         private void SaveUserData()
         {
             string passwordHash = MySQLHelper.GetHash(Password.Text);
@@ -341,9 +619,6 @@ namespace NailService
             NewUser.RoleId = (int)RoleCb.SelectedValue;
         }
 
-        /// <summary>
-        /// Фильтрация ввода в поле фамилии (только русские буквы)
-        /// </summary>
         private void LastName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = LastName.SelectionStart;
@@ -356,9 +631,6 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Фильтрация ввода в поле имени (только русские буквы)
-        /// </summary>
         private void FirstName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = FirstName.SelectionStart;
@@ -371,9 +643,6 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Фильтрация ввода в поле отчества (только русские буквы)
-        /// </summary>
         private void MiddleName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = MiddleName.SelectionStart;
@@ -386,9 +655,6 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Фильтрация ввода в поле логина (латиница, цифры, _, .)
-        /// </summary>
         private void Login_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = Login.SelectionStart;
@@ -404,9 +670,6 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Проверка при потере фокуса поля логина
-        /// </summary>
         private void Login_Leave(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(Login.Text) && _showForm != null)
@@ -415,9 +678,6 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Проверка наличия неактивного пользователя с таким логином
-        /// </summary>
         private void CheckForInactiveUserHint()
         {
             try
@@ -440,22 +700,29 @@ namespace NailService
                     {
                         if (reader.Read())
                         {
-                            int userId = reader.GetInt32("IDUser");
                             string lastName = reader["LastName"]?.ToString() ?? "";
                             string firstName = reader["FirstName"]?.ToString() ?? "";
                             string middleName = reader["MiddleName"]?.ToString() ?? "";
                             string roleName = reader["RoleName"]?.ToString() ?? "";
 
-                            // Здесь можно добавить визуальную подсказку
+                            Login.BackColor = Color.LightYellow;
+                            errorProvider1.SetError(Login, $"Найден неактивный пользователь: {lastName} {firstName}\nПри сохранении будет предложено восстановление");
+                        }
+                        else
+                        {
+                            Login.BackColor = Color.White;
+                            errorProvider1.SetError(Login, "");
                         }
                     }
                 }
             }
             catch
             {
-                // Игнорируем ошибки при проверке подсказки
+                Login.BackColor = Color.White;
+                errorProvider1.SetError(Login, "");
             }
         }
+
         private void LastName_Validating(object sender, CancelEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(LastName.Text))
@@ -463,7 +730,7 @@ namespace NailService
                 string name = LastName.Text.Trim();
                 if (name.Length > 0)
                 {
-                    name = char.ToUpper(name[0]) + name.Substring(1);
+                    name = char.ToUpper(name[0]) + name.Substring(1).ToLower();
                     LastName.Text = name;
                 }
             }
@@ -476,7 +743,7 @@ namespace NailService
                 string name = FirstName.Text.Trim();
                 if (name.Length > 0)
                 {
-                    name = char.ToUpper(name[0]) + name.Substring(1);
+                    name = char.ToUpper(name[0]) + name.Substring(1).ToLower();
                     FirstName.Text = name;
                 }
             }
@@ -489,10 +756,97 @@ namespace NailService
                 string name = MiddleName.Text.Trim();
                 if (name.Length > 0)
                 {
-                    name = char.ToUpper(name[0]) + name.Substring(1);
+                    name = char.ToUpper(name[0]) + name.Substring(1).ToLower();
                     MiddleName.Text = name;
                 }
             }
+        }
+
+        private void txtPhone_TextChanged(object sender, EventArgs e)
+        {
+            int originalSelectionStart = txtPhone.SelectionStart;
+            string originalText = txtPhone.Text;
+
+            string filteredText = InputValidator.FilterToPhone(originalText);
+            string formattedText = InputValidator.FormatPhoneNumber(filteredText);
+
+            if (formattedText != originalText)
+            {
+                txtPhone.Text = formattedText;
+                int adjustedPosition = GetAdjustedCursorPosition(originalSelectionStart, originalText, formattedText);
+                txtPhone.SelectionStart = Math.Min(adjustedPosition, formattedText.Length);
+            }
+
+            // Проверка наличия неактивного клиента с таким телефоном
+            if (!string.IsNullOrWhiteSpace(txtPhone.Text))
+            {
+                CheckForInactiveClientHint();
+            }
+        }
+
+        /// <summary>
+        /// Корректировка позиции курсора после форматирования телефона
+        /// </summary>
+        private int GetAdjustedCursorPosition(int originalPosition, string oldText, string newText)
+        {
+            if (originalPosition >= oldText.Length)
+                return newText.Length;
+
+            int formatCharsBeforeCursor = 0;
+            char[] formatChars = { '(', ')', ' ', '-', '+' };
+
+            for (int i = 0; i < originalPosition && i < newText.Length; i++)
+            {
+                if (formatChars.Contains(newText[i]))
+                {
+                    formatCharsBeforeCursor++;
+                }
+            }
+
+            return originalPosition + formatCharsBeforeCursor;
+        }
+
+        /// <summary>
+        /// Проверка наличия неактивного клиента с введенным номером телефона
+        /// </summary>
+        private void CheckForInactiveClientHint()
+        {
+            try
+            {
+                string phoneDigits = GetPhoneDigits(txtPhone.Text);
+
+                if (string.IsNullOrWhiteSpace(phoneDigits) || phoneDigits.Length < 10)
+                    return;
+
+                using (var connection = new MySqlConnection(_connection))
+                {
+                    connection.Open();
+                    string query = @"SELECT IDMaster, IsActive
+                                    FROM Master 
+                                    WHERE Phone = @Phone AND IsActive = 0";
+
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@Phone", phoneDigits);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            // Здесь можно добавить визуальную подсказку о найденном неактивном клиенте
+                            // Например, изменить цвет фона или показать иконку
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Игнорируем ошибки при проверке подсказки
+            }
+        }
+
+        private string GetPhoneDigits(string phone)
+        {
+            return new string(phone.Where(char.IsDigit).ToArray());
         }
     }
 }

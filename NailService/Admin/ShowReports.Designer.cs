@@ -47,6 +47,7 @@ namespace NailService
             this.btnFirst = new System.Windows.Forms.Button();
             this.btnLast = new System.Windows.Forms.Button();
             this.lblPaginationInfo = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewRecords)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -345,12 +346,25 @@ namespace NailService
             this.lblPaginationInfo.TabIndex = 34;
             this.lblPaginationInfo.Text = "Записей: ";
             // 
+            // button1
+            // 
+            this.button1.BackColor = System.Drawing.Color.HotPink;
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button1.Location = new System.Drawing.Point(629, 739);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(263, 45);
+            this.button1.TabIndex = 35;
+            this.button1.Text = "Статистика по услугам";
+            this.button1.UseVisualStyleBackColor = false;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // ShowReports
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(1173, 800);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.lblPaginationInfo);
             this.Controls.Add(this.btnLast);
             this.Controls.Add(this.btnFirst);
@@ -422,5 +436,6 @@ namespace NailService
         private System.Windows.Forms.Button btnFirst;
         private System.Windows.Forms.Button btnLast;
         private System.Windows.Forms.Label lblPaginationInfo;
+        private Button button1;
     }
 }

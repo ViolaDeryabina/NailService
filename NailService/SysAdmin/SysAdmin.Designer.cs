@@ -30,28 +30,25 @@ namespace NailService
         private void InitializeComponent()
         {
             System.Windows.Forms.PictureBox pictureBox1;
-            this.button1 = new System.Windows.Forms.Button();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SysAdmin));
             this.button2 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.button5 = new System.Windows.Forms.Button();
-            this.button6 = new System.Windows.Forms.Button();
             pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
-            // button1
+            // pictureBox1
             // 
-            this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button1.Location = new System.Drawing.Point(8, 60);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(183, 48);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "Восстановить";
-            this.button1.UseVisualStyleBackColor = false;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            pictureBox1.Image = global::NailService.Properties.Resources.back;
+            pictureBox1.Location = new System.Drawing.Point(213, 60);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new System.Drawing.Size(715, 462);
+            pictureBox1.TabIndex = 4;
+            pictureBox1.TabStop = false;
             // 
             // button2
             // 
@@ -79,11 +76,11 @@ namespace NailService
             // 
             this.button3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button3.Location = new System.Drawing.Point(8, 114);
+            this.button3.Location = new System.Drawing.Point(8, 60);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(183, 48);
             this.button3.TabIndex = 3;
-            this.button3.Text = "Импорт";
+            this.button3.Text = "Импорт/Эксопрт";
             this.button3.UseVisualStyleBackColor = false;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
@@ -91,7 +88,7 @@ namespace NailService
             // 
             this.button4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button4.Location = new System.Drawing.Point(8, 168);
+            this.button4.Location = new System.Drawing.Point(8, 179);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(183, 48);
             this.button4.TabIndex = 5;
@@ -103,35 +100,13 @@ namespace NailService
             // 
             this.button5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button5.Location = new System.Drawing.Point(8, 222);
+            this.button5.Location = new System.Drawing.Point(8, 114);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(183, 59);
             this.button5.TabIndex = 6;
-            this.button5.Text = "Резервное копирование";
+            this.button5.Text = "Восстановление и копирование";
             this.button5.UseVisualStyleBackColor = false;
             this.button5.Click += new System.EventHandler(this.button5_Click);
-            // 
-            // pictureBox1
-            // 
-            pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            pictureBox1.Image = global::NailService.Properties.Resources.back;
-            pictureBox1.Location = new System.Drawing.Point(213, 60);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new System.Drawing.Size(715, 462);
-            pictureBox1.TabIndex = 4;
-            pictureBox1.TabStop = false;
-            // 
-            // button6
-            // 
-            this.button6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
-            this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button6.Location = new System.Drawing.Point(8, 287);
-            this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(183, 59);
-            this.button6.TabIndex = 7;
-            this.button6.Text = "Открыть папку с бэкапами";
-            this.button6.UseVisualStyleBackColor = false;
-            this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
             // SysAdmin
             // 
@@ -139,18 +114,16 @@ namespace NailService
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(940, 557);
-            this.Controls.Add(this.button6);
             this.Controls.Add(this.button5);
             this.Controls.Add(this.button4);
             this.Controls.Add(pictureBox1);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(6);
             this.Name = "SysAdmin";
-            this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Админ ";
             ((System.ComponentModel.ISupportInitialize)(pictureBox1)).EndInit();
@@ -160,13 +133,10 @@ namespace NailService
         }
 
         #endregion
-
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Button button5;
-        private System.Windows.Forms.Button button6;
     }
 }

@@ -33,8 +33,8 @@
             this.FIOlabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.button1 = new System.Windows.Forms.Button();
             this.Exit = new System.Windows.Forms.Button();
-            this.ListButton = new System.Windows.Forms.Button();
             this.RecordButton = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.groupBox1.SuspendLayout();
@@ -75,8 +75,8 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.button1);
             this.groupBox2.Controls.Add(this.Exit);
-            this.groupBox2.Controls.Add(this.ListButton);
             this.groupBox2.Controls.Add(this.RecordButton);
             this.groupBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.groupBox2.Location = new System.Drawing.Point(13, 83);
@@ -84,6 +84,19 @@
             this.groupBox2.Size = new System.Drawing.Size(235, 466);
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
+            // 
+            // button1
+            // 
+            this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
+            this.button1.Location = new System.Drawing.Point(6, 81);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(223, 55);
+            this.button1.TabIndex = 5;
+            this.button1.Text = "Услуги";
+            this.button1.UseVisualStyleBackColor = false;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // Exit
             // 
@@ -97,19 +110,6 @@
             this.Exit.Text = "Выйти из аккаунта";
             this.Exit.UseVisualStyleBackColor = false;
             this.Exit.Click += new System.EventHandler(this.Exit_Click);
-            // 
-            // ListButton
-            // 
-            this.ListButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
-            this.ListButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.ListButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
-            this.ListButton.Location = new System.Drawing.Point(6, 81);
-            this.ListButton.Name = "ListButton";
-            this.ListButton.Size = new System.Drawing.Size(223, 55);
-            this.ListButton.TabIndex = 2;
-            this.ListButton.Text = "Справочники";
-            this.ListButton.UseVisualStyleBackColor = false;
-            this.ListButton.Click += new System.EventHandler(this.ListButton_Click);
             // 
             // RecordButton
             // 
@@ -170,6 +170,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button RecordButton;
         private System.Windows.Forms.Button Exit;
-        private System.Windows.Forms.Button ListButton;
+        private System.Windows.Forms.Button button1;
     }
 }

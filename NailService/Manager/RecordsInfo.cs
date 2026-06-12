@@ -1,48 +1,33 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Windows.Forms;
 
 namespace NailService
 {
-    /// <summary>
-    /// Форма для просмотра и редактирования информации о записи
-    /// Позволяет изменять мастера и статус, а также восстанавливать отмененные записи
-    /// </summary>
     public partial class RecordsInfo : Form
     {
         private int _recordId;
         private string _userFIO;
         private int _roleID;
 
-        // Текущие значения записи для отслеживания изменений
-        private int _currentClientId;
         private int _currentMasterId;
         private int _currentServiceId;
         private int _currentStatusId;
         private DateTime _currentDateTime;
+        private string _currentClientName;
+        private string _currentClientPhone;
 
-        private bool _isCancelled; // Флаг отмененной записи (статус 4)
+        private bool _isCancelled;
 
-        // Данные для чека
-        private string _clientFullName;
-        private string _clientPhone;
         private string _masterName;
         private string _serviceName;
         private decimal _servicePrice;
         private string _statusName;
 
-        /// <summary>
-        /// Конструктор формы информации о записи
-        /// </summary>
-        /// <param name="recordId">ID записи</param>
-        /// <param name="userFIO">ФИО текущего пользователя</param>
-        /// <param name="roleID">ID роли пользователя</param>
         public RecordsInfo(int recordId, string userFIO, int roleID)
         {
             InitializeComponent();
@@ -50,130 +35,113 @@ namespace NailService
             _userFIO = userFIO;
             _roleID = roleID;
 
-            LoadComboBoxData();
+            LoadMasters();
+            LoadStatuses();
+            LoadServices();
             LoadRecordData();
         }
 
-        #region Загрузка данных
+        #region Загрузка справочников
 
-        /// <summary>
-        /// Загрузка данных для комбобоксов (клиенты, мастера, услуги, статусы)
-        /// </summary>
-        private void LoadComboBoxData()
+        private void LoadMasters()
         {
             try
             {
                 using (MySqlConnection con = new MySqlConnection(Connection.ConnectionString))
                 {
                     con.Open();
-
-                    // Загрузка клиентов
-                    string clientQuery = @"
-                        SELECT IDClient, LastName, FirstName, MiddleName, Phone 
-                        FROM Client 
-                        WHERE IsActive = 1
-                        ORDER BY LastName, FirstName";
-
-                    MySqlCommand clientCmd = new MySqlCommand(clientQuery, con);
-                    DataTable clientDt = new DataTable();
-                    clientDt.Load(clientCmd.ExecuteReader());
-
-                    List<ClientItem> clients = new List<ClientItem>();
-                    foreach (DataRow row in clientDt.Rows)
-                    {
-                        string fullName = NameFormatter.FormatToShortName(
-                            row["LastName"].ToString(),
-                            row["FirstName"].ToString(),
-                            row["MiddleName"].ToString()
-                        );
-
-                        clients.Add(new ClientItem
-                        {
-                            ID = Convert.ToInt32(row["IDClient"]),
-                            FullName = fullName,
-                            Phone = row["Phone"].ToString(),
-                            LastName = row["LastName"].ToString(),
-                            FirstName = row["FirstName"].ToString(),
-                            MiddleName = row["MiddleName"].ToString()
-                        });
-                    }
-
-                    cmbClient.DisplayMember = "FullName";
-                    cmbClient.ValueMember = "ID";
-                    cmbClient.DataSource = clients;
-                    cmbClient.Enabled = false; // Клиента нельзя изменить
-                    cmbClient.SelectedIndex = -1;
-
-                    // Загрузка мастеров
-                    string masterQuery = @"
+                    string query = @"
                         SELECT m.IDMasters, u.LastName, u.FirstName, u.MiddleName
                         FROM Masters m
                         INNER JOIN Users u ON m.User = u.IDUser
-                        WHERE u.Role = 3 AND m.IsActive = 1";
+                        WHERE u.Role = 3 AND u.IsActive = 1";
 
-                    MySqlCommand masterCmd = new MySqlCommand(masterQuery, con);
-                    DataTable masterDt = new DataTable();
-                    masterDt.Load(masterCmd.ExecuteReader());
+                    MySqlCommand cmd = new MySqlCommand(query, con);
+                    DataTable dt = new DataTable();
+                    dt.Load(cmd.ExecuteReader());
 
-                    List<MasterItem> masters = new List<MasterItem>();
-                    foreach (DataRow row in masterDt.Rows)
+                    DataTable displayDt = new DataTable();
+                    displayDt.Columns.Add("IDMasters", typeof(int));
+                    displayDt.Columns.Add("FullName", typeof(string));
+
+                    foreach (DataRow row in dt.Rows)
                     {
                         string fullName = NameFormatter.FormatToShortName(
                             row["LastName"].ToString(),
                             row["FirstName"].ToString(),
                             row["MiddleName"].ToString()
                         );
-
-                        masters.Add(new MasterItem
-                        {
-                            ID = Convert.ToInt32(row["IDMasters"]),
-                            FullName = fullName
-                        });
+                        displayDt.Rows.Add(row["IDMasters"], fullName);
                     }
 
                     cmbMaster.DisplayMember = "FullName";
-                    cmbMaster.ValueMember = "ID";
-                    cmbMaster.DataSource = masters;
-                    cmbMaster.Enabled = true; // Мастера можно менять
+                    cmbMaster.ValueMember = "IDMasters";
+                    cmbMaster.DataSource = displayDt;
                     cmbMaster.SelectedIndex = -1;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка загрузки мастеров: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
 
-                    // Загрузка услуг
-                    string serviceQuery = "SELECT IDServices, ServiceName, Price FROM Services WHERE IsActive = 1 ORDER BY ServiceName";
-
-                    MySqlCommand serviceCmd = new MySqlCommand(serviceQuery, con);
-                    DataTable serviceDt = new DataTable();
-                    serviceDt.Load(serviceCmd.ExecuteReader());
+        private void LoadServices()
+        {
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(Connection.ConnectionString))
+                {
+                    con.Open();
+                    string query = "SELECT IDServices, ServiceName, Price FROM Services WHERE IsActive = 1 ORDER BY ServiceName";
+                    MySqlCommand cmd = new MySqlCommand(query, con);
+                    DataTable dt = new DataTable();
+                    dt.Load(cmd.ExecuteReader());
 
                     cmbService.DisplayMember = "ServiceName";
                     cmbService.ValueMember = "IDServices";
-                    cmbService.DataSource = serviceDt;
-                    cmbService.Enabled = false; // Услугу нельзя изменить
+                    cmbService.DataSource = dt;
+                    cmbService.Enabled = false;   // Услугу нельзя менять
                     cmbService.SelectedIndex = -1;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка загрузки услуг: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
 
-                    // Загрузка статусов
-                    string statusQuery = "SELECT IDStatus, StatusName FROM Status ORDER BY IDStatus";
-
-                    MySqlCommand statusCmd = new MySqlCommand(statusQuery, con);
-                    DataTable statusDt = new DataTable();
-                    statusDt.Load(statusCmd.ExecuteReader());
+        private void LoadStatuses()
+        {
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(Connection.ConnectionString))
+                {
+                    con.Open();
+                    string query = "SELECT IDStatus, StatusName FROM Status ORDER BY IDStatus";
+                    MySqlCommand cmd = new MySqlCommand(query, con);
+                    DataTable dt = new DataTable();
+                    dt.Load(cmd.ExecuteReader());
 
                     cmbStatus.DisplayMember = "StatusName";
                     cmbStatus.ValueMember = "IDStatus";
-                    cmbStatus.DataSource = statusDt;
-                    cmbStatus.Enabled = true; // Статус можно менять
+                    cmbStatus.DataSource = dt;
                     cmbStatus.SelectedIndex = -1;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка загрузки данных: {ex.Message}", "Ошибка",
+                MessageBox.Show($"Ошибка загрузки статусов: {ex.Message}", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        /// <summary>
-        /// Загрузка данных конкретной записи
-        /// </summary>
+        #endregion
+
+        #region Загрузка записи
+
         private void LoadRecordData()
         {
             try
@@ -183,15 +151,12 @@ namespace NailService
                     con.Open();
                     string query = @"
                         SELECT 
-                            r.Client,
                             r.Master,
                             r.Service,
                             r.Status,
                             r.Date,
-                            c.LastName as ClientLastName,
-                            c.FirstName as ClientFirstName,
-                            c.MiddleName as ClientMiddleName,
-                            c.Phone as ClientPhone,
+                            r.ClientName,
+                            r.ClientPhone,
                             u_m.LastName as MasterLastName,
                             u_m.FirstName as MasterFirstName,
                             u_m.MiddleName as MasterMiddleName,
@@ -199,7 +164,6 @@ namespace NailService
                             s.Price,
                             stat.StatusName
                         FROM Record r
-                        INNER JOIN Client c ON r.Client = c.IDClient
                         INNER JOIN Masters m ON r.Master = m.IDMasters
                         INNER JOIN Users u_m ON m.User = u_m.IDUser
                         INNER JOIN Services s ON r.Service = s.IDServices
@@ -213,57 +177,66 @@ namespace NailService
                     {
                         if (reader.Read())
                         {
-                            _currentClientId = Convert.ToInt32(reader["Client"]);
                             _currentMasterId = Convert.ToInt32(reader["Master"]);
                             _currentServiceId = Convert.ToInt32(reader["Service"]);
                             _currentStatusId = Convert.ToInt32(reader["Status"]);
                             _currentDateTime = Convert.ToDateTime(reader["Date"]);
+                            _currentClientName = reader["ClientName"].ToString();
+                            _currentClientPhone = reader["ClientPhone"].ToString();
 
-                            // Сохраняем данные для чека
-                            _clientFullName = NameFormatter.FormatToFullName(
-                                reader["ClientLastName"].ToString(),
-                                reader["ClientFirstName"].ToString(),
-                                reader["ClientMiddleName"].ToString()
-                            );
-                            _clientPhone = reader["ClientPhone"]?.ToString() ?? "";
                             _masterName = NameFormatter.FormatToShortName(
                                 reader["MasterLastName"].ToString(),
                                 reader["MasterFirstName"].ToString(),
                                 reader["MasterMiddleName"].ToString()
                             );
-                            _serviceName = reader["ServiceName"]?.ToString() ?? "";
+                            _serviceName = reader["ServiceName"].ToString();
                             _servicePrice = Convert.ToDecimal(reader["Price"]);
-                            _statusName = reader["StatusName"]?.ToString() ?? "";
+                            _statusName = reader["StatusName"].ToString();
 
-                            _isCancelled = (_currentStatusId == 4);
+                            _isCancelled = (_currentStatusId == 3); // 3 = Отменено
 
-                            // Отображение даты и времени
+                            // Отображение информации
+                            lblClientName.Text = $"Клиент: {_currentClientName}";
+                            lblClientPhone.Text = $"Телефон: {_currentClientPhone}";
                             lblDateTimeInfo.Text = $"Дата и время: {_currentDateTime:dd.MM.yyyy HH:mm}";
-                            lblDateTimeInfo.Font = new Font("MS Reference Sans Serif", 10, FontStyle.Bold);
+
+
+                            // Устанавливаем выбранную услугу (только для отображения)
+                            SelectServiceItem(_currentServiceId);
 
                             if (_isCancelled)
                             {
                                 lblDateTimeInfo.ForeColor = Color.Red;
-                                lblStatusInfo.Text = "⚠ ЗАПИСЬ ОТМЕНЕНА";
                                 lblStatusInfo.ForeColor = Color.Red;
-                                lblStatusInfo.Font = new Font("MS Reference Sans Serif", 12, FontStyle.Bold);
-                                lblStatusInfo.Visible = true;
                                 btnSave.Text = "Восстановить запись";
-                                btnPrintReceipt.Visible = false; // Скрываем кнопку печати для отмененных
+                                btnPrintReceipt.Visible = false;
+                                // При восстановлении можно выбрать мастера
+                                cmbMaster.Enabled = true;
+                                cmbStatus.Enabled = false;   // Статус не меняем, восстановление ставит статус 1
                             }
                             else
                             {
                                 lblDateTimeInfo.ForeColor = Color.HotPink;
-                                lblStatusInfo.Visible = false;
-                                btnSave.Text = "Изменить";
-                                btnPrintReceipt.Visible = true; // Показываем кнопку печати
+                                btnSave.Text = "Сохранить изменения";
+                                btnPrintReceipt.Visible = true;
+
+                                // Права доступа:
+                                // Администратор (2) – может менять и мастера, и статус
+                                // Менеджер (4) – может менять только статус (на "Отменено"), но не мастера
+                                bool canEditMaster = (_roleID == 2);
+                                bool canEditStatus = (_roleID == 2 || _roleID == 4);
+
+                                cmbMaster.Enabled = canEditMaster;
+                                cmbStatus.Enabled = canEditStatus;
                             }
 
-                            // Установка выбранных значений в комбобоксах
-                            SelectComboBoxItem(cmbClient, _currentClientId);
-                            SelectComboBoxItem(cmbMaster, _currentMasterId);
-                            SelectServiceItem(_currentServiceId);
+                            SelectMasterItem(_currentMasterId);
                             SelectStatusItem(_currentStatusId);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Запись не найдена!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            Close();
                         }
                     }
                 }
@@ -275,48 +248,12 @@ namespace NailService
             }
         }
 
-        #endregion
-
-        #region Выбор элементов в ComboBox
-
-        /// <summary>
-        /// Выбор элемента в ComboBox по ID (для списков с объектами)
-        /// </summary>
-        private void SelectComboBoxItem(ComboBox comboBox, int value)
-        {
-            if (comboBox.Items.Count == 0) return;
-
-            foreach (var item in comboBox.Items)
-            {
-                if (item == null) continue;
-
-                var property = item.GetType().GetProperty(comboBox.ValueMember);
-                if (property != null)
-                {
-                    object propValue = property.GetValue(item);
-                    if (propValue != null)
-                    {
-                        int itemValue = Convert.ToInt32(propValue);
-                        if (itemValue == value)
-                        {
-                            comboBox.SelectedItem = item;
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Выбор услуги в ComboBox по ID (для DataTable)
-        /// </summary>
         private void SelectServiceItem(int serviceId)
         {
             if (cmbService.Items.Count == 0) return;
-
             foreach (DataRowView item in cmbService.Items)
             {
-                if (item != null && Convert.ToInt32(item["IDServices"]) == serviceId)
+                if (Convert.ToInt32(item["IDServices"]) == serviceId)
                 {
                     cmbService.SelectedItem = item;
                     return;
@@ -324,83 +261,58 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Выбор статуса в ComboBox по ID (для DataTable)
-        /// </summary>
+        private void SelectMasterItem(int masterId)
+        {
+            if (cmbMaster.Items.Count == 0) return;
+            foreach (DataRowView item in cmbMaster.Items)
+            {
+                if (Convert.ToInt32(item["IDMasters"]) == masterId)
+                {
+                    cmbMaster.SelectedItem = item;
+                    break;
+                }
+            }
+        }
+
         private void SelectStatusItem(int statusId)
         {
             if (cmbStatus.Items.Count == 0) return;
-
             foreach (DataRowView item in cmbStatus.Items)
             {
-                if (item != null && Convert.ToInt32(item["IDStatus"]) == statusId)
+                if (Convert.ToInt32(item["IDStatus"]) == statusId)
                 {
                     cmbStatus.SelectedItem = item;
-                    return;
+                    break;
                 }
             }
         }
 
         #endregion
 
-        #region Обработка сохранения
+        #region Сохранение / Восстановление
 
-        /// <summary>
-        /// Обработчик кнопки сохранения/восстановления
-        /// </summary>
         private void btnSave_Click(object sender, EventArgs e)
         {
             if (_isCancelled)
-            {
-                RestoreCancelledRecord();
-            }
+                RestoreRecord();
             else
-            {
-                EditRecord();
-            }
+                UpdateRecord();
         }
 
-        /// <summary>
-        /// Восстановление отмененной записи
-        /// </summary>
-        private void RestoreCancelledRecord()
+        private void RestoreRecord()
         {
-            if (cmbClient.SelectedItem == null)
-            {
-                MessageBox.Show("Ошибка загрузки клиента!", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
             if (cmbMaster.SelectedItem == null)
             {
-                MessageBox.Show("Выберите мастера!", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Выберите мастера!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (cmbService.SelectedItem == null)
-            {
-                MessageBox.Show("Ошибка загрузки услуги!", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            int newMasterId = (int)cmbMaster.SelectedValue;
+            int newMasterId = Convert.ToInt32(cmbMaster.SelectedValue);
 
             if (!IsTimeSlotAvailable(newMasterId, _currentDateTime, _recordId))
             {
-                DialogResult result = MessageBox.Show(
-                    "Это время уже занято у выбранного мастера.\n\n" +
-                    "Хотите перенести запись на другое время?",
-                    "Время занято",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question);
-
-                if (result == DialogResult.Yes)
-                {
-                    SelectNewDateTime();
-                }
+                MessageBox.Show("Это время уже занято у выбранного мастера.",
+                    "Время занято", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -409,87 +321,40 @@ namespace NailService
                 using (MySqlConnection con = new MySqlConnection(Connection.ConnectionString))
                 {
                     con.Open();
-
-                    string query = @"
-                        UPDATE Record 
-                        SET Master = @Master,
-                            Status = 1
-                        WHERE IDRecord = @IDRecord";
-
+                    string query = "UPDATE Record SET Master = @Master, Status = 1 WHERE IDRecord = @IDRecord";
                     MySqlCommand cmd = new MySqlCommand(query, con);
-                    cmd.Parameters.AddWithValue("@IDRecord", _recordId);
                     cmd.Parameters.AddWithValue("@Master", newMasterId);
+                    cmd.Parameters.AddWithValue("@IDRecord", _recordId);
+                    cmd.ExecuteNonQuery();
 
-                    int rowsAffected = cmd.ExecuteNonQuery();
-
-                    if (rowsAffected > 0)
-                    {
-                        MessageBox.Show("Запись успешно восстановлена!", "Успех",
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                        DialogResult = DialogResult.OK;
-                        Close();
-                    }
+                    MessageBox.Show("Запись успешно восстановлена!", "Успех",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    DialogResult = DialogResult.OK;
+                    Close();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при восстановлении записи: {ex.Message}", "Ошибка",
+                MessageBox.Show($"Ошибка восстановления: {ex.Message}", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        /// <summary>
-        /// Редактирование существующей записи
-        /// </summary>
-        private void EditRecord()
+        private void UpdateRecord()
         {
-            if (cmbClient.SelectedItem == null)
-            {
-                MessageBox.Show("Ошибка загрузки клиента!", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
             if (cmbMaster.SelectedItem == null)
             {
-                MessageBox.Show("Выберите мастера!", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Выберите мастера!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-
-            if (cmbService.SelectedItem == null)
-            {
-                MessageBox.Show("Ошибка загрузки услуги!", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
             if (cmbStatus.SelectedItem == null)
             {
-                MessageBox.Show("Выберите статус!", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Выберите статус!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            int newClientId = (int)cmbClient.SelectedValue;
-            int newMasterId = (int)cmbMaster.SelectedValue;
-            int newServiceId = (int)cmbService.SelectedValue;
-            int newStatusId = (int)cmbStatus.SelectedValue;
-
-            if (newClientId != _currentClientId)
-            {
-                MessageBox.Show("Нельзя изменить клиента!", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            if (newServiceId != _currentServiceId)
-            {
-                MessageBox.Show("Нельзя изменить услугу!", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+            int newMasterId = Convert.ToInt32(cmbMaster.SelectedValue);
+            int newStatusId = Convert.ToInt32(cmbStatus.SelectedValue);
 
             if (newMasterId == _currentMasterId && newStatusId == _currentStatusId)
             {
@@ -498,23 +363,11 @@ namespace NailService
                 return;
             }
 
-            if (newMasterId != _currentMasterId)
+            if (newMasterId != _currentMasterId && !IsTimeSlotAvailable(newMasterId, _currentDateTime, _recordId))
             {
-                if (!IsTimeSlotAvailable(newMasterId, _currentDateTime, _recordId))
-                {
-                    DialogResult result = MessageBox.Show(
-                        "Это время уже занято у выбранного мастера.\n\n" +
-                        "Хотите перенести запись на другое время?",
-                        "Время занято",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Question);
-
-                    if (result == DialogResult.Yes)
-                    {
-                        SelectNewDateTime();
-                    }
-                    return;
-                }
+                MessageBox.Show("Это время уже занято у выбранного мастера.",
+                    "Время занято", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
 
             try
@@ -522,43 +375,26 @@ namespace NailService
                 using (MySqlConnection con = new MySqlConnection(Connection.ConnectionString))
                 {
                     con.Open();
-                    string query = @"
-                        UPDATE Record 
-                        SET Master = @Master,
-                            Status = @Status
-                        WHERE IDRecord = @IDRecord";
-
+                    string query = "UPDATE Record SET Master = @Master, Status = @Status WHERE IDRecord = @IDRecord";
                     MySqlCommand cmd = new MySqlCommand(query, con);
-                    cmd.Parameters.AddWithValue("@IDRecord", _recordId);
                     cmd.Parameters.AddWithValue("@Master", newMasterId);
                     cmd.Parameters.AddWithValue("@Status", newStatusId);
+                    cmd.Parameters.AddWithValue("@IDRecord", _recordId);
+                    cmd.ExecuteNonQuery();
 
-                    int rowsAffected = cmd.ExecuteNonQuery();
-
-                    if (rowsAffected > 0)
-                    {
-                        MessageBox.Show("Запись успешно обновлена!", "Успех",
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                        DialogResult = DialogResult.OK;
-                        Close();
-                    }
+                    MessageBox.Show("Запись обновлена!", "Успех",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    DialogResult = DialogResult.OK;
+                    Close();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при обновлении записи: {ex.Message}", "Ошибка",
+                MessageBox.Show($"Ошибка обновления: {ex.Message}", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        #endregion
-
-        #region Проверка доступности времени
-
-        /// <summary>
-        /// Проверка доступности временного слота для мастера
-        /// </summary>
         private bool IsTimeSlotAvailable(int masterId, DateTime dateTime, int excludeRecordId)
         {
             try
@@ -572,14 +408,11 @@ namespace NailService
                         AND Date = @Date 
                         AND Status IN (1, 2)
                         AND IDRecord != @excludeRecordId";
-
                     MySqlCommand cmd = new MySqlCommand(query, con);
                     cmd.Parameters.AddWithValue("@Master", masterId);
                     cmd.Parameters.AddWithValue("@Date", dateTime);
                     cmd.Parameters.AddWithValue("@excludeRecordId", excludeRecordId);
-
-                    int count = Convert.ToInt32(cmd.ExecuteScalar());
-                    return count == 0;
+                    return Convert.ToInt32(cmd.ExecuteScalar()) == 0;
                 }
             }
             catch
@@ -588,43 +421,20 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Выбор нового времени для переноса записи
-        /// </summary>
-        private void SelectNewDateTime()
-        {
-            MessageBox.Show("Функция переноса времени будет доступна в следующей версии.",
-                "В разработке", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-            this.DialogResult = DialogResult.Cancel;
-            this.Close();
-        }
-
         #endregion
 
-        #region Формирование чека
+        #region Печать чека
 
-        /// <summary>
-        /// Обработчик кнопки печати чека
-        /// </summary>
-        private void btnPrintReceipt_Click(object sender, EventArgs e)
-        {
-            GenerateReceipt();
-        }
+        private void btnPrintReceipt_Click(object sender, EventArgs e) => GenerateReceipt();
 
-        /// <summary>
-        /// Генерация чека в формате Word
-        /// </summary>
         private void GenerateReceipt()
         {
             try
             {
-                Microsoft.Office.Interop.Word.Application wordApp = new Microsoft.Office.Interop.Word.Application();
+                var wordApp = new Microsoft.Office.Interop.Word.Application();
                 wordApp.Visible = true;
+                var doc = wordApp.Documents.Add();
 
-                Microsoft.Office.Interop.Word.Document doc = wordApp.Documents.Add();
-
-                // Настройка страницы
                 doc.PageSetup.TopMargin = wordApp.CentimetersToPoints(2f);
                 doc.PageSetup.BottomMargin = wordApp.CentimetersToPoints(2f);
                 doc.PageSetup.LeftMargin = wordApp.CentimetersToPoints(3f);
@@ -633,7 +443,6 @@ namespace NailService
                 object missing = System.Reflection.Missing.Value;
                 Microsoft.Office.Interop.Word.Paragraph para;
 
-                // ЗАГОЛОВОК
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = "ЧЕК";
                 para.Range.Font.Bold = 1;
@@ -643,7 +452,6 @@ namespace NailService
                 para.Range.ParagraphFormat.SpaceAfter = 10;
                 para.Range.InsertParagraphAfter();
 
-                // НАЗВАНИЕ САЛОНА
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = "Салон красоты NailService";
                 para.Range.Font.Size = 16;
@@ -653,7 +461,6 @@ namespace NailService
                 para.Range.ParagraphFormat.SpaceAfter = 20;
                 para.Range.InsertParagraphAfter();
 
-                // РАЗДЕЛИТЕЛЬ
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = "═══════════════════════════════════════";
                 para.Range.Font.Size = 12;
@@ -662,12 +469,10 @@ namespace NailService
                 para.Range.ParagraphFormat.SpaceAfter = 10;
                 para.Range.InsertParagraphAfter();
 
-                // ДАТА И ВРЕМЯ
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = $"Дата: {_currentDateTime:dd.MM.yyyy}";
                 para.Range.Font.Size = 14;
                 para.Range.Font.Name = "Times New Roman";
-                para.Range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphLeft;
                 para.Range.ParagraphFormat.SpaceAfter = 5;
                 para.Range.InsertParagraphAfter();
 
@@ -675,58 +480,47 @@ namespace NailService
                 para.Range.Text = $"Время: {_currentDateTime:HH:mm}";
                 para.Range.Font.Size = 14;
                 para.Range.Font.Name = "Times New Roman";
-                para.Range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphLeft;
                 para.Range.ParagraphFormat.SpaceAfter = 10;
                 para.Range.InsertParagraphAfter();
 
-                // ИНФОРМАЦИЯ О КЛИЕНТЕ
                 para = doc.Content.Paragraphs.Add(missing);
-                para.Range.Text = $"Клиент: {_clientFullName}";
+                para.Range.Text = $"Клиент: {_currentClientName}";
                 para.Range.Font.Size = 14;
                 para.Range.Font.Name = "Times New Roman";
-                para.Range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphLeft;
                 para.Range.ParagraphFormat.SpaceAfter = 5;
                 para.Range.InsertParagraphAfter();
 
-                if (!string.IsNullOrEmpty(_clientPhone))
+                if (!string.IsNullOrEmpty(_currentClientPhone))
                 {
                     para = doc.Content.Paragraphs.Add(missing);
-                    para.Range.Text = $"Телефон: {_clientPhone}";
+                    para.Range.Text = $"Телефон: {_currentClientPhone}";
                     para.Range.Font.Size = 14;
                     para.Range.Font.Name = "Times New Roman";
-                    para.Range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphLeft;
                     para.Range.ParagraphFormat.SpaceAfter = 10;
                     para.Range.InsertParagraphAfter();
                 }
 
-                // УСЛУГА
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = $"Услуга: {_serviceName}";
                 para.Range.Font.Size = 14;
                 para.Range.Font.Name = "Times New Roman";
-                para.Range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphLeft;
                 para.Range.ParagraphFormat.SpaceAfter = 5;
                 para.Range.InsertParagraphAfter();
 
-                // МАСТЕР
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = $"Мастер: {_masterName}";
                 para.Range.Font.Size = 14;
                 para.Range.Font.Name = "Times New Roman";
-                para.Range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphLeft;
                 para.Range.ParagraphFormat.SpaceAfter = 5;
                 para.Range.InsertParagraphAfter();
 
-                // СТАТУС
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = $"Статус: {_statusName}";
                 para.Range.Font.Size = 14;
                 para.Range.Font.Name = "Times New Roman";
-                para.Range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphLeft;
                 para.Range.ParagraphFormat.SpaceAfter = 15;
                 para.Range.InsertParagraphAfter();
 
-                // РАЗДЕЛИТЕЛЬ
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = "───────────────────────────────────────";
                 para.Range.Font.Size = 12;
@@ -735,61 +529,45 @@ namespace NailService
                 para.Range.ParagraphFormat.SpaceAfter = 10;
                 para.Range.InsertParagraphAfter();
 
-                // ЦЕНЫ
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = $"Стоимость: {_servicePrice:N0} руб.";
                 para.Range.Font.Size = 14;
                 para.Range.Font.Name = "Times New Roman";
-                para.Range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphLeft;
                 para.Range.ParagraphFormat.SpaceAfter = 5;
                 para.Range.InsertParagraphAfter();
 
-                // Проверяем наличие скидки (утренняя скидка до 12 часов)
+                decimal discount = 0;
                 if (_currentDateTime.Hour < 12)
+                    discount = 5;
+                decimal total = _servicePrice;
+                if (discount > 0)
                 {
-                    decimal discountAmount = _servicePrice * 5 / 100;
-                    decimal totalPrice = _servicePrice - discountAmount;
-
+                    decimal discountAmount = _servicePrice * discount / 100;
+                    total = _servicePrice - discountAmount;
                     para = doc.Content.Paragraphs.Add(missing);
-                    para.Range.Text = $"Скидка: 5% (утренняя)";
+                    para.Range.Text = $"Скидка: {discount}% (утренняя)";
                     para.Range.Font.Size = 14;
                     para.Range.Font.Name = "Times New Roman";
                     para.Range.Font.Color = Microsoft.Office.Interop.Word.WdColor.wdColorRed;
-                    para.Range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphLeft;
                     para.Range.ParagraphFormat.SpaceAfter = 5;
                     para.Range.InsertParagraphAfter();
-
-                    para = doc.Content.Paragraphs.Add(missing);
-                    para.Range.Text = $"ИТОГО К ОПЛАТЕ: {totalPrice:N0} руб.";
-                    para.Range.Font.Bold = 1;
-                    para.Range.Font.Size = 16;
-                    para.Range.Font.Name = "Times New Roman";
-                    para.Range.Font.Color = Microsoft.Office.Interop.Word.WdColor.wdColorDarkGreen;
-                    para.Range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphLeft;
-                    para.Range.ParagraphFormat.SpaceAfter = 20;
-                    para.Range.InsertParagraphAfter();
-                }
-                else
-                {
-                    para = doc.Content.Paragraphs.Add(missing);
-                    para.Range.Text = $"ИТОГО К ОПЛАТЕ: {_servicePrice:N0} руб.";
-                    para.Range.Font.Bold = 1;
-                    para.Range.Font.Size = 16;
-                    para.Range.Font.Name = "Times New Roman";
-                    para.Range.Font.Color = Microsoft.Office.Interop.Word.WdColor.wdColorDarkGreen;
-                    para.Range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphLeft;
-                    para.Range.ParagraphFormat.SpaceAfter = 20;
-                    para.Range.InsertParagraphAfter();
                 }
 
-                // ПОДПИСЬ
+                para = doc.Content.Paragraphs.Add(missing);
+                para.Range.Text = $"ИТОГО К ОПЛАТЕ: {total:N0} руб.";
+                para.Range.Font.Bold = 1;
+                para.Range.Font.Size = 16;
+                para.Range.Font.Name = "Times New Roman";
+                para.Range.Font.Color = Microsoft.Office.Interop.Word.WdColor.wdColorDarkGreen;
+                para.Range.ParagraphFormat.SpaceAfter = 20;
+                para.Range.InsertParagraphAfter();
+
                 para = doc.Content.Paragraphs.Add(missing);
                 para.Range.Text = "Спасибо за визит!";
                 para.Range.Font.Size = 14;
                 para.Range.Font.Italic = 1;
                 para.Range.Font.Name = "Times New Roman";
                 para.Range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphCenter;
-                para.Range.ParagraphFormat.SpaceAfter = 5;
                 para.Range.InsertParagraphAfter();
 
                 para = doc.Content.Paragraphs.Add(missing);
@@ -800,32 +578,82 @@ namespace NailService
                 para.Range.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphCenter;
                 para.Range.InsertParagraphAfter();
 
-                // Сохраняем документ
                 string fileName = $"Чек_{_currentDateTime:yyyyMMdd_HHmm}.docx";
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                string fullPath = System.IO.Path.Combine(desktopPath, fileName);
-
+                string fullPath = Path.Combine(desktopPath, fileName);
                 doc.SaveAs(fullPath);
 
-                MessageBox.Show($"Чек сохранен на рабочий стол:\n{fullPath}", "Успех",
+                MessageBox.Show($"Чек сохранён на рабочий стол:\n{fullPath}", "Успех",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при создании чека: {ex.Message}", "Ошибка",
+                MessageBox.Show($"Ошибка создания чека: {ex.Message}", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         #endregion
 
-        /// <summary>
-        /// Закрытие формы без сохранения
-        /// </summary>
         private void btnBack_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
             Close();
+        }
+
+
+
+        /// <summary>
+        /// Автоматическое форматирование номера телефона при вводе
+        /// </summary>
+        private void lblClientPhone_TextChanged(object sender, EventArgs e)
+        {
+            int originalSelectionStart = lblClientPhone.SelectionStart;
+            string originalText = lblClientPhone.Text;
+
+            string filteredText = InputValidator.FilterToPhone(originalText);
+            string formattedText = InputValidator.FormatPhoneNumber(filteredText);
+
+            if (formattedText != originalText)
+            {
+                lblClientPhone.Text = formattedText;
+                int adjustedPosition = GetAdjustedCursorPosition(originalSelectionStart, originalText, formattedText);
+                lblClientPhone.SelectionStart = Math.Min(adjustedPosition, formattedText.Length);
+            }
+        }
+
+        /// <summary>
+        /// Корректировка позиции курсора после форматирования телефона
+        /// </summary>
+        private int GetAdjustedCursorPosition(int originalPosition, string oldText, string newText)
+        {
+            if (originalPosition >= oldText.Length)
+                return newText.Length;
+
+            int formatCharsBeforeCursor = 0;
+            char[] formatChars = { '(', ')', ' ', '-', '+' };
+
+            for (int i = 0; i < originalPosition && i < newText.Length; i++)
+            {
+                if (formatChars.Contains(newText[i]))
+                {
+                    formatCharsBeforeCursor++;
+                }
+            }
+
+            return originalPosition + formatCharsBeforeCursor;
+        }
+
+        private void lblClientName_TextChanged(object sender, EventArgs e)
+        {
+            int selectionStart = lblClientName.SelectionStart;
+            string filteredText = InputValidator.FilterToRussianLetters(lblClientName.Text);
+
+            if (filteredText != lblClientName.Text)
+            {
+                lblClientName.Text = filteredText;
+                lblClientName.SelectionStart = Math.Min(selectionStart, lblClientName.Text.Length);
+            }
         }
     }
 }

@@ -13,12 +13,24 @@ namespace NailService
         public int RecordID { get; set; }
         public string MasterName { get; set; }
         public string ClientName { get; set; }
+        public string ClientPhone { get; set; }
         public DateTime Date { get; set; }
         public string Status { get; set; }
         public string Service { get; set; }
         public decimal Price { get; set; }
         public string UserName { get; set; }
         public int StatusID { get; set; }
+        public int Discount { get; set; }
+
+        public decimal FinalPrice
+        {
+            get
+            {
+                if (Discount > 0)
+                    return Price - (Price * Discount / 100);
+                return Price;
+            }
+        }
     }
 
     /// <summary>
@@ -54,28 +66,27 @@ namespace NailService
 
                     string query = @"
                         SELECT 
-                        r.IDRecord,
-                        u_m.LastName as MasterLastName,
-                        u_m.FirstName as MasterFirstName, 
-                        u_m.MiddleName as MasterMiddleName,
-                        c.LastName as ClientLastName,
-                        c.FirstName as ClientFirstName,
-                        c.MiddleName as ClientMiddleName,
-                        r.Date,
-                        s.StatusName as Status,
-                        sv.ServiceName as Service,
-                        sv.Price,
-                        u_u.LastName as UserLastName,
-                        u_u.FirstName as UserFirstName,
-                        u_u.MiddleName as UserMiddleName,
-                        r.Status as StatusID
-                    FROM Record r
-                    LEFT JOIN Masters m ON r.Master = m.IDMasters
-                    LEFT JOIN Users u_m ON m.User = u_m.IDUser
-                    LEFT JOIN Client c ON r.Client = c.IDClient
-                    LEFT JOIN Status s ON r.Status = s.IDStatus
-                    LEFT JOIN Services sv ON r.Service = sv.IDServices
-                    LEFT JOIN Users u_u ON r.User = u_u.IDUser;";
+                            r.IDRecord,
+                            u_m.LastName as MasterLastName,
+                            u_m.FirstName as MasterFirstName, 
+                            u_m.MiddleName as MasterMiddleName,
+                            r.ClientName,
+                            r.ClientPhone,
+                            r.Date,
+                            s.StatusName as Status,
+                            sv.ServiceName as Service,
+                            sv.Price,
+                            u_u.LastName as UserLastName,
+                            u_u.FirstName as UserFirstName,
+                            u_u.MiddleName as UserMiddleName,
+                            r.Status as StatusID,
+                            r.discount
+                        FROM Record r
+                        LEFT JOIN Masters m ON r.Master = m.IDMasters
+                        LEFT JOIN Users u_m ON m.User = u_m.IDUser
+                        LEFT JOIN Status s ON r.Status = s.IDStatus
+                        LEFT JOIN Services sv ON r.Service = sv.IDServices
+                        LEFT JOIN Users u_u ON r.User = u_u.IDUser;";
 
                     using (var command = new MySqlCommand(query, connection))
                     using (var reader = command.ExecuteReader())
@@ -88,12 +99,6 @@ namespace NailService
                                 reader["MasterMiddleName"].ToString()
                             );
 
-                            string clientShortName = NameFormatter.FormatToShortName(
-                                reader["ClientLastName"].ToString(),
-                                reader["ClientFirstName"].ToString(),
-                                reader["ClientMiddleName"].ToString()
-                            );
-
                             string userShortName = NameFormatter.FormatToShortName(
                                 reader["UserLastName"].ToString(),
                                 reader["UserFirstName"].ToString(),
@@ -104,13 +109,15 @@ namespace NailService
                             {
                                 RecordID = Convert.ToInt32(reader["IDRecord"]),
                                 MasterName = masterShortName,
-                                ClientName = clientShortName,
+                                ClientName = reader["ClientName"]?.ToString() ?? "Не указан",
+                                ClientPhone = reader["ClientPhone"]?.ToString() ?? "",
                                 Date = Convert.ToDateTime(reader["Date"]),
                                 Status = reader["Status"].ToString(),
                                 Service = reader["Service"].ToString(),
                                 Price = Convert.ToDecimal(reader["Price"]),
                                 UserName = userShortName,
-                                StatusID = Convert.ToInt32(reader["StatusID"])
+                                StatusID = Convert.ToInt32(reader["StatusID"]),
+                                Discount = reader["discount"] != DBNull.Value ? Convert.ToInt32(reader["discount"]) : 0
                             });
                         }
                     }
@@ -137,7 +144,7 @@ namespace NailService
                 using (var connection = new MySqlConnection(_connectionString))
                 {
                     connection.Open();
-                    string query = "SELECT StatusName FROM Status ORDER BY StatusName";
+                    string query = "SELECT StatusName FROM Status ORDER BY IDStatus";
 
                     using (var command = new MySqlCommand(query, connection))
                     using (var reader = command.ExecuteReader())
@@ -170,7 +177,7 @@ namespace NailService
                 using (var connection = new MySqlConnection(_connectionString))
                 {
                     connection.Open();
-                    string query = "SELECT IDStatus, StatusName FROM Status ORDER BY StatusName";
+                    string query = "SELECT IDStatus, StatusName FROM Status ORDER BY IDStatus";
 
                     using (var command = new MySqlCommand(query, connection))
                     using (var reader = command.ExecuteReader())

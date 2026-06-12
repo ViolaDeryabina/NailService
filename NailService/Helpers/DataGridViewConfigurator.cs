@@ -1,58 +1,255 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 
 namespace NailService
 {
-    /// <summary>
-    /// Статический класс для настройки внешнего вида и поведения DataGridView
-    /// Содержит методы конфигурации для различных типов таблиц в приложении
-    /// </summary>
     public static class DataGridViewConfigurator
     {
         /// <summary>
-        /// Настройка DataGridView для отображения списка услуг с изображениями
+        /// Настройка DataGridView для отображения услуг
         /// </summary>
-        /// <param name="dataGridViewServices">DataGridView для настройки</param>
-        /// <param name="thumbnailWidth">Ширина колонки с миниатюрами (по умолчанию 80)</param>
-        public static void ConfigureServicesDataGridView(DataGridView dataGridViewServices, int thumbnailWidth = 80)
+        public static void ConfigureServicesDataGridView(DataGridView dataGridView)
         {
-            // Скрытие служебных колонок
-            if (dataGridViewServices.Columns.Contains("ID"))
-                dataGridViewServices.Columns["ID"].Visible = false;
+            if (dataGridView == null) return;
 
-            if (dataGridViewServices.Columns.Contains("CategoryID"))
-                dataGridViewServices.Columns["CategoryID"].Visible = false;
-
-            if (dataGridViewServices.Columns.Contains("Имя файла"))
-                dataGridViewServices.Columns["Имя файла"].Visible = false;
-
-            // Настройка колонки с изображением услуги
-            if (dataGridViewServices.Columns.Contains("Миниатюра"))
+            try
             {
-                dataGridViewServices.Columns["Миниатюра"].Width = thumbnailWidth;
-                dataGridViewServices.Columns["Миниатюра"].HeaderText = "Фото";
-                dataGridViewServices.Columns["Миниатюра"].Resizable = DataGridViewTriState.False;
+                // Настройка внешнего вида
+                dataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+                dataGridView.AllowUserToResizeRows = false;
+                dataGridView.RowHeadersVisible = false;
+                dataGridView.ReadOnly = true;
+                dataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                dataGridView.MultiSelect = false;
 
-                if (dataGridViewServices.Columns["Миниатюра"] is DataGridViewImageColumn imageColumn)
+                // Настройка высоты строк
+                dataGridView.RowTemplate.Height = 80;
+                dataGridView.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
+
+                // Настройка колонок, если они существуют
+                if (dataGridView.Columns.Contains("ID"))
                 {
-                    imageColumn.ImageLayout = DataGridViewImageCellLayout.Zoom;
+                    dataGridView.Columns["ID"].Visible = false;
+                }
+
+                if (dataGridView.Columns.Contains("CategoryID"))
+                {
+                    dataGridView.Columns["CategoryID"].Visible = false;
+                }
+
+                if (dataGridView.Columns.Contains("Миниатюра") && dataGridView.Columns["Миниатюра"] != null)
+                {
+                    dataGridView.Columns["Миниатюра"].Width = 100;
+                    dataGridView.Columns["Миниатюра"].MinimumWidth = 80;
+                    dataGridView.Columns["Миниатюра"].HeaderText = "Фото";
+                    dataGridView.Columns["Миниатюра"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                }
+
+                if (dataGridView.Columns.Contains("Название услуги") && dataGridView.Columns["Название услуги"] != null)
+                {
+                    dataGridView.Columns["Название услуги"].Width = 180;
+                    dataGridView.Columns["Название услуги"].MinimumWidth = 120;
+                }
+
+                if (dataGridView.Columns.Contains("Описание") && dataGridView.Columns["Описание"] != null)
+                {
+                    dataGridView.Columns["Описание"].Width = 250;
+                    dataGridView.Columns["Описание"].MinimumWidth = 150;
+                    dataGridView.Columns["Описание"].DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+                }
+
+                if (dataGridView.Columns.Contains("Цена") && dataGridView.Columns["Цена"] != null)
+                {
+                    dataGridView.Columns["Цена"].Width = 100;
+                    dataGridView.Columns["Цена"].MinimumWidth = 80;
+                    dataGridView.Columns["Цена"].DefaultCellStyle.Format = "N0";
+                    dataGridView.Columns["Цена"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                }
+
+                if (dataGridView.Columns.Contains("Категория") && dataGridView.Columns["Категория"] != null)
+                {
+                    dataGridView.Columns["Категория"].Width = 120;
+                    dataGridView.Columns["Категория"].MinimumWidth = 100;
+                }
+
+                // Включаем AutoSizeMode для оставшихся колонок
+                foreach (DataGridViewColumn column in dataGridView.Columns)
+                {
+                    if (column.Visible &&
+                        column.Name != "Миниатюра" &&
+                        column.Name != "Название услуги" &&
+                        column.Name != "Описание" &&
+                        column.Name != "Цена" &&
+                        column.Name != "Категория")
+                    {
+                        column.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    }
                 }
             }
-
-            // Настройка колонки с описанием (многострочный текст)
-            if (dataGridViewServices.Columns.Contains("Описание"))
+            catch (Exception ex)
             {
-                dataGridViewServices.Columns["Описание"].DefaultCellStyle.WrapMode = DataGridViewTriState.True;
-                dataGridViewServices.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+                System.Diagnostics.Debug.WriteLine($"Ошибка настройки DataGridView: {ex.Message}");
             }
+        }
 
-            // Настройка колонки с ценой (формат валюты и выравнивание)
-            if (dataGridViewServices.Columns.Contains("Цена"))
+        /// <summary>
+        /// Настройка DataGridView для отображения пользователей
+        /// </summary>
+        public static void ConfigureUsersDataGridView(DataGridView dataGridView)
+        {
+            if (dataGridView == null) return;
+
+            try
             {
-                dataGridViewServices.Columns["Цена"].DefaultCellStyle.Format = "C2";
-                dataGridViewServices.Columns["Цена"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                dataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                dataGridView.RowHeadersVisible = false;
+                dataGridView.ReadOnly = true;
+                dataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                dataGridView.MultiSelect = false;
+
+                if (dataGridView.Columns.Contains("ID"))
+                {
+                    dataGridView.Columns["ID"].Visible = false;
+                }
+
+                if (dataGridView.Columns.Contains("RoleID"))
+                {
+                    dataGridView.Columns["RoleID"].Visible = false;
+                }
+
+                if (dataGridView.Columns.Contains("Пароль"))
+                {
+                    dataGridView.Columns["Пароль"].Visible = false;
+                }
+
+                if (dataGridView.Columns.Contains("ФИО") && dataGridView.Columns["ФИО"] != null)
+                {
+                    dataGridView.Columns["ФИО"].FillWeight = 35;
+                }
+
+                if (dataGridView.Columns.Contains("Логин") && dataGridView.Columns["Логин"] != null)
+                {
+                    dataGridView.Columns["Логин"].FillWeight = 30;
+                }
+
+                if (dataGridView.Columns.Contains("Роль") && dataGridView.Columns["Роль"] != null)
+                {
+                    dataGridView.Columns["Роль"].FillWeight = 35;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка настройки DataGridView пользователей: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Настройка DataGridView для отображения мастеров
+        /// </summary>
+        public static void ConfigureMastersDataGridView(DataGridView dataGridView)
+        {
+            if (dataGridView == null) return;
+
+            try
+            {
+                dataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                dataGridView.RowHeadersVisible = false;
+                dataGridView.ReadOnly = true;
+                dataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                dataGridView.MultiSelect = false;
+
+                if (dataGridView.Columns.Contains("ID"))
+                {
+                    dataGridView.Columns["ID"].Visible = false;
+                }
+
+                if (dataGridView.Columns.Contains("ФИО") && dataGridView.Columns["ФИО"] != null)
+                {
+                    dataGridView.Columns["ФИО"].FillWeight = 30;
+                }
+
+                if (dataGridView.Columns.Contains("Описание") && dataGridView.Columns["Описание"] != null)
+                {
+                    dataGridView.Columns["Описание"].FillWeight = 50;
+                    dataGridView.Columns["Описание"].DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+                }
+
+                if (dataGridView.Columns.Contains("Телефон") && dataGridView.Columns["Телефон"] != null)
+                {
+                    dataGridView.Columns["Телефон"].FillWeight = 20;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка настройки DataGridView мастеров: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Настройка DataGridView для отображения клиентов
+        /// </summary>
+        public static void ConfigureClientsDataGridView(DataGridView dataGridView)
+        {
+            if (dataGridView == null) return;
+
+            try
+            {
+                dataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                dataGridView.RowHeadersVisible = false;
+                dataGridView.ReadOnly = true;
+                dataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                dataGridView.MultiSelect = false;
+
+                if (dataGridView.Columns.Contains("ID"))
+                {
+                    dataGridView.Columns["ID"].Visible = false;
+                }
+
+                if (dataGridView.Columns.Contains("ФИО") && dataGridView.Columns["ФИО"] != null)
+                {
+                    dataGridView.Columns["ФИО"].FillWeight = 60;
+                }
+
+                if (dataGridView.Columns.Contains("Телефон") && dataGridView.Columns["Телефон"] != null)
+                {
+                    dataGridView.Columns["Телефон"].FillWeight = 40;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка настройки DataGridView клиентов: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Настройка DataGridView для отображения статусов
+        /// </summary>
+        public static void ConfigureStatusesDataGridView(DataGridView dataGridView)
+        {
+            if (dataGridView == null) return;
+
+            try
+            {
+                dataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                dataGridView.RowHeadersVisible = false;
+                dataGridView.ReadOnly = true;
+                dataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                dataGridView.MultiSelect = false;
+
+                if (dataGridView.Columns.Contains("ID"))
+                {
+                    dataGridView.Columns["ID"].Visible = false;
+                }
+
+                if (dataGridView.Columns.Contains("Название статуса") && dataGridView.Columns["Название статуса"] != null)
+                {
+                    dataGridView.Columns["Название статуса"].FillWeight = 100;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка настройки DataGridView статусов: {ex.Message}");
             }
         }
     }
