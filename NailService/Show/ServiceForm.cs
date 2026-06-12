@@ -22,7 +22,16 @@ namespace NailService
                 InitializeComponent();
                 _roleID = RoleID;
                 _userName = FIO;
-                _userId = userId; // сохранить userId
+            if (RoleID == 2)
+            {
+                txtFIO.Text = $"Админ: {FIO}";
+            }
+            else if (RoleID == 4)
+            {
+                txtFIO.Text = $"Менеджер: {FIO}";
+            }
+
+            _userId = userId; // сохранить userId
                 _connection = Connection.ConnectionString;
                 _editUserClass = new EditUserClass();
                 _imageService = new ImageService();

@@ -26,6 +26,7 @@ namespace NailService
             InitializeComponent();
             _roleID = RoleID;
             _userName = FIO;
+            txtFIO.Text = $"Админ: {FIO}";
             _connection = Connection.ConnectionString;
             _currentLogin = login;
             _editUserClass = new EditUserClass();

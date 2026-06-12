@@ -33,6 +33,7 @@
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
+            this.txtFIO = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewMasters)).BeginInit();
             this.SuspendLayout();
             // 
@@ -85,12 +86,23 @@
             this.label1.TabIndex = 3;
             this.label1.Text = "Просмотр пользователей";
             // 
+            // txtFIO
+            // 
+            this.txtFIO.AutoSize = true;
+            this.txtFIO.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
+            this.txtFIO.Location = new System.Drawing.Point(624, 0);
+            this.txtFIO.Name = "txtFIO";
+            this.txtFIO.Size = new System.Drawing.Size(59, 24);
+            this.txtFIO.TabIndex = 4;
+            this.txtFIO.Text = "txtFIO";
+            // 
             // MasterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(842, 601);
+            this.Controls.Add(this.txtFIO);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
@@ -113,5 +125,6 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label txtFIO;
     }
 }

@@ -33,6 +33,7 @@
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
+            this.txtFIO = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewServices)).BeginInit();
             this.SuspendLayout();
             // 
@@ -79,11 +80,21 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F);
-            this.label1.Location = new System.Drawing.Point(440, 9);
+            this.label1.Location = new System.Drawing.Point(429, 9);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(213, 31);
             this.label1.TabIndex = 3;
             this.label1.Text = "Просмотр услуг";
+            // 
+            // txtFIO
+            // 
+            this.txtFIO.AutoSize = true;
+            this.txtFIO.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F);
+            this.txtFIO.Location = new System.Drawing.Point(693, -1);
+            this.txtFIO.Name = "txtFIO";
+            this.txtFIO.Size = new System.Drawing.Size(152, 24);
+            this.txtFIO.TabIndex = 4;
+            this.txtFIO.Text = "Просмотр услуг";
             // 
             // ServiceForm
             // 
@@ -91,6 +102,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1088, 601);
+            this.Controls.Add(this.txtFIO);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
@@ -113,5 +125,6 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label txtFIO;
     }
 }
