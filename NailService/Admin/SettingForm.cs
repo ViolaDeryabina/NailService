@@ -23,6 +23,17 @@ namespace NailService
             InitializeComponent();
             _inactivityController = inactivityController;
             LoadCurrentSettings();
+            numericTimeout.Maximum = 180;
+            numericTimeout.Minimum = 1;
+
+            // Дополнительная проверка при изменении значения
+            numericTimeout.ValueChanged += (s, e) =>
+            {
+                if (numericTimeout.Value > 180)
+                    numericTimeout.Value = 180;
+                if (numericTimeout.Value < 1)
+                    numericTimeout.Value = 1;
+            };
         }
 
         /// <summary>

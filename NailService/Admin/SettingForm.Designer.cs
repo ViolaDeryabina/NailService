@@ -154,9 +154,9 @@
             this.label6.AutoSize = true;
             this.label6.Location = new System.Drawing.Point(19, 331);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(190, 24);
+            this.label6.Size = new System.Drawing.Size(282, 24);
             this.label6.TabIndex = 12;
-            this.label6.Text = "Время бездействия";
+            this.label6.Text = "Время бездействия (секунды)";
             // 
             // button1
             // 
