@@ -716,32 +716,46 @@ namespace NailService
                 string formatResult = ReportHelper.ShowFormatDialog();
                 if (string.IsNullOrEmpty(formatResult)) return;
 
-                string filePath = ReportHelper.ShowSaveFileDialog(
-                    formatResult == "Excel" ? "Excel Files|*.xlsx" : "PDF Files|*.pdf",
-                    $"Сохранить отчет {formatResult}",
-                    formatResult == "Excel" ? "xlsx" : "pdf");
-
-                if (string.IsNullOrEmpty(filePath)) return;
-
-
+                // Настройка SaveFileDialog напрямую
                 SaveFileDialog saveDialog = new SaveFileDialog();
                 saveDialog.Title = $"Сохранить отчет со статистикой ({formatResult})";
-                saveDialog.Filter = formatResult;
-                saveDialog.DefaultExt = formatResult;
-                saveDialog.FileName = $"Статистика_услуг_{DateTime.Now:yyyyMMdd_HHmmss}.{formatResult}";
+
+                // Правильная строка фильтра
+                if (formatResult == "Excel")
+                {
+                    saveDialog.Filter = "Excel файлы (*.xlsx)|*.xlsx";
+                    saveDialog.DefaultExt = "xlsx";
+                    saveDialog.FileName = $"Статистика_услуг_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                }
+                else // PDF
+                {
+                    saveDialog.Filter = "PDF файлы (*.pdf)|*.pdf";
+                    saveDialog.DefaultExt = "pdf";
+                    saveDialog.FileName = $"Статистика_услуг_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                }
 
                 if (saveDialog.ShowDialog() == DialogResult.OK)
                 {
+                    string filePath = saveDialog.FileName;
+
                     if (formatResult == "Excel")
                     {
+                        // Убедимся, что расширение файла .xlsx
+                        if (!filePath.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+                            filePath += ".xlsx";
+
                         var generator = new ExcelReportGenerator(null, null, null, null, null, null, 0, null, null);
-                        generator.GenerateServiceStatistics(saveDialog.FileName, serviceStats);
+                        generator.GenerateServiceStatistics(filePath, serviceStats);
                     }
                     else // PDF
                     {
+                        // Убедимся, что расширение файла .pdf
+                        if (!filePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                            filePath += ".pdf";
+
                         var pdfGenerator = new PdfReportGenerator(
                             null, null, null, null, null, null, 0, null, null, 0, serviceStats);
-                        pdfGenerator.GenerateServiceStatistics(saveDialog.FileName, serviceStats);
+                        pdfGenerator.GenerateServiceStatistics(filePath, serviceStats);
                     }
 
                     MessageBox.Show($"Отчет успешно сохранен в формате {formatResult}!", "Успех",
@@ -750,7 +764,7 @@ namespace NailService
                     if (MessageBox.Show("Открыть сохраненный файл?", "Открыть файл",
                         MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
-                        System.Diagnostics.Process.Start(saveDialog.FileName);
+                        System.Diagnostics.Process.Start(filePath);
                     }
                 }
             }

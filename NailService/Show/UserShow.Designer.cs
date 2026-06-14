@@ -82,9 +82,9 @@
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F);
             this.label1.Location = new System.Drawing.Point(245, 9);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(265, 31);
+            this.label1.Size = new System.Drawing.Size(335, 31);
             this.label1.TabIndex = 3;
-            this.label1.Text = "Просмотр мастеров";
+            this.label1.Text = "Просмотр пользователей";
             // 
             // txtFIO
             // 
@@ -112,7 +112,7 @@
             this.Margin = new System.Windows.Forms.Padding(6);
             this.Name = "UserShow";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Просмотр мастеров";
+            this.Text = "Просмотр пользователей";
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewUsers)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
