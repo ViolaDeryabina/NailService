@@ -8,8 +8,6 @@ using System.Windows.Forms;
 
 namespace NailService
 {
-   
-
     public partial class Schedule : Form
     {
         private DateTime currentWeekStart;
@@ -51,12 +49,14 @@ namespace NailService
             dataGridViewSchedule.ColumnHeadersDefaultCellStyle.Font = new Font("MS Reference Sans Serif", 11, FontStyle.Bold);
             dataGridViewSchedule.DefaultCellStyle.SelectionBackColor = Color.FromArgb(220, 235, 252);
             dataGridViewSchedule.DefaultCellStyle.SelectionForeColor = Color.Black;
-            dataGridViewSchedule.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
             dataGridViewSchedule.ReadOnly = true;
             dataGridViewSchedule.RowHeadersVisible = true;
             dataGridViewSchedule.RowHeadersWidth = 70;
             dataGridViewSchedule.RowTemplate.Height = 80;
             dataGridViewSchedule.CellFormatting += DataGridViewSchedule_CellFormatting;
+
+            // Включаем автоподбор ширины колонок на всю доступную ширину
+            dataGridViewSchedule.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
 
         private void DataGridViewSchedule_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e) { }
@@ -112,6 +112,9 @@ namespace NailService
                 CreateColumns(weekDates);
                 AddTimeRows();
                 LoadScheduleData(weekDates);
+
+                // После загрузки данных пересчитываем ширину колонок
+                AdjustColumnWidths();
             }
             catch (Exception ex)
             {
@@ -129,7 +132,7 @@ namespace NailService
                 Name = "Time",
                 HeaderText = "Время",
                 ReadOnly = true,
-                Width = 80,
+                MinimumWidth = 80,
                 DefaultCellStyle = new DataGridViewCellStyle
                 {
                     BackColor = accentColor,
@@ -139,8 +142,6 @@ namespace NailService
                 }
             };
             dataGridViewSchedule.Columns.Add(timeColumn);
-
-            int dayColumnWidth = (dataGridViewSchedule.Width - 100) / 5;
 
             for (int i = 0; i < 5; i++)
             {
@@ -155,7 +156,7 @@ namespace NailService
                     Name = headerText,
                     HeaderText = headerText,
                     ReadOnly = true,
-                    Width = dayColumnWidth,
+                    MinimumWidth = 100,
                     HeaderCell = new DataGridViewColumnHeaderCell
                     {
                         Style = new DataGridViewCellStyle
@@ -180,6 +181,34 @@ namespace NailService
                 };
                 dataGridViewSchedule.Columns.Add(dayColumn);
             }
+            dataGridViewSchedule.Refresh();
+        }
+
+        /// <summary>
+        /// Настройка ширины колонок для заполнения всей таблицы
+        /// </summary>
+        private void AdjustColumnWidths()
+        {
+            if (dataGridViewSchedule.Columns.Count == 0) return;
+
+            // Устанавливаем режим Fill для всех колонок
+            dataGridViewSchedule.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            // Задаём веса колонок (относительная ширина)
+            dataGridViewSchedule.Columns[0].FillWeight = 15; // Время
+
+            for (int i = 1; i < dataGridViewSchedule.Columns.Count && i <= 5; i++)
+            {
+                dataGridViewSchedule.Columns[i].FillWeight = 85 / 5; // Оставшееся место на 5 дней
+            }
+
+            // Минимальная ширина для колонок
+            dataGridViewSchedule.Columns[0].MinimumWidth = 80;
+            for (int i = 1; i < dataGridViewSchedule.Columns.Count && i <= 5; i++)
+            {
+                dataGridViewSchedule.Columns[i].MinimumWidth = 100;
+            }
+
             dataGridViewSchedule.Refresh();
         }
 
@@ -317,14 +346,14 @@ namespace NailService
         #endregion
 
         #region Обработка событий DataGridView
-       private void DataGridViewSchedule_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        private void DataGridViewSchedule_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0 && e.ColumnIndex >= 1 && e.ColumnIndex <= 5)
             {
                 object tag = dataGridViewSchedule.Rows[e.RowIndex].Cells[e.ColumnIndex].Tag;
                 if (tag != null && tag is RecordCellInfo recordInfo)
                 {
-                    // 1) Запрет на редактирование выполненных записей (статус 2)
+                    // Запрет на редактирование выполненных записей (статус 2)
                     if (recordInfo.StatusId == 2)
                     {
                         MessageBox.Show("Нельзя изменить выполненную запись.", "Доступ запрещён",
@@ -332,7 +361,7 @@ namespace NailService
                         return;
                     }
 
-                    // 2) Запрет на редактирование записей за прошедшую дату
+                    // Запрет на редактирование записей за прошедшую дату
                     if (recordInfo.RecordDate.Date < DateTime.Today)
                     {
                         MessageBox.Show("Нельзя изменить запись за прошедшую дату.", "Доступ запрещён",
@@ -340,7 +369,7 @@ namespace NailService
                         return;
                     }
 
-                    // 3) Отменённая запись (статус 3) – только перезапись
+                    // Отменённая запись (статус 3) – только перезапись
                     if (recordInfo.StatusId == 3)
                     {
                         DialogResult result = MessageBox.Show(
@@ -424,7 +453,7 @@ namespace NailService
         {
             if (_roleID == 2) new MenuAdmin(_userFIO).Show();
             else new MenuManager(_userFIO, _userId).Show();
-            this.Hide();
+            this.Close();
         }
         #endregion
 
@@ -433,8 +462,6 @@ namespace NailService
 
         private DateTime GetMonthStart(DateTime date) => new DateTime(date.Year, date.Month, 1);
         private DateTime GetMonthEnd(DateTime date) => GetMonthStart(date).AddMonths(1).AddDays(-1).Date.AddHours(23).AddMinutes(59).AddSeconds(59);
-
-       
 
         private void GenerateMonthlyReport()
         {
@@ -487,17 +514,12 @@ namespace NailService
             button3.Location = new Point(w - 350, h - 65);
             button2.Location = new Point(w - 300, h - 65);
 
-            if (dataGridViewSchedule.Columns.Count > 0)
-            {
-                int availableWidth = dataGridViewSchedule.Width - dataGridViewSchedule.RowHeadersWidth - 20;
-                int dayColumnWidth = (availableWidth - 80) / 5;
-                dataGridViewSchedule.Columns[0].Width = 80;
-                for (int i = 1; i <= 5 && i < dataGridViewSchedule.Columns.Count; i++)
-                    dataGridViewSchedule.Columns[i].Width = dayColumnWidth;
-            }
+            // Пересчитываем ширину колонок при изменении размера формы
+            AdjustColumnWidths();
         }
         #endregion
     }
+
     public class RecordCellInfo
     {
         public int RecordId { get; set; }

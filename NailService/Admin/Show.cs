@@ -1,16 +1,11 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Data.Common;
 using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using static NailServiceApp.Utilities.NameFormatter;
 
 namespace NailService
 {
@@ -32,13 +27,12 @@ namespace NailService
 
         private bool _isEditingStatus = false;
         private string _selectedStatusName = "";
+        private int _selectedStatusId = 0;
 
         private bool _isEditingCategory = false;
         private string _selectedCategoryName = "";
+        private int _selectedCategoryId = 0;
 
-        /// <summary>
-        /// Конструктор формы просмотра и управления данными
-        /// </summary>
         public Show(string FIO, int RoleID, string login = null)
         {
             InitializeComponent();
@@ -64,6 +58,9 @@ namespace NailService
             ConfigureTabsByRole();
             ResetStatusEditingState();
             ResetCategoryEditingState();
+
+            // Подписываемся на события загрузки вкладок
+            tabControl1.SelectedIndexChanged += tabControl1_SelectedIndexChanged;
         }
 
         private int GetCurrentUserId(string login)
@@ -76,7 +73,6 @@ namespace NailService
                     string query = @"SELECT IDUser FROM Users WHERE Login = @Login";
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@Login", login);
-
                     object result = cmd.ExecuteScalar();
                     return result != null ? Convert.ToInt32(result) : 0;
                 }
@@ -99,7 +95,6 @@ namespace NailService
                            LIMIT 1";
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@FIO", fio);
-
                     object result = cmd.ExecuteScalar();
                     return result != null ? Convert.ToInt32(result) : 0;
                 }
@@ -144,35 +139,6 @@ namespace NailService
             }
         }
 
-        private bool HasDependencies(string tableName, int id)
-        {
-            using (var connection = GetNewConnection())
-            {
-                try
-                {
-                    connection.Open();
-
-                    switch (tableName)
-                    {
-                        case "user":
-                            string userQuery = @"SELECT COUNT(*) FROM Record WHERE User = @Id";
-                            MySqlCommand userCmd = new MySqlCommand(userQuery, connection);
-                            userCmd.Parameters.AddWithValue("@Id", id);
-                            return Convert.ToInt32(userCmd.ExecuteScalar()) > 0;
-
-                        default:
-                            return false;
-                    }
-                }
-                catch
-                {
-                    return true;
-                }
-            }
-        }
-
-       
-
         #region ============ КАТЕГОРИИ ============
 
         private void LoadCategoriesData()
@@ -213,6 +179,8 @@ namespace NailService
                     dataGridViewCategories.DataSource = displayDt;
                     dataGridViewCategories.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
                     dataGridViewCategories.Columns["ID"].Visible = false;
+
+                    ConfigureDataGridView(dataGridViewCategories);
 
                     connection.Close();
                 }
@@ -261,6 +229,7 @@ namespace NailService
 
             var selectedRow = dataGridViewCategories.SelectedRows[0];
             _selectedCategoryName = selectedRow.Cells["Название категории"].Value?.ToString();
+            _selectedCategoryId = Convert.ToInt32(selectedRow.Cells["ID"].Value);
 
             if (!string.IsNullOrEmpty(_selectedCategoryName))
             {
@@ -282,7 +251,6 @@ namespace NailService
             string categoryName = selectedRow.Cells["Название категории"].Value?.ToString();
             int categoryId = Convert.ToInt32(selectedRow.Cells["ID"].Value);
 
-            // Проверка наличия связанных услуг
             if (HasCategoryDependencies(categoryId))
             {
                 MessageBox.Show(
@@ -335,23 +303,6 @@ namespace NailService
                 {
                     connection.Open();
 
-                    string checkQuery = "SELECT IsActive FROM Category WHERE IDCategory = @CategoryId";
-                    MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
-                    checkCmd.Parameters.AddWithValue("@CategoryId", categoryId);
-
-                    object result = checkCmd.ExecuteScalar();
-
-                    if (result != null)
-                    {
-                        bool isActive = Convert.ToBoolean(result);
-
-                        if (!isActive)
-                        {
-                            ShowInfo("Категория уже отключена");
-                            return;
-                        }
-                    }
-
                     string query = "UPDATE Category SET IsActive = 0 WHERE IDCategory = @CategoryId";
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@CategoryId", categoryId);
@@ -380,13 +331,22 @@ namespace NailService
 
         private void AddCategory_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(CategoryTextBox.Text))
+            string newCategoryName = CategoryTextBox.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(newCategoryName))
             {
                 ShowInfo("Введите название категории");
                 return;
             }
 
-            string newCategoryName = CategoryTextBox.Text.Trim();
+            // Валидация только русские буквы
+            if (!IsRussianText(newCategoryName))
+            {
+                ShowInfo("Название категории должно содержать только русские буквы, пробелы и дефис");
+                return;
+            }
+
+            newCategoryName = CapitalizeFirstLetter(newCategoryName);
 
             using (var connection = GetNewConnection())
             {
@@ -394,7 +354,7 @@ namespace NailService
                 {
                     connection.Open();
 
-                    string checkQuery = "SELECT COUNT(*) FROM Category WHERE CategoryName = @CategoryName";
+                    string checkQuery = "SELECT COUNT(*) FROM Category WHERE CategoryName = @CategoryName AND IsActive = 1";
                     MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
                     checkCmd.Parameters.AddWithValue("@CategoryName", newCategoryName);
 
@@ -433,7 +393,9 @@ namespace NailService
 
         private void EditCategory_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(CategoryTextBox.Text))
+            string newCategoryName = CategoryTextBox.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(newCategoryName))
             {
                 ShowInfo("Введите новое название категории");
                 return;
@@ -445,7 +407,14 @@ namespace NailService
                 return;
             }
 
-            string newCategoryName = CategoryTextBox.Text.Trim();
+            // Валидация только русские буквы
+            if (!IsRussianText(newCategoryName))
+            {
+                ShowInfo("Название категории должно содержать только русские буквы, пробелы и дефис");
+                return;
+            }
+
+            newCategoryName = CapitalizeFirstLetter(newCategoryName);
 
             if (_selectedCategoryName == newCategoryName)
             {
@@ -459,10 +428,10 @@ namespace NailService
                 {
                     connection.Open();
 
-                    string checkQuery = "SELECT COUNT(*) FROM Category WHERE CategoryName = @NewCategoryName AND CategoryName != @OldCategoryName";
+                    string checkQuery = "SELECT COUNT(*) FROM Category WHERE CategoryName = @NewCategoryName AND IDCategory != @CategoryId";
                     MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
                     checkCmd.Parameters.AddWithValue("@NewCategoryName", newCategoryName);
-                    checkCmd.Parameters.AddWithValue("@OldCategoryName", _selectedCategoryName);
+                    checkCmd.Parameters.AddWithValue("@CategoryId", _selectedCategoryId);
 
                     int count = Convert.ToInt32(checkCmd.ExecuteScalar());
 
@@ -472,10 +441,10 @@ namespace NailService
                         return;
                     }
 
-                    string updateQuery = "UPDATE Category SET CategoryName = @NewCategoryName WHERE CategoryName = @OldCategoryName";
+                    string updateQuery = "UPDATE Category SET CategoryName = @NewCategoryName WHERE IDCategory = @CategoryId";
                     MySqlCommand updateCmd = new MySqlCommand(updateQuery, connection);
                     updateCmd.Parameters.AddWithValue("@NewCategoryName", newCategoryName);
-                    updateCmd.Parameters.AddWithValue("@OldCategoryName", _selectedCategoryName);
+                    updateCmd.Parameters.AddWithValue("@CategoryId", _selectedCategoryId);
 
                     int affectedRows = updateCmd.ExecuteNonQuery();
 
@@ -509,17 +478,11 @@ namespace NailService
             if (_isEditingCategory)
             {
                 AddCategoryButton.Enabled = false;
-                EditCategoryButton.Enabled = hasText && !string.IsNullOrEmpty(_selectedCategoryName);
+                EditCategoryButton.Enabled = hasText;
             }
             else
             {
                 AddCategoryButton.Enabled = hasText;
-                EditCategoryButton.Enabled = false;
-            }
-
-            if (!hasText)
-            {
-                AddCategoryButton.Enabled = false;
                 EditCategoryButton.Enabled = false;
             }
         }
@@ -528,16 +491,38 @@ namespace NailService
         {
             _isEditingCategory = false;
             _selectedCategoryName = "";
+            _selectedCategoryId = 0;
             CategoryTextBox.Clear();
-
-            AddCategoryButton.Enabled = false;
-            EditCategoryButton.Enabled = false;
-
             UpdateCategoryButtonsState();
         }
 
         private void CategoryTextBox_TextChanged(object sender, EventArgs e)
         {
+            int selectionStart = CategoryTextBox.SelectionStart;
+            int selectionLength = CategoryTextBox.SelectionLength;
+
+            // Оставляем только русские буквы, пробелы и дефис
+            string filteredText = new string(CategoryTextBox.Text
+                .Where(c => (c >= 'а' && c <= 'я') ||
+                            (c >= 'А' && c <= 'Я') ||
+                            c == 'ё' ||
+                            c == 'Ё' ||
+                            c == ' ' ||
+                            c == '-')
+                .ToArray());
+
+            if (filteredText != CategoryTextBox.Text)
+            {
+                CategoryTextBox.Text = filteredText;
+
+                // Корректируем позицию курсора
+                if (selectionStart > CategoryTextBox.Text.Length)
+                    selectionStart = CategoryTextBox.Text.Length;
+
+                CategoryTextBox.SelectionStart = selectionStart;
+                CategoryTextBox.SelectionLength = 0;
+            }
+
             UpdateCategoryButtonsState();
         }
 
@@ -548,6 +533,34 @@ namespace NailService
                 ResetCategoryEditingState();
                 e.Handled = true;
             }
+        }
+
+        // Валидация только русских букв, пробелов и дефиса
+        private bool IsRussianText(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return false;
+            return Regex.IsMatch(text, @"^[а-яА-ЯёЁ\s\-]+$");
+        }
+
+        // Преобразование первой буквы в заглавную
+        private string CapitalizeFirstLetter(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return text;
+
+            text = text.ToLower();
+            char[] chars = text.ToCharArray();
+            chars[0] = char.ToUpper(chars[0]);
+
+            // Обработка слов после пробела
+            for (int i = 1; i < chars.Length - 1; i++)
+            {
+                if (chars[i] == ' ' && i + 1 < chars.Length)
+                    chars[i + 1] = char.ToUpper(chars[i + 1]);
+            }
+
+            return new string(chars);
         }
 
         #endregion
@@ -590,6 +603,8 @@ namespace NailService
                     dataGridViewStatuses.DataSource = displayDt;
                     dataGridViewStatuses.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
                     dataGridViewStatuses.Columns["ID"].Visible = false;
+
+                    ConfigureDataGridView(dataGridViewStatuses);
 
                     connection.Close();
                 }
@@ -638,6 +653,13 @@ namespace NailService
 
             var selectedRow = dataGridViewStatuses.SelectedRows[0];
             _selectedStatusName = selectedRow.Cells["Название статуса"].Value?.ToString();
+            _selectedStatusId = Convert.ToInt32(selectedRow.Cells["ID"].Value);
+
+            if (IsSystemStatus(_selectedStatusName))
+            {
+                ShowInfo("Системные статусы нельзя редактировать");
+                return;
+            }
 
             if (!string.IsNullOrEmpty(_selectedStatusName))
             {
@@ -657,19 +679,27 @@ namespace NailService
 
             var selectedRow = dataGridViewStatuses.SelectedRows[0];
             string statusName = selectedRow.Cells["Название статуса"].Value?.ToString();
+            int statusId = Convert.ToInt32(selectedRow.Cells["ID"].Value);
 
             if (IsSystemStatus(statusName))
             {
-                MessageBox.Show("Системные статусы нельзя удалять",
-                               "Предупреждение",
-                               MessageBoxButtons.OK,
-                               MessageBoxIcon.Warning);
+                ShowInfo("Системные статусы нельзя удалять");
+                return;
+            }
+
+            if (HasStatusDependencies(statusId))
+            {
+                MessageBox.Show(
+                    $"Нельзя удалить статус '{statusName}'.\n\n" +
+                    "Есть записи с этим статусом. Сначала измените статус у этих записей.",
+                    "Ошибка удаления",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
                 return;
             }
 
             var result = MessageBox.Show(
-                $"Вы точно хотите удалить статус '{statusName}'?\n\n" +
-                "Это действие нельзя отменить.",
+                $"Вы точно хотите удалить статус '{statusName}'?",
                 "Подтверждение удаления",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning
@@ -677,7 +707,7 @@ namespace NailService
 
             if (result == DialogResult.Yes)
             {
-                DeleteStatusFromDatabase(statusName);
+                DeleteStatusFromDatabase(statusId);
             }
         }
 
@@ -686,17 +716,30 @@ namespace NailService
             if (string.IsNullOrEmpty(statusName))
                 return false;
 
-            string[] systemStatuses = {
-                "Запланирован",
-                "Подтвержден",
-                "Выполнен",
-                "Отменен"
-            };
-
-            return systemStatuses.Contains(statusName, StringComparer.OrdinalIgnoreCase);
+            string[] systemStatuses = { "Занято", "Выполнено", "Отменено" };
+            return systemStatuses.Contains(statusName);
         }
 
-        private void DeleteStatusFromDatabase(string statusName)
+        private bool HasStatusDependencies(int statusId)
+        {
+            using (var connection = GetNewConnection())
+            {
+                try
+                {
+                    connection.Open();
+                    string query = "SELECT COUNT(*) FROM Record WHERE Status = @StatusId";
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@StatusId", statusId);
+                    return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+                }
+                catch
+                {
+                    return true;
+                }
+            }
+        }
+
+        private void DeleteStatusFromDatabase(int statusId)
         {
             using (var connection = GetNewConnection())
             {
@@ -704,22 +747,9 @@ namespace NailService
                 {
                     connection.Open();
 
-                    string checkQuery = "SELECT COUNT(*) FROM Record WHERE Status = " +
-                                       "(SELECT IDStatus FROM Status WHERE StatusName = @StatusName)";
-                    MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
-                    checkCmd.Parameters.AddWithValue("@StatusName", statusName);
-
-                    int recordCount = Convert.ToInt32(checkCmd.ExecuteScalar());
-
-                    if (recordCount > 0)
-                    {
-                        ShowInfo($"Нельзя удалить статус '{statusName}'. Найдено {recordCount} записей с этим статусом.");
-                        return;
-                    }
-
-                    string deleteQuery = "DELETE FROM Status WHERE StatusName = @StatusName";
+                    string deleteQuery = "DELETE FROM Status WHERE IDStatus = @StatusId";
                     MySqlCommand deleteCmd = new MySqlCommand(deleteQuery, connection);
-                    deleteCmd.Parameters.AddWithValue("@StatusName", statusName);
+                    deleteCmd.Parameters.AddWithValue("@StatusId", statusId);
 
                     int affectedRows = deleteCmd.ExecuteNonQuery();
 
@@ -745,13 +775,22 @@ namespace NailService
 
         private void AddStatus_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(StatusTextBox.Text))
+            string newStatusName = StatusTextBox.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(newStatusName))
             {
                 ShowInfo("Введите название статуса");
                 return;
             }
 
-            string newStatusName = StatusTextBox.Text.Trim();
+            // Валидация только русские буквы
+            if (!IsRussianText(newStatusName))
+            {
+                ShowInfo("Название статуса должно содержать только русские буквы, пробелы и дефис");
+                return;
+            }
+
+            newStatusName = CapitalizeFirstLetter(newStatusName);
 
             using (var connection = GetNewConnection())
             {
@@ -795,7 +834,9 @@ namespace NailService
 
         private void EditStatus_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(StatusTextBox.Text))
+            string newStatusName = StatusTextBox.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(newStatusName))
             {
                 ShowInfo("Введите новое название статуса");
                 return;
@@ -807,21 +848,24 @@ namespace NailService
                 return;
             }
 
-            string newStatusName = StatusTextBox.Text.Trim();
+            if (IsSystemStatus(_selectedStatusName))
+            {
+                ShowInfo("Системные статусы нельзя редактировать");
+                ResetStatusEditingState();
+                return;
+            }
+
+            if (!IsRussianText(newStatusName))
+            {
+                ShowInfo("Название статуса должно содержать только русские буквы, пробелы и дефис");
+                return;
+            }
+
+            newStatusName = CapitalizeFirstLetter(newStatusName);
 
             if (_selectedStatusName == newStatusName)
             {
                 ShowInfo("Название статуса не изменилось");
-                return;
-            }
-
-            if (IsSystemStatus(_selectedStatusName))
-            {
-                MessageBox.Show("Системные статусы нельзя редактировать",
-                               "Предупреждение",
-                               MessageBoxButtons.OK,
-                               MessageBoxIcon.Warning);
-                ResetStatusEditingState();
                 return;
             }
 
@@ -831,10 +875,10 @@ namespace NailService
                 {
                     connection.Open();
 
-                    string checkQuery = "SELECT COUNT(*) FROM Status WHERE StatusName = @NewStatusName AND StatusName != @OldStatusName";
+                    string checkQuery = "SELECT COUNT(*) FROM Status WHERE StatusName = @NewStatusName AND IDStatus != @StatusId";
                     MySqlCommand checkCmd = new MySqlCommand(checkQuery, connection);
                     checkCmd.Parameters.AddWithValue("@NewStatusName", newStatusName);
-                    checkCmd.Parameters.AddWithValue("@OldStatusName", _selectedStatusName);
+                    checkCmd.Parameters.AddWithValue("@StatusId", _selectedStatusId);
 
                     int count = Convert.ToInt32(checkCmd.ExecuteScalar());
 
@@ -844,10 +888,10 @@ namespace NailService
                         return;
                     }
 
-                    string updateQuery = "UPDATE Status SET StatusName = @NewStatusName WHERE StatusName = @OldStatusName";
+                    string updateQuery = "UPDATE Status SET StatusName = @NewStatusName WHERE IDStatus = @StatusId";
                     MySqlCommand updateCmd = new MySqlCommand(updateQuery, connection);
                     updateCmd.Parameters.AddWithValue("@NewStatusName", newStatusName);
-                    updateCmd.Parameters.AddWithValue("@OldStatusName", _selectedStatusName);
+                    updateCmd.Parameters.AddWithValue("@StatusId", _selectedStatusId);
 
                     int affectedRows = updateCmd.ExecuteNonQuery();
 
@@ -878,17 +922,11 @@ namespace NailService
             if (_isEditingStatus)
             {
                 AddStatusButton.Enabled = false;
-                EditStatusButton.Enabled = hasText && !string.IsNullOrEmpty(_selectedStatusName);
+                EditStatusButton.Enabled = hasText;
             }
             else
             {
                 AddStatusButton.Enabled = hasText;
-                EditStatusButton.Enabled = false;
-            }
-
-            if (!hasText)
-            {
-                AddStatusButton.Enabled = false;
                 EditStatusButton.Enabled = false;
             }
         }
@@ -897,16 +935,37 @@ namespace NailService
         {
             _isEditingStatus = false;
             _selectedStatusName = "";
+            _selectedStatusId = 0;
             StatusTextBox.Clear();
-
-            AddStatusButton.Enabled = false;
-            EditStatusButton.Enabled = false;
-
             UpdateStatusButtonsState();
         }
 
         private void StatusTextBox_TextChanged(object sender, EventArgs e)
         {
+            int selectionStart = CategoryTextBox.SelectionStart;
+            int selectionLength = CategoryTextBox.SelectionLength;
+
+            // Оставляем только русские буквы, пробелы и дефис
+            string filteredText = new string(CategoryTextBox.Text
+                .Where(c => (c >= 'а' && c <= 'я') ||
+                            (c >= 'А' && c <= 'Я') ||
+                            c == 'ё' ||
+                            c == 'Ё' ||
+                            c == ' ' ||
+                            c == '-')
+                .ToArray());
+
+            if (filteredText != CategoryTextBox.Text)
+            {
+                CategoryTextBox.Text = filteredText;
+
+                // Корректируем позицию курсора
+                if (selectionStart > CategoryTextBox.Text.Length)
+                    selectionStart = CategoryTextBox.Text.Length;
+
+                CategoryTextBox.SelectionStart = selectionStart;
+                CategoryTextBox.SelectionLength = 0;
+            }
             UpdateStatusButtonsState();
         }
 
@@ -931,32 +990,22 @@ namespace NailService
         private void Show_Load(object sender, EventArgs e)
         {
             LoadCurrentTabData();
-            if (tabControl1.TabPages.Contains(_tabCategories))
-                ConfigureDataGridView(dataGridViewCategories);
-            if (tabControl1.TabPages.Contains(_tabStatuses))
-            {
-                ConfigureDataGridView(dataGridViewStatuses);
-                ResetStatusEditingState();
-            }
+            ConfigureDataGridView(dataGridViewCategories);
+            ConfigureDataGridView(dataGridViewStatuses);
+            ResetStatusEditingState();
+            ResetCategoryEditingState();
         }
 
-        private void ConfigureDataGridView(DataGridView name)
+        private void ConfigureDataGridView(DataGridView grid)
         {
-            name.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            name.MultiSelect = false;
-            name.RowHeadersVisible = false;
-            name.ReadOnly = true;
+            if (grid == null) return;
+            grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            grid.MultiSelect = false;
+            grid.RowHeadersVisible = false;
+            grid.ReadOnly = true;
 
-            name.CellClick += (s, e) =>
-            {
-                if (e.RowIndex >= 0)
-                {
-                    name.Rows[e.RowIndex].Selected = true;
-                }
-            };
-
-            name.DefaultCellStyle.SelectionBackColor = Color.FromArgb(255, 203, 219);
-            name.DefaultCellStyle.SelectionForeColor = Color.White;
+            grid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(255, 203, 219);
+            grid.DefaultCellStyle.SelectionForeColor = Color.Black;
         }
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
@@ -971,8 +1020,8 @@ namespace NailService
 
             string tabName = tabControl1.SelectedTab.Name;
 
-            switch (tabName) { 
-
+            switch (tabName)
+            {
                 case "tabPage7":
                     if (_roleID == 2)
                         LoadCategoriesData();

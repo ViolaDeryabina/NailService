@@ -29,6 +29,7 @@ namespace NailService
             LoadRoles();
             ShowMasterFields(false);
             this.Text = "Добавление пользователя";
+            label1.Text = "Добавление пользователя";
         }
 
         public AddUserForm(Form parentForm, bool isMasterMode)
@@ -41,6 +42,7 @@ namespace NailService
             LoadRolesForMaster();
             ShowMasterFields(true);
             this.Text = "Добавление мастера";
+            label1.Text = "Добавление мастера";
         }
 
         private void ShowMasterFields(bool show)
@@ -431,6 +433,8 @@ namespace NailService
                         {
                             MessageBox.Show("Пользователь успешно восстановлен", "Успех",
                                           MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            this.DialogResult = DialogResult.OK;
+                            this.Close();
                             return true;
                         }
                     }
@@ -452,8 +456,11 @@ namespace NailService
 
                         if (result > 0)
                         {
-                            MessageBox.Show("Пользователь успешно добавлен", "Успех",
-                                          MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show("Пользователь успешно добавлен!", "Успех",
+                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                            this.DialogResult = DialogResult.OK;
+                            this.Close();
                             return true;
                         }
                     }
@@ -573,8 +580,8 @@ namespace NailService
 
                     if (masterCreated)
                     {
-                        MessageBox.Show("Мастер успешно добавлен", "Успех",
-                                      MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        this.DialogResult = DialogResult.OK;
+                        this.Close();
                         return true;
                     }
                     else

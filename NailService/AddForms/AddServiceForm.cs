@@ -76,7 +76,7 @@ namespace NailService
             }
 
             this.Text = "Редактирование услуги";
-            button1.Text = "Сохранить";
+            button1.Text = "Очистить";
         }
         /// <summary>
         /// Загрузка изображения-заглушки для новых услуг
@@ -134,13 +134,17 @@ namespace NailService
                 }
 
                 byte[] imageBytes = File.ReadAllBytes(filePath);
+                long originalSize = imageBytes.Length;
+                bool wasCompressed = false;
 
-                // Проверка размера файла
-                if (imageBytes.Length > MAX_IMAGE_SIZE)
+                // Проверка размера файла (2 МБ = 2 * 1024 * 1024)
+                const long TWO_MB = 2 * 1024 * 1024;
+
+                if (imageBytes.Length > TWO_MB)
                 {
-                    // Сжимаем изображение
                     Cursor = Cursors.WaitCursor;
                     imageBytes = CompressImageBytes(imageBytes);
+                    wasCompressed = true;
                     Cursor = Cursors.Default;
                 }
 
@@ -154,6 +158,19 @@ namespace NailService
 
                     FileInfo fileInfo = new FileInfo(filePath);
                     ShowImageInfo(fileInfo.Name, fileInfo.Length, imageBytes.Length, _selectedImage.Width, _selectedImage.Height);
+
+                    // Если было сжатие, показываем результат
+                    if (wasCompressed)
+                    {
+                        MessageBox.Show(
+                            $"Изображение успешно загружено!\n\n" +
+                            $"Исходный размер: {FormatFileSize(originalSize)}\n" +
+                            $"Размер после сжатия: {FormatFileSize(imageBytes.Length)}\n" +
+                            $"Сэкономлено: {FormatFileSize(originalSize - imageBytes.Length)}",
+                            "Изображение сжато",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information);
+                    }
                 }
             }
             catch (OutOfMemoryException)
@@ -467,7 +484,6 @@ namespace NailService
 
                     if (result > 0)
                     {
-                        MessageBox.Show("Услуга успешно добавлена", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return true;
                     }
                     else
@@ -695,7 +711,23 @@ namespace NailService
             }
         }
 
-        private void Price_TextChanged(object sender, EventArgs e) { }
+        private void Price_TextChanged(object sender, EventArgs e) {
+            int selectionStart = Price.SelectionStart;
+            int selectionLength = Price.SelectionLength;
+
+            // Оставляем только цифры
+            string filteredText = new string(Price.Text.Where(c => char.IsDigit(c)).ToArray());
+
+            if (filteredText != Price.Text)
+            {
+                Price.Text = filteredText;
+                // Корректируем позицию курсора
+                if (selectionStart > Price.Text.Length)
+                    selectionStart = Price.Text.Length;
+                Price.SelectionStart = selectionStart;
+                Price.SelectionLength = 0;
+            }
+        }
         private void Description_TextChanged(object sender, EventArgs e)
         {
             int charCount = Description.Text.Length;

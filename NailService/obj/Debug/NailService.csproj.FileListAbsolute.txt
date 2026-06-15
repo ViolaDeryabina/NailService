@@ -69,6 +69,7 @@ C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.Se
 C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.Show.resources
 C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.ShowReports.resources
 C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.RecordingClients.resources
+C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.Schedule.resources
 C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.SysAdmin.resources
 C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.UserShow.resources
 C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.csproj.GenerateResource.cache
@@ -77,4 +78,3 @@ C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailServ.8FE58
 C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.exe
 C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.pdb
 C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.exe.config
-C:\Users\viole\OneDrive\Desktop\NailService\NailService\obj\Debug\NailService.Schedule.resources

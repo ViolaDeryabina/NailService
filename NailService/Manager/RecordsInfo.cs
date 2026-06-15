@@ -150,25 +150,25 @@ namespace NailService
                 {
                     con.Open();
                     string query = @"
-                        SELECT 
-                            r.Master,
-                            r.Service,
-                            r.Status,
-                            r.Date,
-                            r.ClientName,
-                            r.ClientPhone,
-                            u_m.LastName as MasterLastName,
-                            u_m.FirstName as MasterFirstName,
-                            u_m.MiddleName as MasterMiddleName,
-                            s.ServiceName,
-                            s.Price,
-                            stat.StatusName
-                        FROM Record r
-                        INNER JOIN Masters m ON r.Master = m.IDMasters
-                        INNER JOIN Users u_m ON m.User = u_m.IDUser
-                        INNER JOIN Services s ON r.Service = s.IDServices
-                        INNER JOIN Status stat ON r.Status = stat.IDStatus
-                        WHERE r.IDRecord = @recordId";
+                SELECT 
+                    r.Master,
+                    r.Service,
+                    r.Status,
+                    r.Date,
+                    r.ClientName,
+                    r.ClientPhone,
+                    u_m.LastName as MasterLastName,
+                    u_m.FirstName as MasterFirstName,
+                    u_m.MiddleName as MasterMiddleName,
+                    s.ServiceName,
+                    s.Price,
+                    stat.StatusName
+                FROM Record r
+                INNER JOIN Masters m ON r.Master = m.IDMasters
+                INNER JOIN Users u_m ON m.User = u_m.IDUser
+                INNER JOIN Services s ON r.Service = s.IDServices
+                INNER JOIN Status stat ON r.Status = stat.IDStatus
+                WHERE r.IDRecord = @recordId";
 
                     MySqlCommand cmd = new MySqlCommand(query, con);
                     cmd.Parameters.AddWithValue("@recordId", _recordId);
@@ -196,13 +196,15 @@ namespace NailService
                             _isCancelled = (_currentStatusId == 3); // 3 = Отменено
 
                             // Отображение информации
-                            lblClientName.Text = $"Клиент: {_currentClientName}";
+                            lblClientName.Text = $"{_currentClientName}";
                             lblClientPhone.Text = $"Телефон: {_currentClientPhone}";
                             lblDateTimeInfo.Text = $"Дата и время: {_currentDateTime:dd.MM.yyyy HH:mm}";
 
-
                             // Устанавливаем выбранную услугу (только для отображения)
                             SelectServiceItem(_currentServiceId);
+
+                            // Определяем, можно ли устанавливать статус "Выполнено"
+                            bool canSetCompleted = _currentDateTime <= DateTime.Now;
 
                             if (_isCancelled)
                             {
@@ -210,9 +212,8 @@ namespace NailService
                                 lblStatusInfo.ForeColor = Color.Red;
                                 btnSave.Text = "Восстановить запись";
                                 btnPrintReceipt.Visible = false;
-                                // При восстановлении можно выбрать мастера
                                 cmbMaster.Enabled = true;
-                                cmbStatus.Enabled = false;   // Статус не меняем, восстановление ставит статус 1
+                                cmbStatus.Enabled = false;
                             }
                             else
                             {
@@ -228,6 +229,22 @@ namespace NailService
 
                                 cmbMaster.Enabled = canEditMaster;
                                 cmbStatus.Enabled = canEditStatus;
+
+                                // ЗАПРЕЩАЕМ устанавливать статус "Выполнено", если дата и время ещё не наступили
+                                if (!canSetCompleted && cmbStatus.Enabled)
+                                {
+                                    // Блокируем статус "Выполнено" (IDStatus = 2)
+                                    foreach (DataRowView item in cmbStatus.Items)
+                                    {
+                                        if (Convert.ToInt32(item["IDStatus"]) == 2)
+                                        {
+                                            item.Delete(); // Удаляем из списка
+                                            break;
+                                        }
+                                    }
+                                    // Или можно просто заблокировать выбор этого статуса
+                                    // Альтернативный подход: отключаем возможность выбора статуса "Выполнено"
+                                }
                             }
 
                             SelectMasterItem(_currentMasterId);

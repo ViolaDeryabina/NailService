@@ -1,21 +1,15 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.Common;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace NailService
 {
     /// <summary>
     /// Форма для редактирования данных существующего пользователя
-    /// Позволяет изменять ФИО, логин, пароль и роль (с ограничениями для администраторов)
     /// </summary>
     public partial class EditUserForm : Form
     {
@@ -24,25 +18,19 @@ namespace NailService
         public bool IsEditMode { get; private set; }
         private bool _isPasswordChanged = false;
 
-        /// <summary>
-        /// Конструктор формы редактирования пользователя
-        /// </summary>
-        /// <param name="user">Объект пользователя с текущими данными</param>
         public EditUserForm(UserModel user)
         {
             InitializeComponent();
             _connection = Connection.ConnectionString;
-            LoadRoles();
             User = user;
             IsEditMode = true;
+
+            LoadRoles();
             LoadTextBoxs();
         }
 
         #region Загрузка данных
 
-        /// <summary>
-        /// Загрузка данных пользователя в поля формы
-        /// </summary>
         private void LoadTextBoxs()
         {
             LastName.Text = User.LastName;
@@ -51,15 +39,14 @@ namespace NailService
             Login.Text = User.Login;
             Password.Text = "";
             Password.PasswordChar = '*';
-            RoleCb.Text = User.RoleName;
 
-            // Блокировка изменения роли для администраторов
-            RoleCb.Enabled = !IsAdminUser();
+            if (RoleCb != null)
+            {
+                RoleCb.Text = User.RoleName;
+                RoleCb.Enabled = !IsCurrentUserAdmin();
+            }
         }
 
-        /// <summary>
-        /// Загрузка списка ролей из базы данных
-        /// </summary>
         private void LoadRoles()
         {
             try
@@ -88,31 +75,23 @@ namespace NailService
 
         #region Валидация и сохранение
 
-        /// <summary>
-        /// Сохранение изменений и закрытие формы
-        /// </summary>
         private void btnSave_Click(object sender, EventArgs e)
         {
             if (ValidateData())
             {
                 SaveUserData();
+                UpdateUserInDatabase();
                 DialogResult = DialogResult.OK;
                 Close();
             }
         }
 
-        /// <summary>
-        /// Отмена редактирования и закрытие формы
-        /// </summary>
         private void btnCancel_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
             Close();
         }
 
-        /// <summary>
-        /// Валидация введенных данных перед сохранением
-        /// </summary>
         private bool ValidateData()
         {
             if (string.IsNullOrWhiteSpace(LastName.Text))
@@ -139,12 +118,40 @@ namespace NailService
                 return false;
             }
 
+            if (Login.Text != User.Login && IsLoginExists())
+            {
+                MessageBox.Show("Пользователь с таким логином уже существует", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Login.Focus();
+                Login.SelectAll();
+                return false;
+            }
+
             return true;
         }
 
-        /// <summary>
-        /// Сохранение данных из формы в объект User
-        /// </summary>
+        private bool IsLoginExists()
+        {
+            try
+            {
+                using (var connection = new MySqlConnection(_connection))
+                {
+                    connection.Open();
+                    string query = "SELECT COUNT(*) FROM Users WHERE Login = @Login AND IDUser != @UserId";
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@Login", Login.Text.Trim());
+                    cmd.Parameters.AddWithValue("@UserId", User.UserId);
+
+                    int count = Convert.ToInt32(cmd.ExecuteScalar());
+                    return count > 0;
+                }
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
         private void SaveUserData()
         {
             User.LastName = LastName.Text.Trim();
@@ -152,6 +159,7 @@ namespace NailService
             User.MiddleName = MiddleName.Text.Trim();
             User.Login = Login.Text.Trim();
             User.RoleId = (int)RoleCb.SelectedValue;
+            User.RoleName = RoleCb.Text;
 
             if (_isPasswordChanged && !string.IsNullOrWhiteSpace(Password.Text))
             {
@@ -159,37 +167,73 @@ namespace NailService
             }
         }
 
+        private void UpdateUserInDatabase()
+        {
+            try
+            {
+                using (var connection = new MySqlConnection(_connection))
+                {
+                    connection.Open();
+
+                    string query;
+                    MySqlCommand cmd;
+
+                    if (_isPasswordChanged && !string.IsNullOrWhiteSpace(Password.Text))
+                    {
+                        query = @"UPDATE Users 
+                                  SET LastName = @LastName,
+                                      FirstName = @FirstName,
+                                      MiddleName = @MiddleName,
+                                      Login = @Login,
+                                      Password = @Password,
+                                      Role = @Role
+                                  WHERE IDUser = @UserId";
+                        cmd = new MySqlCommand(query, connection);
+                        cmd.Parameters.AddWithValue("@Password", User.Password);
+                    }
+                    else
+                    {
+                        query = @"UPDATE Users 
+                                  SET LastName = @LastName,
+                                      FirstName = @FirstName,
+                                      MiddleName = @MiddleName,
+                                      Login = @Login,
+                                      Role = @Role
+                                  WHERE IDUser = @UserId";
+                        cmd = new MySqlCommand(query, connection);
+                    }
+
+                    cmd.Parameters.AddWithValue("@UserId", User.UserId);
+                    cmd.Parameters.AddWithValue("@LastName", User.LastName);
+                    cmd.Parameters.AddWithValue("@FirstName", User.FirstName);
+                    cmd.Parameters.AddWithValue("@MiddleName", string.IsNullOrWhiteSpace(User.MiddleName) ? (object)DBNull.Value : User.MiddleName);
+                    cmd.Parameters.AddWithValue("@Login", User.Login);
+                    cmd.Parameters.AddWithValue("@Role", User.RoleId);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка обновления пользователя: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                throw;
+            }
+        }
+
         #endregion
 
         #region Проверка прав
 
-        /// <summary>
-        /// Проверка, является ли редактируемый пользователь администратором
-        /// </summary>
-        /// <returns>true если пользователь администратор</returns>
-        private bool IsAdminUser()
+        private bool IsCurrentUserAdmin()
         {
-            return User.RoleName?.ToLower() == "админ" ||
-                   User.RoleName?.ToLower() == "administrator" ||
-                   User.RoleName?.ToLower() == "admin" ||
-                   User.RoleId == GetAdminRoleId();
-        }
-
-        /// <summary>
-        /// Получение ID роли администратора (фиксированное значение)
-        /// </summary>
-        private int GetAdminRoleId()
-        {
-            return 2;
+            return User.RoleName?.ToLower() == "админ";
         }
 
         #endregion
 
         #region Фильтрация ввода
 
-        /// <summary>
-        /// Фильтрация ввода в поле фамилии (только русские буквы)
-        /// </summary>
         private void LastName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = LastName.SelectionStart;
@@ -202,9 +246,6 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Фильтрация ввода в поле имени (только русские буквы)
-        /// </summary>
         private void FirstName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = FirstName.SelectionStart;
@@ -217,9 +258,6 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Фильтрация ввода в поле отчества (только русские буквы)
-        /// </summary>
         private void MiddleName_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = MiddleName.SelectionStart;
@@ -232,9 +270,6 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Фильтрация ввода в поле логина (латиница, цифры, _, .)
-        /// </summary>
         private void Login_TextChanged(object sender, EventArgs e)
         {
             int selectionStart = Login.SelectionStart;
@@ -250,14 +285,50 @@ namespace NailService
             }
         }
 
-        /// <summary>
-        /// Отслеживание изменения пароля
-        /// </summary>
         private void Password_TextChanged(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(Password.Text))
             {
                 _isPasswordChanged = true;
+            }
+        }
+
+        private void LastName_Validating(object sender, CancelEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(LastName.Text))
+            {
+                string name = LastName.Text.Trim();
+                if (name.Length > 0)
+                {
+                    name = char.ToUpper(name[0]) + name.Substring(1).ToLower();
+                    LastName.Text = name;
+                }
+            }
+        }
+
+        private void FirstName_Validating(object sender, CancelEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(FirstName.Text))
+            {
+                string name = FirstName.Text.Trim();
+                if (name.Length > 0)
+                {
+                    name = char.ToUpper(name[0]) + name.Substring(1).ToLower();
+                    FirstName.Text = name;
+                }
+            }
+        }
+
+        private void MiddleName_Validating(object sender, CancelEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(MiddleName.Text))
+            {
+                string name = MiddleName.Text.Trim();
+                if (name.Length > 0)
+                {
+                    name = char.ToUpper(name[0]) + name.Substring(1).ToLower();
+                    MiddleName.Text = name;
+                }
             }
         }
 

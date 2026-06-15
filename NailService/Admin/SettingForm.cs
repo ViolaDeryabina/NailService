@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace NailService
 {
     public partial class SettingForm : Form
     {
         private InactivityController _inactivityController;
+        private PasswordVisibilityToggle _passwordToggle;
 
         /// <summary>
         /// Конструктор формы настроек подключения к базе данных
@@ -22,6 +17,10 @@ namespace NailService
         {
             InitializeComponent();
             _inactivityController = inactivityController;
+
+            // Инициализируем переключатель видимости пароля
+            InitializePasswordToggle();
+
             LoadCurrentSettings();
             numericTimeout.Maximum = 180;
             numericTimeout.Minimum = 1;
@@ -34,6 +33,20 @@ namespace NailService
                 if (numericTimeout.Value < 1)
                     numericTimeout.Value = 1;
             };
+        }
+
+        /// <summary>
+        /// Инициализация переключателя видимости пароля
+        /// </summary>
+        private void InitializePasswordToggle()
+        {
+            // Предполагаем, что на форме есть:
+            // - TextBox с именем Password (поле для пароля)
+            // - PictureBox с именем Eye (глазик для показа/скрытия)
+            // - Ресурсы eyeOpen и eyeClose (иконки открытого и закрытого глаза)
+
+            _passwordToggle = new PasswordVisibilityToggle(
+                Eye, Password, Properties.Resources.eyeOpen, Properties.Resources.eyeClose);
         }
 
         /// <summary>
@@ -62,13 +75,32 @@ namespace NailService
         {
             try
             {
-                // Проверяем, изменились ли настройки
+                // Проверяем, заполнены ли обязательные поля
+                if (string.IsNullOrWhiteSpace(Server.Text) ||
+                    string.IsNullOrWhiteSpace(NameUser.Text) ||
+                    string.IsNullOrWhiteSpace(DB.Text))
+                {
+                    MessageBox.Show("Пожалуйста, заполните все обязательные поля:\n- Сервер\n- Имя пользователя\n- База данных",
+                        "Не все поля заполнены",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Получаем введённые значения
+                string newHost = Server.Text.Trim();
+                string newUid = NameUser.Text.Trim();
+                string newPwd = Password.Text;
+                string newDatabase = DB.Text.Trim();
+                int newTimeout = (int)numericTimeout.Value;
+
+                // Проверяем, изменились ли настройки (сравниваем с текущими сохранёнными)
                 bool settingsChanged =
-                    Server.Text != Properties.Settings.Default.host ||
-                    NameUser.Text != Properties.Settings.Default.uid ||
-                    Password.Text != Properties.Settings.Default.pwd ||
-                    DB.Text != Properties.Settings.Default.database ||
-                    (int)numericTimeout.Value != Properties.Settings.Default.inactivityTimeout;
+                    newHost != Properties.Settings.Default.host ||
+                    newUid != Properties.Settings.Default.uid ||
+                    newPwd != Properties.Settings.Default.pwd ||
+                    newDatabase != Properties.Settings.Default.database ||
+                    newTimeout != Properties.Settings.Default.inactivityTimeout;
 
                 // Если настройки не изменились, просто выходим
                 if (!settingsChanged)
@@ -86,68 +118,55 @@ namespace NailService
                     return;
                 }
 
-                // Проверяем, заполнены ли обязательные поля
-                if (string.IsNullOrWhiteSpace(Server.Text) ||
-                    string.IsNullOrWhiteSpace(NameUser.Text) ||
-                    string.IsNullOrWhiteSpace(DB.Text))
+                // Пробуем подключиться с новыми параметрами
+                Cursor = Cursors.WaitCursor;
+
+                // Создаём временную строку подключения для проверки
+                string testConnectionString = $"server={newHost};user={newUid};password={newPwd};database={newDatabase};charset=utf8;Convert Zero Datetime=True;";
+                bool connectionSuccess = await Task.Run(() => TestConnection(testConnectionString));
+
+                Cursor = Cursors.Default;
+
+                // Если подключение не удалось - НЕ СОХРАНЯЕМ настройки
+                if (!connectionSuccess)
                 {
-                    MessageBox.Show("Пожалуйста, заполните все обязательные поля:\n- Сервер\n- Имя пользователя\n- База данных",
-                        "Не все поля заполнены",
+                    MessageBox.Show(
+                        "Не удалось подключиться к базе данных с указанными параметрами.\n\n" +
+                        "Проверьте правильность введенных данных.\n\n" +
+                        "Настройки НЕ БЫЛИ СОХРАНЕНЫ.",
+                        "Ошибка подключения",
                         MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
+                        MessageBoxIcon.Error);
                     return;
                 }
 
-                // Проверяем соединение с новыми параметрами
-                Cursor = Cursors.WaitCursor;
-                bool connectionSuccess = await Task.Run(() => Connection.TestConnection());
-                Cursor = Cursors.Default;
+                // Подключение успешно - СОХРАНЯЕМ настройки
+                Properties.Settings.Default.host = newHost;
+                Properties.Settings.Default.uid = newUid;
+                Properties.Settings.Default.pwd = newPwd;
+                Properties.Settings.Default.database = newDatabase;
+                Properties.Settings.Default.inactivityTimeout = newTimeout;
 
-                if (!connectionSuccess)
-                {
-                    DialogResult retry = MessageBox.Show(
-                        "Не удалось подключиться к базе данных с указанными параметрами.\n\n" +
-                        "Проверьте правильность введенных данных.\n\n" +
-                        "Сохранить настройки все равно?",
-                        "Ошибка подключения",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Warning);
+                Properties.Settings.Default.Save();
 
-                    if (retry != DialogResult.Yes)
-                    {
-                        return;
-                    }
-                }
+                // Обновляем статические свойства класса Connection
+                Connection.Host = newHost;
+                Connection.Database = newDatabase;
+                Connection.UserId = newUid;
+                Connection.Password = newPwd;
 
-                // Сохраняем настройки
-                Properties.Settings.Default["host"] = Server.Text;
-                Properties.Settings.Default["uid"] = NameUser.Text;
-                Properties.Settings.Default["pwd"] = Password.Text;
-                Properties.Settings.Default["database"] = DB.Text;
-
-                int newTimeout = (int)numericTimeout.Value;
-                Properties.Settings.Default["inactivityTimeout"] = newTimeout;
+                // Обновляем таймаут неактивности
                 if (_inactivityController != null)
                 {
                     _inactivityController.UpdateTimeout(newTimeout);
                 }
 
-                Properties.Settings.Default.Save();
-
-                // Обновляем статические свойства класса Connection
-                Connection.Host = Server.Text;
-                Connection.Database = DB.Text;
-                Connection.UserId = NameUser.Text;
-                Connection.Password = Password.Text;
-
                 // Спрашиваем о перезапуске
                 DialogResult restart = MessageBox.Show(
-                    connectionSuccess
-                        ? "Настройки успешно сохранены!\n\nДля применения всех изменений необходимо перезапустить приложение.\n\nПерезапустить сейчас?"
-                        : "Настройки сохранены, но подключение не удалось.\n\nДля применения изменений необходимо перезапустить приложение.\n\nПерезапустить сейчас?",
+                    "Настройки успешно сохранены!\n\nДля применения всех изменений необходимо перезапустить приложение.\n\nПерезапустить сейчас?",
                     "Сохранение настроек",
                     MessageBoxButtons.YesNo,
-                    connectionSuccess ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+                    MessageBoxIcon.Information);
 
                 if (restart == DialogResult.Yes)
                 {
@@ -165,6 +184,26 @@ namespace NailService
                 Cursor = Cursors.Default;
                 MessageBox.Show($"Ошибка сохранения: {ex.Message}", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Тест подключения к базе данных с указанными параметрами
+        /// </summary>
+        private bool TestConnection(string connectionString)
+        {
+            try
+            {
+                using (MySqlConnection connection = new MySqlConnection(connectionString))
+                {
+                    connection.Open();
+                    connection.Close();
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -256,7 +295,7 @@ namespace NailService
         private void button1_Click(object sender, EventArgs e)
         {
             new SysAdmin().Show();
-            this.Hide();
+            this.Close();
         }
     }
 }

@@ -38,7 +38,11 @@
             this.EditMaster = new System.Windows.Forms.Button();
             this.Back = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.FIO = new System.Windows.Forms.TextBox();
+            this.LastName = new System.Windows.Forms.TextBox();
+            this.FirstName = new System.Windows.Forms.TextBox();
+            this.MiddleName = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -55,16 +59,16 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 75);
+            this.label2.Location = new System.Drawing.Point(12, 92);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(55, 24);
+            this.label2.Size = new System.Drawing.Size(97, 24);
             this.label2.TabIndex = 1;
-            this.label2.Text = "ФИО";
+            this.label2.Text = "Фамилия";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 117);
+            this.label3.Location = new System.Drawing.Point(14, 246);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(96, 24);
             this.label3.TabIndex = 2;
@@ -73,7 +77,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 161);
+            this.label4.Location = new System.Drawing.Point(14, 297);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(105, 24);
             this.label4.TabIndex = 3;
@@ -81,7 +85,7 @@
             // 
             // Phone
             // 
-            this.Phone.Location = new System.Drawing.Point(133, 120);
+            this.Phone.Location = new System.Drawing.Point(133, 239);
             this.Phone.Name = "Phone";
             this.Phone.Size = new System.Drawing.Size(441, 31);
             this.Phone.TabIndex = 5;
@@ -89,7 +93,7 @@
             // 
             // Description
             // 
-            this.Description.Location = new System.Drawing.Point(133, 161);
+            this.Description.Location = new System.Drawing.Point(133, 297);
             this.Description.Multiline = true;
             this.Description.Name = "Description";
             this.Description.Size = new System.Drawing.Size(441, 148);
@@ -99,7 +103,7 @@
             // 
             this.EditMaster.BackColor = System.Drawing.Color.HotPink;
             this.EditMaster.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.EditMaster.Location = new System.Drawing.Point(351, 355);
+            this.EditMaster.Location = new System.Drawing.Point(351, 471);
             this.EditMaster.Name = "EditMaster";
             this.EditMaster.Size = new System.Drawing.Size(223, 47);
             this.EditMaster.TabIndex = 7;
@@ -111,7 +115,7 @@
             // 
             this.Back.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.Back.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.Back.Location = new System.Drawing.Point(16, 355);
+            this.Back.Location = new System.Drawing.Point(16, 471);
             this.Back.Name = "Back";
             this.Back.Size = new System.Drawing.Size(223, 47);
             this.Back.TabIndex = 8;
@@ -129,20 +133,56 @@
             this.pictureBox1.TabIndex = 9;
             this.pictureBox1.TabStop = false;
             // 
-            // FIO
+            // LastName
             // 
-            this.FIO.Location = new System.Drawing.Point(133, 75);
-            this.FIO.Name = "FIO";
-            this.FIO.Size = new System.Drawing.Size(441, 31);
-            this.FIO.TabIndex = 10;
+            this.LastName.Location = new System.Drawing.Point(133, 92);
+            this.LastName.Name = "LastName";
+            this.LastName.Size = new System.Drawing.Size(441, 31);
+            this.LastName.TabIndex = 10;
+            // 
+            // FirstName
+            // 
+            this.FirstName.Location = new System.Drawing.Point(133, 140);
+            this.FirstName.Name = "FirstName";
+            this.FirstName.Size = new System.Drawing.Size(441, 31);
+            this.FirstName.TabIndex = 11;
+            // 
+            // MiddleName
+            // 
+            this.MiddleName.Location = new System.Drawing.Point(133, 191);
+            this.MiddleName.Name = "MiddleName";
+            this.MiddleName.Size = new System.Drawing.Size(441, 31);
+            this.MiddleName.TabIndex = 12;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(14, 143);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(48, 24);
+            this.label5.TabIndex = 13;
+            this.label5.Text = "Имя";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(14, 194);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(99, 24);
+            this.label6.TabIndex = 14;
+            this.label6.Text = "Отчество";
             // 
             // EditMasterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(602, 424);
-            this.Controls.Add(this.FIO);
+            this.ClientSize = new System.Drawing.Size(602, 542);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.MiddleName);
+            this.Controls.Add(this.FirstName);
+            this.Controls.Add(this.LastName);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.Back);
             this.Controls.Add(this.EditMaster);
@@ -178,6 +218,10 @@
         private System.Windows.Forms.Button EditMaster;
         private System.Windows.Forms.Button Back;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.TextBox FIO;
+        private System.Windows.Forms.TextBox LastName;
+        private System.Windows.Forms.TextBox FirstName;
+        private System.Windows.Forms.TextBox MiddleName;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label6;
     }
 }

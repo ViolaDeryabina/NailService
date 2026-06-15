@@ -43,7 +43,9 @@
             this.label6 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
+            this.Eye = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericTimeout)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Eye)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -182,12 +184,21 @@
             this.button2.UseVisualStyleBackColor = false;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
+            // Eye
+            // 
+            this.Eye.Location = new System.Drawing.Point(326, 290);
+            this.Eye.Name = "Eye";
+            this.Eye.Size = new System.Drawing.Size(33, 32);
+            this.Eye.TabIndex = 15;
+            this.Eye.TabStop = false;
+            // 
             // SettingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(336, 586);
+            this.ClientSize = new System.Drawing.Size(368, 586);
+            this.Controls.Add(this.Eye);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label6);
@@ -213,6 +224,7 @@
             this.Text = "Настройки";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SettingForm_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.numericTimeout)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Eye)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -234,5 +246,6 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.PictureBox Eye;
     }
 }

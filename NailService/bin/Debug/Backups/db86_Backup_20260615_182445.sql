@@ -1,5 +1,5 @@
 -- MySqlBackup.NET 2.7.1.0
--- Dump Time: 2026-06-14 18:50:56
+-- Dump Time: 2026-06-15 18:24:45
 -- --------------------------------------
 -- Server version 9.4.0 MySQL Community Server - GPL
 
@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS `category` (
 -- 
 
 /*!40000 ALTER TABLE `category` DISABLE KEYS */;
+INSERT INTO `category`(`IDCategory`,`CategoryName`,`IsActive`) VALUES(1,'Маникюр',1),(2,'Педикюр',1),(3,'Наращивание',1),(4,'Уход',1);
 /*!40000 ALTER TABLE `category` ENABLE KEYS */;
 
 -- 
@@ -52,6 +53,7 @@ CREATE TABLE IF NOT EXISTS `role` (
 -- 
 
 /*!40000 ALTER TABLE `role` DISABLE KEYS */;
+INSERT INTO `role`(`IDRole`,`RoleName`) VALUES(2,'Админ'),(3,'Мастер'),(4,'Менеджер');
 /*!40000 ALTER TABLE `role` ENABLE KEYS */;
 
 -- 
@@ -89,14 +91,13 @@ CREATE TABLE IF NOT EXISTS `status` (
   `StatusName` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`IDStatus`),
   UNIQUE KEY `StatusName` (`StatusName`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 
 -- Dumping data for table status
 -- 
 
 /*!40000 ALTER TABLE `status` DISABLE KEYS */;
-INSERT INTO `status`(`IDStatus`,`StatusName`) VALUES(9,'1'),(8,'2'),(10,'3');
 /*!40000 ALTER TABLE `status` ENABLE KEYS */;
 
 -- 
@@ -193,5 +194,5 @@ CREATE TABLE IF NOT EXISTS `record` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 
--- Dump completed on 2026-06-14 18:50:56
--- Total time: 0:0:0:0:100 (d:h:m:s:ms)
+-- Dump completed on 2026-06-15 18:24:45
+-- Total time: 0:0:0:0:126 (d:h:m:s:ms)

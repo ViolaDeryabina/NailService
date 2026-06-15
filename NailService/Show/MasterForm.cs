@@ -144,10 +144,10 @@ namespace NailService
                 var masterModel = _editUserClass.LoadMasterById(masterId);
                 if (masterModel != null)
                 {
+                    // Передаём MasterModel напрямую в EditMasterForm
                     var editForm = new EditMasterForm(masterModel);
                     if (editForm.ShowDialog() == DialogResult.OK)
                     {
-                        _editUserClass.UpdateMasterInDatabase(editForm.Master);
                         LoadMastersData();
                         ShowInfo("Мастер успешно обновлен");
                     }
@@ -393,13 +393,15 @@ namespace NailService
         private void BtnAddMaster_Click(object sender, EventArgs e)
         {
             // Используем ту же форму AddUserForm, но в режиме мастера
-            AddUserForm addMasterForm = new AddUserForm(this, true);
-            DialogResult result = addMasterForm.ShowDialog();
-
-            if (result == DialogResult.OK)
+            using (AddUserForm addMasterForm = new AddUserForm(this, true))
             {
-                LoadMastersData();
-                ShowInfo("Мастер успешно добавлен");
+                DialogResult result = addMasterForm.ShowDialog();
+
+                if (result == DialogResult.OK)
+                {
+                    LoadMastersData();
+                    ShowInfo("Мастер успешно добавлен");
+                }
             }
         }
 
@@ -492,7 +494,7 @@ namespace NailService
         {
             MenuAdmin menu = new MenuAdmin(_userName);
             menu.Show();
-            this.Hide();
+            this.Close();
         }
 
         private void MasterForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -500,7 +502,7 @@ namespace NailService
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
-                this.Hide();
+                this.Close();
             }
         }
     }

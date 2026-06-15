@@ -168,9 +168,9 @@
             this.lblCharCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.25F);
             this.lblCharCount.Location = new System.Drawing.Point(425, 335);
             this.lblCharCount.Name = "lblCharCount";
-            this.lblCharCount.Size = new System.Drawing.Size(53, 20);
+            this.lblCharCount.Size = new System.Drawing.Size(50, 20);
             this.lblCharCount.TabIndex = 11;
-            this.lblCharCount.Text = "label6";
+            this.lblCharCount.Text = "0/500";
             // 
             // pictureBoxService
             // 

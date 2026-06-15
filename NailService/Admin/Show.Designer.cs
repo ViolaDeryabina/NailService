@@ -170,6 +170,7 @@
             this.CategoryTextBox.Name = "CategoryTextBox";
             this.CategoryTextBox.Size = new System.Drawing.Size(284, 27);
             this.CategoryTextBox.TabIndex = 5;
+            this.CategoryTextBox.TextChanged += new System.EventHandler(this.CategoryTextBox_TextChanged);
             // 
             // label4
             // 
@@ -229,6 +230,7 @@
             this.dataGridViewCategories.ReadOnly = true;
             this.dataGridViewCategories.Size = new System.Drawing.Size(958, 363);
             this.dataGridViewCategories.TabIndex = 0;
+            this.dataGridViewCategories.MouseClick += new System.Windows.Forms.MouseEventHandler(this.dataGridViewCategories_MouseClick);
             // 
             // label1
             // 

@@ -49,7 +49,20 @@ namespace NailService
             _captchaManager.OnBlockEnded += OnCaptchaBlockEnded;
 
             int timeout = Properties.Settings.Default.inactivityTimeout;
-            _inactivityController = new InactivityController(LockSystem, timeout);
+
+            // Создаём контроллер неактивности с проверкой, что блокировка не действует на форме авторизации
+            _inactivityController = new InactivityController(
+                () =>
+                {
+                    // Блокируем только если текущая активная форма НЕ является Form1
+                    Form activeForm = Form.ActiveForm;
+                    if (activeForm != null && activeForm.GetType() != typeof(Form1))
+                    {
+                        LockSystem();
+                    }
+                },
+                timeout);
+
             Application.AddMessageFilter(_inactivityController);
         }
 
@@ -199,7 +212,7 @@ namespace NailService
             if (role != null && FIO != null)
             {
                 int masterID = EditUserClass.GetMasterId(Login.Text, passwordHash);
-                OpenRoleForm(role, FIO, masterID, Login.Text, passwordHash); // передаём логин и хэш
+                OpenRoleForm(role, FIO, masterID, Login.Text, passwordHash);
             }
         }
 
@@ -242,24 +255,26 @@ namespace NailService
 
         private void OpenRoleForm(string role, string fio, int masterID, string login, string passwordHash)
         {
-            int userId = GetUserId(login, passwordHash); // получаем IDUser
+            int userId = GetUserId(login, passwordHash);
 
             switch (role)
             {
                 case "Админ":
                     new MenuAdmin(fio, login).Show();
+                    this.Close();
                     break;
                 case "Мастер":
                     new MenuMaster(fio, masterID).Show();
+                    this.Close();
                     break;
                 case "Менеджер":
-                    new MenuManager(fio, userId).Show();  // передаём userId
+                    new MenuManager(fio, userId).Show();
+                    this.Close();
                     break;
             }
             this.Hide();
         }
 
-        // Добавьте этот метод в класс Form1 (например, после GetRoleName)
         private int GetUserId(string login, string passwordHash)
         {
             using (MySqlConnection con = new MySqlConnection(_connection))
@@ -274,11 +289,12 @@ namespace NailService
             }
         }
 
-
         private void OpenSysAdminForm()
         {
             new SysAdmin().Show();
             this.Hide();
+            this.Close();
+            
         }
 
         private void HandleConnectionError()
@@ -287,7 +303,7 @@ namespace NailService
                 "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             new SettingForm().Show();
-            this.Hide();
+            this.Close();
         }
 
         private void ButtonRefreshCaptcha_Click(object sender, EventArgs e)
@@ -319,6 +335,13 @@ namespace NailService
 
         private void LockSystem()
         {
+            // Дополнительная проверка - если текущая форма Form1, не блокируем
+            Form activeForm = Form.ActiveForm;
+            if (activeForm != null && activeForm.GetType() == typeof(Form1))
+            {
+                return; // На форме авторизации блокировка не нужна
+            }
+
             Login.Clear();
             Password.Clear();
             _captchaManager.ClearInput();
@@ -344,6 +367,58 @@ namespace NailService
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
+            }
+        }
+
+        private void Login_TextChanged(object sender, EventArgs e)
+        {
+            int selectionStart = Login.SelectionStart;
+            int selectionLength = Login.SelectionLength;
+
+            // Разрешённые символы: английские буквы (верхний и нижний регистр), цифры и спецсимволы
+            string filteredText = new string(Login.Text
+                .Where(c => (c >= 'a' && c <= 'z') ||
+                            (c >= 'A' && c <= 'Z') ||
+                            (c >= '0' && c <= '9') ||
+                            c == '-' )
+                .ToArray());
+
+            if (filteredText != Login.Text)
+            {
+                Login.Text = filteredText;
+
+                // Корректируем позицию курсора
+                if (selectionStart > Login.Text.Length)
+                    selectionStart = Login.Text.Length;
+
+                Login.SelectionStart = selectionStart;
+                Login.SelectionLength = 0;
+            }
+        }
+
+        private void Password_TextChanged(object sender, EventArgs e)
+        {
+            int selectionStart = Password.SelectionStart;
+            int selectionLength = Password.SelectionLength;
+
+            // Удаляем русские буквы (верхний и нижний регистр)
+            string filteredText = new string(Password.Text
+                .Where(c => !((c >= 'а' && c <= 'я') ||
+                              (c >= 'А' && c <= 'Я') ||
+                              c == 'ё' ||
+                              c == 'Ё'))
+                .ToArray());
+
+            if (filteredText != Password.Text)
+            {
+                Password.Text = filteredText;
+
+                // Корректируем позицию курсора
+                if (selectionStart > Password.Text.Length)
+                    selectionStart = Password.Text.Length;
+
+                Password.SelectionStart = selectionStart;
+                Password.SelectionLength = 0;
             }
         }
     }

@@ -73,6 +73,7 @@
             this.Login.Name = "Login";
             this.Login.Size = new System.Drawing.Size(313, 31);
             this.Login.TabIndex = 2;
+            this.Login.TextChanged += new System.EventHandler(this.Login_TextChanged);
             // 
             // Password
             // 
@@ -80,6 +81,7 @@
             this.Password.Name = "Password";
             this.Password.Size = new System.Drawing.Size(313, 31);
             this.Password.TabIndex = 4;
+            this.Password.TextChanged += new System.EventHandler(this.Password_TextChanged);
             // 
             // label3
             // 

@@ -149,7 +149,11 @@ namespace NailService
                 using (MySqlConnection con = new MySqlConnection(Connection.ConnectionString))
                 {
                     con.Open();
-                    string query = "SELECT IDStatus, StatusName FROM Status WHERE IDStatus IN (1, 2)";
+
+                    // Для новых записей доступен только статус "Занято"
+                    // Нельзя создать запись со статусом "Выполнено"
+                    string query = "SELECT IDStatus, StatusName FROM Status WHERE IDStatus = 1";
+
                     MySqlCommand cmd = new MySqlCommand(query, con);
                     DataTable dt = new DataTable();
                     dt.Load(cmd.ExecuteReader());
@@ -158,6 +162,7 @@ namespace NailService
                     cmbStatus.ValueMember = "IDStatus";
                     cmbStatus.DataSource = dt;
                     cmbStatus.SelectedValue = 1;
+                    cmbStatus.Enabled = false; // Блокируем выбор, так как только один статус
                 }
             }
             catch (Exception ex)
@@ -171,6 +176,16 @@ namespace NailService
         #region Установка даты и времени
         public void SetSelectedDateTime(DateTime dateTime)
         {
+            // Проверка на прошедшее время
+            if (dateTime < DateTime.Now)
+            {
+                MessageBox.Show("Нельзя создать запись на прошедшее время!\n" +
+                                "Пожалуйста, выберите будущую дату и время.",
+                                "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                this.Close();
+                return;
+            }
+
             _selectedDateTime = dateTime;
             lblSelectedTime.Text = dateTime.ToString("dd.MM.yyyy HH:mm");
 
@@ -223,6 +238,14 @@ namespace NailService
         {
             if (!ValidateForm())
                 return;
+
+            if (_selectedDateTime < DateTime.Now)
+            {
+                MessageBox.Show("Нельзя создать запись на прошедшее время!\n" +
+                                "Пожалуйста, выберите будущую дату и время.",
+                                "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
             try
             {

@@ -52,11 +52,7 @@ namespace NailService
             cmbSort.Items.Clear();
             cmbSort.Items.AddRange(new string[] {
                 "Цена (по возрастанию)",
-                "Цена (по убыванию)",
-                "Мастер (А-Я)",
-                "Мастер (Я-А)",
-                "Клиент (А-Я)",
-                "Клиент (Я-А)"
+                "Цена (по убыванию)"
             });
             cmbSort.SelectedIndex = 0;
 
@@ -122,6 +118,14 @@ namespace NailService
                     Name = "MasterName",
                     HeaderText = "Мастер",
                     ReadOnly = true
+                });
+
+                dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = "ClientName",
+                    HeaderText = "Клиент",
+                    ReadOnly = true,
+                    AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
                 });
 
                 dataGridViewRecords.Columns.Add(new DataGridViewTextBoxColumn
@@ -254,10 +258,6 @@ namespace NailService
                     {
                         case "Цена (по возрастанию)": sortBy = "Price"; ascending = true; break;
                         case "Цена (по убыванию)": sortBy = "Price"; ascending = false; break;
-                        case "Мастер (А-Я)": sortBy = "Master"; ascending = true; break;
-                        case "Мастер (Я-А)": sortBy = "Master"; ascending = false; break;
-                        case "Клиент (А-Я)": sortBy = "Client"; ascending = true; break;
-                        case "Клиент (Я-А)": sortBy = "Client"; ascending = false; break;
                     }
                 }
 
@@ -295,10 +295,11 @@ namespace NailService
 
                 foreach (var record in pagedRecords)
                 {
-                    int rowIndex = dataGridViewRecords.Rows.Add(
+                    int rowIndex = dataGridViewRecords.Rows.Add(                                  
                         record.MasterName,
+                        record.ClientName,
                         record.Date.ToString("dd.MM.yyyy HH:mm"),
-                        record.Status, 
+                        record.Status,
                         record.Service,
                         record.Price.ToString("C0"),
                         record.UserName,

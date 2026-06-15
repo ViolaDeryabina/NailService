@@ -1,29 +1,22 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace NailService
 {
     /// <summary>
     /// Форма для редактирования данных существующего мастера
-    /// Позволяет изменять описание и номер телефона (ФИО только для просмотра)
+    /// Позволяет изменять ФИО, описание и номер телефона
     /// </summary>
     public partial class EditMasterForm : Form
     {
         private string _connection;
         public MasterModel Master { get; private set; }
 
-        /// <summary>
-        /// Конструктор формы редактирования мастера
-        /// </summary>
-        /// <param name="master">Объект мастера с текущими данными для редактирования</param>
         public EditMasterForm(MasterModel master)
         {
             InitializeComponent();
@@ -37,8 +30,9 @@ namespace NailService
         /// </summary>
         private void LoadMasterData()
         {
-            FIO.Text = Master.FullName;
-            FIO.Enabled = false; // ФИО нельзя редактировать (привязано к пользователю)
+            LastName.Text = Master.LastName;
+            FirstName.Text = Master.FirstName;
+            MiddleName.Text = Master.MiddleName;
             Description.Text = Master.Description;
             Phone.Text = Master.Phone;
         }
@@ -51,12 +45,10 @@ namespace NailService
             if (ValidateData())
             {
                 SaveMasterData();
-
-                if (UpdateMasterInDatabase())
-                {
-                    DialogResult = DialogResult.OK;
-                    Close();
-                }
+                UpdateUserData();
+                UpdateMasterInDatabase();
+                DialogResult = DialogResult.OK;
+                Close();
             }
         }
 
@@ -71,15 +63,28 @@ namespace NailService
 
         #region Валидация данных
 
-        /// <summary>
-        /// Валидация введенных данных перед сохранением
-        /// </summary>
         private bool ValidateData()
         {
+            if (string.IsNullOrWhiteSpace(LastName.Text))
+            {
+                MessageBox.Show("Введите фамилию", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                LastName.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(FirstName.Text))
+            {
+                MessageBox.Show("Введите имя", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                FirstName.Focus();
+                return false;
+            }
+
             if (string.IsNullOrWhiteSpace(Phone.Text))
             {
-                MessageBox.Show("Введите телефон мастера", "Внимание",
-                              MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Введите телефон мастера", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 Phone.Focus();
                 return false;
             }
@@ -88,7 +93,7 @@ namespace NailService
             if (phoneDigits.Length < 10)
             {
                 MessageBox.Show("Номер телефона должен содержать не менее 10 цифр",
-                    "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 Phone.Focus();
                 return false;
             }
@@ -124,10 +129,8 @@ namespace NailService
                     return count == 0;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show($"Ошибка проверки телефона: {ex.Message}", "Ошибка",
-                              MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
         }
@@ -179,19 +182,54 @@ namespace NailService
 
         #endregion
 
-        /// <summary>
-        /// Сохранение данных из формы в объект Master
-        /// </summary>
+        #region Сохранение данных
+
         private void SaveMasterData()
         {
+            Master.LastName = LastName.Text.Trim();
+            Master.FirstName = FirstName.Text.Trim();
+            Master.MiddleName = MiddleName.Text.Trim();
             Master.Description = Description.Text.Trim();
             Master.Phone = GetPhoneDigits(Phone.Text);
         }
 
         /// <summary>
-        /// Обновление данных мастера в базе данных
+        /// Обновление данных пользователя (ФИО) в таблице Users
         /// </summary>
-        private bool UpdateMasterInDatabase()
+        private void UpdateUserData()
+        {
+            try
+            {
+                using (var connection = new MySqlConnection(_connection))
+                {
+                    connection.Open();
+
+                    string query = @"UPDATE Users 
+                                     SET LastName = @LastName,
+                                         FirstName = @FirstName,
+                                         MiddleName = @MiddleName
+                                     WHERE IDUser = @UserId";
+
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@UserId", Master.UserId);
+                    cmd.Parameters.AddWithValue("@LastName", Master.LastName);
+                    cmd.Parameters.AddWithValue("@FirstName", Master.FirstName);
+                    cmd.Parameters.AddWithValue("@MiddleName", string.IsNullOrWhiteSpace(Master.MiddleName) ? (object)DBNull.Value : Master.MiddleName);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка обновления ФИО: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Обновление данных мастера в таблице Masters
+        /// </summary>
+        private void UpdateMasterInDatabase()
         {
             try
             {
@@ -200,37 +238,108 @@ namespace NailService
                     connection.Open();
 
                     string query = @"UPDATE Masters 
-                                    SET Description = @Description,
-                                        Phone = @Phone
-                                    WHERE IDMasters = @MasterId";
+                                     SET Description = @Description,
+                                         Phone = @Phone
+                                     WHERE IDMasters = @MasterId";
 
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("@MasterId", Master.IDMasters);
                     cmd.Parameters.AddWithValue("@Description", string.IsNullOrWhiteSpace(Master.Description) ? (object)DBNull.Value : Master.Description);
                     cmd.Parameters.AddWithValue("@Phone", Master.Phone);
 
-                    int result = cmd.ExecuteNonQuery();
-
-                    if (result > 0)
-                    {
-                        MessageBox.Show("Данные мастера успешно обновлены", "Успех",
-                                      MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        return true;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Не удалось обновить данные мастера", "Ошибка",
-                                      MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return false;
-                    }
+                    cmd.ExecuteNonQuery();
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка при обновлении мастера: {ex.Message}", "Ошибка",
-                              MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        #endregion
+
+        #region Фильтрация ввода (только русские буквы для ФИО)
+
+        private void LastName_TextChanged(object sender, EventArgs e)
+        {
+            int selectionStart = LastName.SelectionStart;
+            string filteredText = InputValidator.FilterToRussianLetters(LastName.Text);
+
+            if (filteredText != LastName.Text)
+            {
+                LastName.Text = filteredText;
+                LastName.SelectionStart = Math.Min(selectionStart, LastName.Text.Length);
+            }
+        }
+
+        private void FirstName_TextChanged(object sender, EventArgs e)
+        {
+            int selectionStart = FirstName.SelectionStart;
+            string filteredText = InputValidator.FilterToRussianLetters(FirstName.Text);
+
+            if (filteredText != FirstName.Text)
+            {
+                FirstName.Text = filteredText;
+                FirstName.SelectionStart = Math.Min(selectionStart, FirstName.Text.Length);
+            }
+        }
+
+        private void MiddleName_TextChanged(object sender, EventArgs e)
+        {
+            int selectionStart = MiddleName.SelectionStart;
+            string filteredText = InputValidator.FilterToRussianLetters(MiddleName.Text);
+
+            if (filteredText != MiddleName.Text)
+            {
+                MiddleName.Text = filteredText;
+                MiddleName.SelectionStart = Math.Min(selectionStart, MiddleName.Text.Length);
+            }
+        }
+
+        #endregion
+
+        #region Автоматическое преобразование первой буквы в заглавную
+
+        private void LastName_Validating(object sender, CancelEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(LastName.Text))
+            {
+                string name = LastName.Text.Trim();
+                if (name.Length > 0)
+                {
+                    name = char.ToUpper(name[0]) + name.Substring(1).ToLower();
+                    LastName.Text = name;
+                }
+            }
+        }
+
+        private void FirstName_Validating(object sender, CancelEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(FirstName.Text))
+            {
+                string name = FirstName.Text.Trim();
+                if (name.Length > 0)
+                {
+                    name = char.ToUpper(name[0]) + name.Substring(1).ToLower();
+                    FirstName.Text = name;
+                }
+            }
+        }
+
+        private void MiddleName_Validating(object sender, CancelEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(MiddleName.Text))
+            {
+                string name = MiddleName.Text.Trim();
+                if (name.Length > 0)
+                {
+                    name = char.ToUpper(name[0]) + name.Substring(1).ToLower();
+                    MiddleName.Text = name;
+                }
+            }
+        }
+
+        #endregion
     }
 }

@@ -35,9 +35,9 @@
             this.Login = new System.Windows.Forms.TextBox();
             this.MiddleName = new System.Windows.Forms.TextBox();
             this.FirstName = new System.Windows.Forms.TextBox();
-            this.label7 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
+            this.lblRole = new System.Windows.Forms.Label();
+            this.lblPassword = new System.Windows.Forms.Label();
+            this.lblLogin = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -53,7 +53,7 @@
             // 
             this.btnSave.BackColor = System.Drawing.Color.HotPink;
             this.btnSave.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnSave.Location = new System.Drawing.Point(346, 374);
+            this.btnSave.Location = new System.Drawing.Point(346, 372);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(223, 47);
             this.btnSave.TabIndex = 33;
@@ -65,7 +65,7 @@
             // 
             this.btnCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(203)))), ((int)(((byte)(219)))));
             this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnCancel.Location = new System.Drawing.Point(21, 374);
+            this.btnCancel.Location = new System.Drawing.Point(21, 372);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(223, 47);
             this.btnCancel.TabIndex = 32;
@@ -109,32 +109,32 @@
             this.FirstName.TabIndex = 28;
             this.FirstName.TextChanged += new System.EventHandler(this.FirstName_TextChanged);
             // 
-            // label7
+            // lblRole
             // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(17, 305);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(56, 24);
-            this.label7.TabIndex = 26;
-            this.label7.Text = "Роль";
+            this.lblRole.AutoSize = true;
+            this.lblRole.Location = new System.Drawing.Point(17, 305);
+            this.lblRole.Name = "lblRole";
+            this.lblRole.Size = new System.Drawing.Size(56, 24);
+            this.lblRole.TabIndex = 26;
+            this.lblRole.Text = "Роль";
             // 
-            // label6
+            // lblPassword
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(17, 249);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(82, 24);
-            this.label6.TabIndex = 25;
-            this.label6.Text = "Пароль";
+            this.lblPassword.AutoSize = true;
+            this.lblPassword.Location = new System.Drawing.Point(17, 249);
+            this.lblPassword.Name = "lblPassword";
+            this.lblPassword.Size = new System.Drawing.Size(82, 24);
+            this.lblPassword.TabIndex = 25;
+            this.lblPassword.Text = "Пароль";
             // 
-            // label5
+            // lblLogin
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(17, 210);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(69, 24);
-            this.label5.TabIndex = 24;
-            this.label5.Text = "Логин";
+            this.lblLogin.AutoSize = true;
+            this.lblLogin.Location = new System.Drawing.Point(17, 210);
+            this.lblLogin.Name = "lblLogin";
+            this.lblLogin.Size = new System.Drawing.Size(69, 24);
+            this.lblLogin.TabIndex = 24;
+            this.lblLogin.Text = "Логин";
             // 
             // label4
             // 
@@ -216,7 +216,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(604, 437);
+            this.ClientSize = new System.Drawing.Size(604, 440);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.btnSave);
@@ -225,9 +225,9 @@
             this.Controls.Add(this.Login);
             this.Controls.Add(this.MiddleName);
             this.Controls.Add(this.FirstName);
-            this.Controls.Add(this.label7);
-            this.Controls.Add(this.label6);
-            this.Controls.Add(this.label5);
+            this.Controls.Add(this.lblRole);
+            this.Controls.Add(this.lblPassword);
+            this.Controls.Add(this.lblLogin);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -255,9 +255,9 @@
         private System.Windows.Forms.TextBox Login;
         private System.Windows.Forms.TextBox MiddleName;
         private System.Windows.Forms.TextBox FirstName;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label lblRole;
+        private System.Windows.Forms.Label lblPassword;
+        private System.Windows.Forms.Label lblLogin;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
